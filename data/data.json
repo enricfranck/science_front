@@ -1,0 +1,28 @@
+{
+  "trips": [
+    {
+      "tripname": "calName",
+      "persons": [],
+      "sumCost": "0",
+      "personCost": []
+    },
+    {
+      "tripname": "sdcsdc",
+      "persons": [],
+      "sumCost": "0",
+      "personCost": []
+    },
+    {
+      "tripname": "",
+      "persons": [],
+      "sumCost": "0",
+      "personCost": []
+    },
+    {
+      "tripname": "",
+      "persons": [],
+      "sumCost": "0",
+      "personCost": []
+    }
+  ]
+}

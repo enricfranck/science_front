@@ -1,0 +1,148 @@
+ScreenManager:
+    LoginScreen: 
+    MainScreen: 
+    ReinscriptionScreen: 
+
+<LoginScreen>:
+    id: login_screen
+    name: 'Login'
+    MDCard:
+        size_hint: None, None
+        size: 380, 400
+        pos_hint: {"center_x": 0.5, "center_y": 0.5}
+        elevation:10
+        padding: 30
+        orientation: 'vertical'
+        Image:
+            source: "images/logo_science.jpg"
+            size_hint_y:None
+            width: 100
+            allow_stretch: True
+            padding_bottom:2
+        MDLabel:
+            text: "FACULTÉ DES SCIENCES"
+            halign: "center"
+            font_size: "14px"
+        
+        MDSpinner:
+            id:spinner
+            size_hint: None, None
+            size: dp(20), dp(20)
+            pos_hint: {'center_x': 0.5}
+            active:False
+        
+        MDTextField:
+            id: email
+            hint_text: "Enter email:"
+            pos_hint: {"center_x": 0.5}
+            size_hint_x: None
+            helper_text_mode:"on_error"
+            width:300
+
+        MyMDTextField:
+            id: password
+            hint_text: "Enter password:"
+            pos_hint: {"center_x": 0.5}
+            size_hint_x: None
+            password: True
+            helper_text_mode:"on_error"
+            icon_right:"eye-off"
+            width:300
+
+        MDLabel:
+            text: "Mot de passe oublié"
+            halign: "center"
+            font_size: "12px"
+            
+        MDCard:
+            size_hint: None, None
+            size: 200, 50
+            pos_hint: {"center_x": 0.5, "center_y": 0.5}
+            spacing: 5
+            orientation: 'horizontal'
+            halign:'center'
+            MDRectangleFlatButton:
+                text: 'login'
+                on_press: root.login()
+
+            MDRectangleFlatButton:
+                text: 'auto'
+                on_press: root.auto_remplir()
+
+
+<MainScreen>:
+    name:  'Main'
+    MDNavigationLayout:
+        ScreenManager:
+            Screen:
+                BoxLayout:
+                    orientation:'vertical'
+                    MDToolbar:
+                        title: 'Menue Principale'
+                        left_action_items:[["menu",lambda x: nav_drawer.set_state("toggle")]]
+                        right_action_items:[["logout",lambda x: root.logout()]]
+                        elevation:5
+                    Widget:
+                    
+        MDNavigationDrawer:
+            id:nav_drawer
+
+<ReinscriptionScreen>:
+    name: 'Reinscription'
+    id:box_layout
+    BoxLayout:
+        orientation:'horizontal'
+        size_hint_x:0.8
+        MDFlatButton:
+            id:mention_button
+            text:"Mention"
+            pos_hint:{"center_y": 0.12}
+            on_release:root.menu_mention.open()
+        MDLabel:
+            id:mention_label
+            text:""
+            pos_hint:{"center_y": 0.12}
+            size_hint_x:1.2
+
+        MDFlatButton:
+            id:parcours_button
+            text:"Parcours"
+            pos_hint:{"center_y": 0.12}
+            on_release:root.menu_parcours.open()
+
+        MDLabel:
+            id:parcours_label
+            text:""
+            pos_hint:{"center_y": 0.12}
+            size_hint:(0.3,0.15)
+
+        MDFlatButton:
+            id:semestre_button
+            text:"Semestre"
+            pos_hint:{"center_y": 0.12}
+            on_release:root.menu_semestre.open()
+
+        MDLabel:
+            id:semestre_label
+            text:""
+            pos_hint:{"center_y": 0.12}
+            size_hint:(0.3,0.15)
+
+        MDFlatButton:
+            id:annee_button
+            text:"Année universitaire"
+            pos_hint:{"center_y": 0.12}
+            on_release:root.menu_annee_univ.open()
+
+    MDBottomAppBar:
+        orientation:'vertical'
+        MDToolbar:
+            title: 'Réinscription'
+            type:'bottom'
+            left_action_items:[["keyboard-backspace",lambda x: root.back_main()]]
+            elevation:5
+            mode:"end"
+            icon:"account-plus"
+    
+    
+
