@@ -10,8 +10,9 @@ class MainScreen(Screen):
         print(email, password)
     
     def logout(seld):
+    
         MDApp.get_running_app().root.current = 'Login'
         MDApp.get_running_app().TOKEN = ""
         MDApp.get_running_app().ALL_MENTION = []
         MDApp.get_running_app().MENTION = ""
-        MDApp.get_running_app().HOST = ""
+        MDApp.get_running_app().IS_INITIALISE = False

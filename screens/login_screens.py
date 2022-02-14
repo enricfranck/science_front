@@ -1,4 +1,3 @@
-
 from dotenv import load_dotenv
 import os
 import sys
@@ -7,7 +6,7 @@ from time import sleep, time
 
 from kivymd.app import MDApp
 from kivy.uix.screenmanager import ScreenManager, Screen
-from kivy.properties import ObjectProperty,StringProperty, BooleanProperty
+from kivy.properties import ObjectProperty, StringProperty, BooleanProperty
 from kivymd.uix.textfield import MDTextField
 from kivy.clock import Clock
 from functools import partial
@@ -16,7 +15,6 @@ from kivy.uix.anchorlayout import AnchorLayout
 
 from all_requests import request_login
 from kivy.metrics import dp
-
 
 parent = Path(__file__).resolve().parent.parent / ""
 sys.path.append(str(parent))
@@ -31,7 +29,6 @@ else:
 class MyMDTextField(MDTextField):
     password_mode = BooleanProperty(True)
 
-   
     def on_touch_down(self, touch):
         if self.collide_point(*touch.pos):
             if self.icon_right:
@@ -56,20 +53,22 @@ class MyMDTextField(MDTextField):
 
                     # try to adjust cursor position
                     cursor = self.cursor
-                    self.cursor = (0,0)
+                    self.cursor = (0, 0)
                     Clock.schedule_once(partial(self.set_cursor, cursor))
         return super(MyMDTextField, self).on_touch_down(touch)
 
     def set_cursor(self, pos, dt):
         self.cursor = pos
 
+
 class LoginScreen(Screen):
     screenManager = ObjectProperty(None)
+
     def login(self):
         host = MDApp.get_running_app().HOST
         email = self.ids.email.text
         password = self.ids.password.text
-        url_login:str = f"http://{host}/api/v1/login/access-token"
+        url_login: str = f"http://{host}/api/v1/login/access-token"
 
         if len(email) != 0 and len(password) != 0:
             self.ids.spinner.active = True
@@ -92,8 +91,7 @@ class LoginScreen(Screen):
             self.ids.password.require = True
 
     def auto_remplir(self):
-        self.ids.email.text = "franck@example.com"
-        self.ids.password.text = "123"
-        # self.ids.email.text = "admin@science.com"
-        # self.ids.password.text = "aze135azq35sfsnf6353sfh3xb68yyp31gf68k5sf6h3s5d68jd5"
-
+        # self.ids.email.text = "franck@example.com"
+        # self.ids.password.text = "123"
+        self.ids.email.text = "admin@science.com"
+        self.ids.password.text = "aze135azq35sfsnf6353sfh3xb68yyp31gf68k5sf6h3s5d68jd5"
