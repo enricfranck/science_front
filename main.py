@@ -10,6 +10,7 @@ from screens.login_screens import LoginScreen
 from screens.main_screens import MainScreen
 from screens.reinscription_add_screen import ReinscriptionAddScreen
 from screens.reinscription_screen import ReinscriptionScreen
+from screens.reinscription_update_screen import ReinscriptionUpdateScreen
 
 Config.set('graphics', 'resizable', 0)
 Config.set('graphics', 'width', 1000)
@@ -33,14 +34,21 @@ class ReinscriptionAddScreen(ReinscriptionAddScreen):
     pass
 
 
+class ReinscriptionUpdateScreen(ReinscriptionUpdateScreen):
+    pass
+
+
 class ScienceApp(MDApp):
     dialog = None
     TOKEN: str = ""
     ALL_MENTION: list = []
+    ALL_PARCOURS: list = []
+    ALL_ETUDIANT: list = []
+    NUMERO_CARTE: str = ""
     MENTION: str = ""
     HOST: str = os.getenv("host")
     IS_INITIALISE = False
-    ANNEE = ""
+    ANNEE: str = ""
 
     def build(self):
         self.theme_cls.theme_style = "Dark"

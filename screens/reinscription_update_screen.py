@@ -3,7 +3,7 @@ from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.properties import ObjectProperty, StringProperty
 
 
-class ReinscriptionAddScreen(Screen):
+class ReinscriptionUpdateScreen(Screen):
     screenManager = ObjectProperty(None)
 
     def on_enter(self):

@@ -16,8 +16,11 @@ BoxLayout:
                 angle_end: 360
 
 '''
+
+
 class App(App):
     def build(self):
         return Builder.load_string(kv)
+
 
 App().run()

@@ -45,7 +45,6 @@ class Test(MDApp):
         else:
             app.root.ids.spinner.active = False
 
-
     def long_process(self, bala):
         time.sleep(5)
         for x in range(100):
@@ -55,8 +54,7 @@ class Test(MDApp):
     def long_process_thread(self):
         self.spinner_toggle()
         threading.Thread(target=(
-        self.long_process)).start()
-
+            self.long_process)).start()
 
 
 Test().run()

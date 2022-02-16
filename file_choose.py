@@ -1,13 +1,10 @@
-from kivymd.app import MDApp
 from kivy.core.window import Window
-from kivy.lang import Builder
 from kivy.factory import Factory
+from kivy.lang import Builder
 from kivy.uix.modalview import ModalView
-
-from kivymd.uix.filemanager import MDFileManager
-from kivymd.theming import ThemeManager
+from kivymd.app import MDApp
 from kivymd.toast import toast
-
+from kivymd.uix.filemanager import MDFileManager
 
 Builder.load_string('''
 
@@ -39,6 +36,7 @@ class Example(MDApp):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.file_manager = None
         Window.bind(on_keyboard=self.events)
         self.manager_open = False
         self.manager = None
@@ -57,24 +55,24 @@ class Example(MDApp):
         self.manager.open()
 
     def select_path(self, path):
-        '''It will be called when you click on the file name
+        """It will be called when you click on the file name
         or the catalog selection button.
 
         :type path: str;
         :param path: path to the selected directory or file;
-        '''
+        """
 
         self.exit_manager()
         toast(path)
 
     def exit_manager(self, *args):
-        '''Called when the user reaches the root of the directory tree.'''
+        """Called when the user reaches the root of the directory tree."""
 
         self.manager.dismiss()
         self.manager_open = False
 
     def events(self, instance, keyboard, keycode, text, modifiers):
-        '''Called when buttons are pressed on the mobile device..'''
+        """Called when buttons are pressed on the mobile device.."""
 
         if keyboard in (1001, 27):
             if self.manager_open:

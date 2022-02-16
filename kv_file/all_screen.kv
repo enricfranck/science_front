@@ -3,6 +3,7 @@ ScreenManager:
     MainScreen: 
     ReinscriptionScreen:
     ReinscriptionAddScreen:
+    ReinscriptionUpdateScreen:
 
 <LoginScreen>:
     id: login_screen
@@ -317,8 +318,8 @@ ScreenManager:
                     on_release:""
 
                 MDTextField:
-                    id: etat
-                    hint_text: "État"
+                    id: montant
+                    hint_text: "Montant"
                     pos: 700, 240
                     size_hint_x: None
                     helper_text_mode:"on_error"
@@ -334,6 +335,15 @@ ScreenManager:
                     width:100
                     required: True
 
+                MDTextField:
+                    id: etat
+                    hint_text: "État"
+                    pos: 400, 185
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:180
+                    required: True
+
                 MDFillRoundFlatIconButton:
                     id: save_etudiant
                     text: "Sauvegarder"
@@ -342,6 +352,13 @@ ScreenManager:
                     disabled: True if (moyenne.text == "" or etat.text =="" or num_quictance.text == "" or addresse.text=="" or nom.text == "" or num_ce.text == "" or nation.text == "" or lieu_naiss.text == "") else False
                     icon: "content-save"
                     md_bg_color:(0,0,0,0)
+
+                MDSpinner:
+                    id: spinner
+                    size_hint: None, None
+                    size: dp(50), dp(50)
+                    pos: 540, 300
+                    active: True
 
                 MDLabel:
                     id:s1
@@ -444,6 +461,320 @@ ScreenManager:
                     size_hint:None, None
                     pos_hint: {"center_y": 0.95,"center_x": 0.2}
 
+<ReinscriptionUpdateScreen>:
+    name: 'Reinscription_update'
+    MDBoxLayout:
+        orientation:'vertical'
+        MDToolbar:
+            title: 'Update étudiant'
+            left_action_items:[["keyboard-backspace",lambda x: root.back_home()]]
+            elevation:5
+        Widget:
+        BoxLayout:
+            orientation: 'vertical'
+            FloatLayout:
+                canvas:
+                    Color:
+                        rgb: 1, 1, 1
+                    Ellipse:
+                        pos: 80, 430
+                        size: 100 , 120
+                        source: 'image.jpg'
+                        angle_start: 0
+                        angle_end: 360
+                MDIconButton:
+                    id: camera
+                    icon: 'camera'
+                    pos: 140, 415
+
+                MDTextField:
+                    id: num_ce
+                    hint_text: "Numéro Carte"
+                    pos: 70, 370
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:120
+                    required: True
+
+                MDIconButton:
+                    id:import_etudiant
+                    icon: 'account-convert'
+                    pos: 190, 370
+                    disabled: True if len(num_ce.text) < 4 else False
+                    opacity: 0 if len(num_ce.text) < 4 else 1
+                    md_bg_color:(0,0,0,0)
+
+                MDTextField:
+                    id: nom
+                    hint_text: "Nom"
+                    pos: 280, 480
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:300
+                    required: True
+
+                MDTextField:
+                    id: prenom
+                    hint_text: "Prénom"
+                    pos: 600, 480
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:150
+                    required: False
+
+                MDTextField:
+                    id: sexe
+                    hint_text: "Sexe"
+                    pos: 770, 480
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:100
+                    required: True
+
+                MDTextField:
+                    id: date_naiss
+                    hint_text: "Né(e) le"
+                    pos: 280, 420
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:100
+                    readonly: True
+                    text:"2022-12-12"
+
+                MDIconButton:
+                    id:calend_naiss
+                    icon: 'calendar'
+                    pos: 375, 420
+                    on_release:""
+
+                MDTextField:
+                    id: lieu_naiss
+                    hint_text: "à"
+                    pos: 440, 420
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:245
+                    required: True
+
+                MDTextField:
+                    id: nation
+                    hint_text: "Nationalité"
+                    pos: 725, 420
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:150
+                    required: True
+
+                MDTextField:
+                    id: addresse
+                    hint_text: "Addresse"
+                    pos: 280, 360
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:600
+                    required: True
+
+                MDTextField:
+                    id: num_cin
+                    hint_text: "CIN"
+                    pos: 280, 300
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:150
+
+                MDTextField:
+                    id: date_cin
+                    hint_text: "du"
+                    pos: 450, 300
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:100
+                    readonly: True
+                    text:"2022-12-12"
+
+                MDIconButton:
+                    id:calend_cin
+                    icon: 'calendar'
+                    pos: 540, 300
+                    on_release:""
+
+                MDTextField:
+                    id: lieu_cin
+                    hint_text: "à"
+                    pos: 600, 300
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:270
+                    required: True if num_cin.text != "" else False
+
+                MDTextField:
+                    id: num_quictance
+                    hint_text: "Quintance"
+                    pos: 280, 240
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:260
+                    required: True
+
+                MDTextField:
+                    id: date_quintance
+                    hint_text: "du"
+                    pos: 560, 240
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:100
+                    readonly: True
+                    text:"2022-12-12"
+
+                MDIconButton:
+                    id:calend_quitance
+                    icon: 'calendar'
+                    pos: 640, 240
+                    on_release:""
+
+                MDTextField:
+                    id: montant
+                    hint_text: "Montant"
+                    pos: 700, 240
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:180
+                    required: True
+
+                MDTextField:
+                    id: moyenne
+                    hint_text: "Moyenne"
+                    pos: 280, 185
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:100
+                    required: True
+
+                MDTextField:
+                    id: etat
+                    hint_text: "État"
+                    pos: 400, 185
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:180
+                    required: True
+
+                MDFillRoundFlatIconButton:
+                    id: save_etudiant
+                    text: "Sauvegarder"
+                    pos: 750, 150
+                    width:100
+                    disabled: True if (moyenne.text == "" or etat.text =="" or num_quictance.text == "" or addresse.text=="" or nom.text == "" or num_ce.text == "" or nation.text == "" or lieu_naiss.text == "") else False
+                    icon: "content-save"
+                    md_bg_color:(0,0,0,0)
+
+                MDSpinner:
+                    id: spinner
+                    size_hint: None, None
+                    size: dp(50), dp(50)
+                    pos: 540, 300
+                    active: True
+
+                MDLabel:
+                    id:s1
+                    text:"S1"
+                    pos: 30, 200
+                MDCheckbox:
+                    id:s1_check
+                    size: 20,20
+                    size_hint:None, None
+                    pos_hint: {"center_y": 1.12,"center_x": 0.04}
+
+                MDLabel:
+                    id:s3
+                    text:"S3"
+                    pos: 70, 200
+                MDCheckbox:
+                    id:s3_check
+                    size: 20,20
+                    size_hint:None, None
+                    pos_hint: {"center_y": 1.12,"center_x": 0.08}
+
+                MDLabel:
+                    id:s5
+                    text:"S5"
+                    pos: 110, 200
+                MDCheckbox:
+                    id:s5_check
+                    size: 20,20
+                    size_hint:None, None
+                    pos_hint: {"center_y": 1.12,"center_x": 0.12}
+
+                MDLabel:
+                    id:s7
+                    text:"S7"
+                    pos: 150, 200
+                MDCheckbox:
+                    id:s7_check
+                    size: 20,20
+                    size_hint:None, None
+                    pos_hint: {"center_y": 1.12,"center_x": 0.16}
+
+                MDLabel:
+                    id:s9
+                    text:"S9"
+                    pos: 190, 200
+                MDCheckbox:
+                    id:s9_check
+                    size: 20,20
+                    size_hint:None, None
+                    pos_hint: {"center_y": 1.12,"center_x": 0.2}
+
+
+                MDLabel:
+                    id:s2
+                    text:"S2"
+                    pos: 30, 150
+                MDCheckbox:
+                    id:s2_check
+                    size: 20,20
+                    size_hint:None, None
+                    pos_hint: {"center_y": 0.95,"center_x": 0.04}
+
+                MDLabel:
+                    id:s4
+                    text:"S4"
+                    pos: 70, 150
+                MDCheckbox:
+                    id:s4_check
+                    size: 20,20
+                    size_hint:None, None
+                    pos_hint: {"center_y": 0.95,"center_x": 0.08}
+
+                MDLabel:
+                    id:s6
+                    text:"S6"
+                    pos: 110, 150
+                MDCheckbox:
+                    id:s6_check
+                    size: 20,20
+                    size_hint:None, None
+                    pos_hint: {"center_y": 0.95,"center_x": 0.12}
+
+                MDLabel:
+                    id:s8
+                    text:"S8"
+                    pos: 150, 150
+                MDCheckbox:
+                    id:s8_check
+                    size: 20,20
+                    size_hint:None, None
+                    pos_hint: {"center_y": 0.95,"center_x": 0.16}
+
+                MDLabel:
+                    id:s10
+                    text:"S10"
+                    pos: 190, 150
+                MDCheckbox:
+                    id:s10_check
+                    size: 20,20
+                    size_hint:None, None
+                    pos_hint: {"center_y": 0.95,"center_x": 0.2}
 
 
 
