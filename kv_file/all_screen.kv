@@ -157,20 +157,22 @@ ScreenManager:
         Widget:
         BoxLayout:
             orientation: 'vertical'
-            FloatLayout:
+            FloatLayout_:
+                id: ellipse
                 canvas:
                     Color:
                         rgb: 1, 1, 1
                     Ellipse:
                         pos: 80, 430
-                        size: 100 , 120 
-                        source: 'image.jpg'
+                        size: 100 , 120
                         angle_start: 0
+                        source: self.source
                         angle_end: 360
                 MDIconButton:
                     id: camera
                     icon: 'camera'
                     pos: 140, 415
+                    on_release: root.file_manager_open()
 
                 MDTextField:
                     id: num_ce
@@ -188,6 +190,24 @@ ScreenManager:
                     disabled: True if len(num_ce.text) < 4 else False
                     opacity: 0 if len(num_ce.text) < 4 else 1
                     md_bg_color:(0,0,0,0)
+
+                MDTextField:
+                    id:mention_field
+                    hint_text:"Mention"
+                    size_hint_x: None
+                    pos: 20, 185
+                    width: 250
+                    readonly: True
+                    on_focus: if self.focus: root.menu_mention.open()
+
+
+                MDTextField:
+                    id:parcours_field
+                    hint_text:"Parcours"
+                    size_hint_x: None
+                    pos: 20, 125
+                    width: 180
+                    on_focus: if self.focus: root.menu_parcours.open()
 
                 MDTextField:
                     id: nom
@@ -224,13 +244,13 @@ ScreenManager:
                     helper_text_mode:"on_error"
                     width:100
                     readonly: True
-                    text:"2022-12-12"
+                    text:""
 
                 MDIconButton:
                     id:calend_naiss
                     icon: 'calendar'
                     pos: 375, 420
-                    on_release:""
+                    on_release:root.show_date_picker_naiss()
 
                 MDTextField:
                     id: lieu_naiss
@@ -275,13 +295,14 @@ ScreenManager:
                     helper_text_mode:"on_error"
                     width:100
                     readonly: True
-                    text:"2022-12-12"
+                    required:True if num_cin.text != "" else False
+                    text:""
 
                 MDIconButton:
                     id:calend_cin
                     icon: 'calendar'
                     pos: 540, 300
-                    on_release:""
+                    on_release:root.show_date_picker_cin()
 
                 MDTextField:
                     id: lieu_cin
@@ -293,7 +314,7 @@ ScreenManager:
                     required: True if num_cin.text != "" else False
 
                 MDTextField:
-                    id: num_quictance
+                    id: num_quintance
                     hint_text: "Quintance"
                     pos: 280, 240
                     size_hint_x: None
@@ -309,13 +330,13 @@ ScreenManager:
                     helper_text_mode:"on_error"
                     width:100
                     readonly: True
-                    text:"2022-12-12"
+                    text:""
 
                 MDIconButton:
                     id:calend_quitance
                     icon: 'calendar'
                     pos: 640, 240
-                    on_release:""
+                    on_release:root.show_date_picker_quint()
 
                 MDTextField:
                     id: montant
@@ -341,7 +362,16 @@ ScreenManager:
                     pos: 400, 185
                     size_hint_x: None
                     helper_text_mode:"on_error"
-                    width:180
+                    width:100
+                    required: True
+
+                MDTextField:
+                    id: bacc_annee
+                    hint_text: "Année bacc"
+                    pos: 520, 185
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:90
                     required: True
 
                 MDFillRoundFlatIconButton:
@@ -349,8 +379,9 @@ ScreenManager:
                     text: "Sauvegarder"
                     pos: 750, 150
                     width:100
-                    disabled: True if (moyenne.text == "" or etat.text =="" or num_quictance.text == "" or addresse.text=="" or nom.text == "" or num_ce.text == "" or nation.text == "" or lieu_naiss.text == "") else False
+                    disabled: True if (date_naiss.text == "" or date_quintance.text == "" or mention_field.text == "" or parcours_field.text == "" or montant.text == "" or bacc_annee.text == "" or moyenne.text == "" or etat.text =="" or num_quintance.text == "" or addresse.text=="" or nom.text == "" or num_ce.text == "" or nation.text == "" or lieu_naiss.text == "") else False
                     icon: "content-save"
+                    on_release:root.enreg_etudiant()
                     md_bg_color:(0,0,0,0)
 
                 MDSpinner:
@@ -472,15 +503,16 @@ ScreenManager:
         Widget:
         BoxLayout:
             orientation: 'vertical'
-            FloatLayout:
+            FloatLayout_:
+                id: ellipse
                 canvas:
                     Color:
                         rgb: 1, 1, 1
                     Ellipse:
                         pos: 80, 430
                         size: 100 , 120
-                        source: 'image.jpg'
                         angle_start: 0
+                        source:self.source
                         angle_end: 360
                 MDIconButton:
                     id: camera
@@ -503,6 +535,24 @@ ScreenManager:
                     disabled: True if len(num_ce.text) < 4 else False
                     opacity: 0 if len(num_ce.text) < 4 else 1
                     md_bg_color:(0,0,0,0)
+
+                MDTextField:
+                    id:mention_field
+                    hint_text:"Mention"
+                    size_hint_x: None
+                    pos: 20, 185
+                    width: 250
+                    readonly: True
+                    on_focus: if self.focus: root.menu_mention.open()
+
+
+                MDTextField:
+                    id:parcours_field
+                    hint_text:"Parcours"
+                    size_hint_x: None
+                    pos: 20, 125
+                    width: 180
+                    on_focus: if self.focus: root.menu_parcours.open()
 
                 MDTextField:
                     id: nom
@@ -539,7 +589,7 @@ ScreenManager:
                     helper_text_mode:"on_error"
                     width:100
                     readonly: True
-                    text:"2022-12-12"
+                    text:""
 
                 MDIconButton:
                     id:calend_naiss
@@ -590,7 +640,7 @@ ScreenManager:
                     helper_text_mode:"on_error"
                     width:100
                     readonly: True
-                    text:"2022-12-12"
+                    text:""
 
                 MDIconButton:
                     id:calend_cin
@@ -608,7 +658,7 @@ ScreenManager:
                     required: True if num_cin.text != "" else False
 
                 MDTextField:
-                    id: num_quictance
+                    id: num_quintance
                     hint_text: "Quintance"
                     pos: 280, 240
                     size_hint_x: None
@@ -624,7 +674,7 @@ ScreenManager:
                     helper_text_mode:"on_error"
                     width:100
                     readonly: True
-                    text:"2022-12-12"
+                    text:""
 
                 MDIconButton:
                     id:calend_quitance
@@ -659,12 +709,21 @@ ScreenManager:
                     width:180
                     required: True
 
+                MDTextField:
+                    id: bacc_annee
+                    hint_text: "Année bacc"
+                    pos: 520, 185
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:90
+                    required: True
+
                 MDFillRoundFlatIconButton:
                     id: save_etudiant
                     text: "Sauvegarder"
                     pos: 750, 150
                     width:100
-                    disabled: True if (moyenne.text == "" or etat.text =="" or num_quictance.text == "" or addresse.text=="" or nom.text == "" or num_ce.text == "" or nation.text == "" or lieu_naiss.text == "") else False
+                    disabled: True if (mention_field.text == "" or parcours_field.text == "" or montant.text == "" or bacc_annee.text == "" or moyenne.text == "" or etat.text =="" or num_quintance.text == "" or addresse.text=="" or nom.text == "" or num_ce.text == "" or nation.text == "" or lieu_naiss.text == "") else False
                     icon: "content-save"
                     md_bg_color:(0,0,0,0)
 

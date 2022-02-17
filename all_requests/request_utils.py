@@ -21,8 +21,7 @@ def get_mention_uuid(url:str,uuid_mention:str, token:str):
                }
     req = UrlRequest(url, on_success=success, on_failure=fail, on_error=error, on_progress=progress, 
     req_headers=headers, verify=False, method='GET') 
-    req.wait() 
-    print(req.result)
+    req.wait()
     return req.result
 
 def get_mention(url:str,token:str):

@@ -80,8 +80,8 @@ class LoginScreen(Screen):
                 self.ids.spinner.active = False
                 MDApp.get_running_app().root.current = 'Reinscription'
                 MDApp.get_running_app().TOKEN = response["access_token"]
-                MDApp.get_running_app().ALL_MENTIONS = response["mention"]
-                MDApp.get_running_app().MENTION = MDApp.get_running_app().ALL_MENTIONS[0]
+                MDApp.get_running_app().ALL_UUID_MENTION = response["mention"]
+                MDApp.get_running_app().MENTION = MDApp.get_running_app().ALL_UUID_MENTION[0]
                 self.ids.email.text = ""
                 self.ids.password.text = ""
             else:

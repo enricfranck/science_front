@@ -128,42 +128,56 @@ class ReinscriptionScreen(Screen):
         self.delete_etudiant.disabled = False
         self.delete_etudiant.md_bg_color = (0, 0, 0, 0)
 
+    def inactive_button(self, *args):
+        self.edit_etudiant.opacity = 0
+        self.edit_etudiant.disabled = True
+        self.edit_etudiant.md_bg_color = (0, 0, 0, 0)
+        self.delete_etudiant.opacity = 0
+        self.delete_etudiant.disabled = True
+        self.delete_etudiant.md_bg_color = (0, 0, 0, 0)
+
     def on_enter(self):
         if not MDApp.get_running_app().IS_INITIALISE:
             self.load_table()
             self.init_data()
             MDApp.get_running_app().IS_INITIALISE = True
+        else:
+            MDApp.get_running_app().NUM_CARTE = ""
+            self.inactive_button()
 
     def get_all_mention(self):
+        response = Any
         host = MDApp.get_running_app().HOST
         token = MDApp.get_running_app().TOKEN
-        uuid_mention = MDApp.get_running_app().ALL_MENTION
-        mention = [""]
+        uuid_mention = MDApp.get_running_app().ALL_UUID_MENTION
+        mention = []
+        print("etoooo", uuid_mention)
         if len(uuid_mention) != 0:
             url_mention: str = f'http://{host}/api/v1/mentions/by_uuid'
             for uuid in uuid_mention:
                 response = request_utils.get_mention_uuid(url_mention, uuid, token)
                 if response:
-                    mention.append(str(response[0]['title']))
+                    MDApp.get_running_app().ALL_MENTION.append(response)
+                    mention.append(str(response['title']))
         else:
             url_mention: str = f'http://{host}/api/v1/mentions/'
             response = request_utils.get_mention(url_mention, token)
             if response:
                 mention.append(str(response[0]['title']))
+                MDApp.get_running_app().ALL_MENTION = response
 
         menu_items = [
             {
                 "viewclass": "OneLineListItem",
                 "text": f"{mention[i]}",
-                "height": dp(56),
-                "on_release": lambda x=f"{mention[i]}": self.menu_calback_mention(i, x),
+                "height": dp(50),
+                "on_release": lambda x=f"{mention[i]}": self.menu_calback_mention(x),
             } for i in range(len(mention))
         ]
         return menu_items
 
     def get_all_parcours(self):
         parcours = []
-        self.all_semestre = []
         self.semestre = []
         host = MDApp.get_running_app().HOST
         token = MDApp.get_running_app().TOKEN
@@ -171,15 +185,15 @@ class ReinscriptionScreen(Screen):
         url_parcours: str = f'http://{host}/api/v1/parcours/by_mention/'
         response = request_utils.get_parcours_by_mention(url_parcours, uuid_mention, token)
         if response:
+            MDApp.get_running_app().ALL_PARCOURS = response
             for rep in response:
                 parcours.append(str(rep['abreviation']))
-                self.all_semestre.append(rep["semestre"])
 
         menu_items = [
             {
                 "viewclass": "OneLineListItem",
                 "text": f"{parcours[i]}",
-                "height": dp(56),
+                "height": dp(50),
                 "on_release": lambda x=f"{parcours[i]}": self.menu_calback_parcours(i, x),
             } for i in range(len(parcours))
         ]
@@ -199,7 +213,7 @@ class ReinscriptionScreen(Screen):
             {
                 "viewclass": "OneLineListItem",
                 "text": f"{annee_univ[i]}",
-                "height": dp(56),
+                "height": dp(50),
                 "on_release": lambda x=f"{annee_univ[i]}": self.menu_calback_annee(x),
             } for i in range(len(annee_univ))
         ]
@@ -209,22 +223,23 @@ class ReinscriptionScreen(Screen):
         menu_items = [
             {
                 "viewclass": "OneLineListItem",
-                "text": f"S{i+1}",
-                "height": dp(56),
-                "on_release": lambda x=f"S{i+1}": self.menu_calback_semestre(x),
+                "text": f"S{i + 1}",
+                "height": dp(50),
+                "on_release": lambda x=f"S{i + 1}": self.menu_calback_semestre(x),
             } for i in range(9)
         ]
         return menu_items
 
-    def menu_calback_mention(self, i, text_item):
+    def menu_calback_mention(self, text_item):
+        print(MDApp.get_running_app().ALL_MENTION)
         if self.initialise:
-            MDApp.get_running_app().MENTION = MDApp.get_running_app().ALL_MENTIONS[i - 1]
+            MDApp.get_running_app().MENTION = self.read_mention_by_title(
+                MDApp.get_running_app().ALL_MENTION, text_item)[0]['uuid']
             if self.annee.text != "":
                 self.spinner_toggle()
                 self.process_spiner()
                 self.spinner_toggle()
             self.ids.mention_label.text = text_item
-            self.initialise = False
             self.menu_mention.dismiss()
         self.menu_mention.dismiss()
 
@@ -243,6 +258,7 @@ class ReinscriptionScreen(Screen):
         self.spinner_toggle()
 
     def get_data(self):
+        self.initialise = False
         host = MDApp.get_running_app().HOST
         token = MDApp.get_running_app().TOKEN
         uuid_mention = MDApp.get_running_app().MENTION
@@ -273,7 +289,7 @@ class ReinscriptionScreen(Screen):
     def menu_calback_semestre(self, text_item):
         self.ids.semestre_label.text = text_item
         parcours = self.ids.parcours_label.text
-        all_etudiant = self.read_by_semestre_and_parcours(MDApp.get_running_app().ALL_ETUDIANT,parcours, text_item)
+        all_etudiant = self.read_by_semestre_and_parcours(MDApp.get_running_app().ALL_ETUDIANT, parcours, text_item)
         self.data_tables.row_data = self.transforme_data(all_etudiant)
         self.menu_semestre.dismiss()
 
@@ -286,7 +302,8 @@ class ReinscriptionScreen(Screen):
 
     def row_selected(self, table, row):
         start_index, end_index = row.table.recycle_data[row.index]["range"]
-        print(row.table.recycle_data[start_index + 1]["text"])
+        num_carte = row.table.recycle_data[start_index + 1]["text"]
+        MDApp.get_running_app().NUMERO_CARTE = num_carte
         self.data_tables.background_color_selected_cell = (1, 1, 1)
         self.active_button()
 
@@ -328,3 +345,6 @@ class ReinscriptionScreen(Screen):
     def read_by_semestre_and_parcours(self, data: list, parcours: str, semestre: str):
         return list(filter(lambda etudiant: etudiant["parcours"] == parcours and (
                 etudiant["semestre_petit"] == semestre or etudiant["semestre_grand"] == semestre), data))
+
+    def read_mention_by_title(self, data: list, titre: str):
+        return list(filter(lambda mention: mention["title"].lower() == titre.lower(), data))

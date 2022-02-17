@@ -2,6 +2,8 @@ import os
 
 from kivy.config import Config
 from kivy.lang.builder import Builder
+from kivy.properties import StringProperty
+from kivy.uix.floatlayout import FloatLayout
 from kivymd.app import MDApp
 from kivymd.uix.button import MDFlatButton
 from kivymd.uix.dialog import MDDialog
@@ -38,13 +40,18 @@ class ReinscriptionUpdateScreen(ReinscriptionUpdateScreen):
     pass
 
 
+class FloatLayout_(FloatLayout):
+    source = StringProperty()
+
+
 class ScienceApp(MDApp):
     dialog = None
     TOKEN: str = ""
+    ALL_UUID_MENTION: list = []
     ALL_MENTION: list = []
     ALL_PARCOURS: list = []
     ALL_ETUDIANT: list = []
-    NUMERO_CARTE: str = ""
+    NUM_CARTE: str = ""
     MENTION: str = ""
     HOST: str = os.getenv("host")
     IS_INITIALISE = False

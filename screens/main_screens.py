@@ -13,6 +13,10 @@ class MainScreen(Screen):
     
         MDApp.get_running_app().root.current = 'Login'
         MDApp.get_running_app().TOKEN = ""
+        MDApp.get_running_app().ALL_UUID_MENTION = []
         MDApp.get_running_app().ALL_MENTION = []
+        MDApp.get_running_app().ALL_PARCOURS = []
+        MDApp.get_running_app().ALL_ETUDIANT = []
         MDApp.get_running_app().MENTION = ""
+        MDApp.get_running_app().NUM_CARTE = ""
         MDApp.get_running_app().IS_INITIALISE = False
