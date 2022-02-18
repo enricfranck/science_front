@@ -6,10 +6,11 @@
 # from kivy.lang.builder import Builder
 import urllib.parse
 
+
 # KV = """
 # ScreenManager:
 #     DemoPage:
-    
+
 #     ClientsTable:
 
 
@@ -20,8 +21,8 @@ import urllib.parse
 #         pos_hint: {"center_x": 0.5, "center_y": 0.4}
 #         on_release: 
 #             root.manager.current = 'Clientstable'
-            
-            
+
+
 # <ClientsTable>:
 #     name: 'Clientstable'
 #     BoxLayout:
@@ -74,11 +75,21 @@ import urllib.parse
 #         return screen
 
 
+def find_key(lettre: str, key: str):
+    value = lettre.lower()
+    key_value = key.lower()
+    return value.find(key_value)
+
+
+def read_mention_by_title(data: list, titre: str):
+    return list(filter(lambda mention: find_key(mention["name"], titre) != -1 or find_key(mention["adresse"], titre) != -1, data))
+
+
 if __name__ == "__main__":
     # MainWindow().run()
-
-    values = {'uuid_mention':"franck","name":"test"} 
-    # converted data to json type 
-    params = urllib.parse.urlencode(values)
-    data = {"test",20}
-    print(tuple(data))
+    data = [{"name": "franck", "age": 26, "adresse": "paris"},
+            {"name": "françois", "age": 27, "adresse": "france"},
+            {"name": "frame", "age": 15, "adresse": "parisho"}
+            ]
+    value = read_mention_by_title(data, "PA")
+    print(value)

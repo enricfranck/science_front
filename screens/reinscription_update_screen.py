@@ -47,7 +47,7 @@ class ReinscriptionUpdateScreen(Screen):
             self.ids.mention_field.text = self.read_mention_by_uuid(MDApp.get_running_app().ALL_MENTION,
                                                                     MDApp.get_running_app().MENTION)[0]["title"]
             try:
-                self.ids.ellipse.source = f"http://{self.host}/api/v1/ancien_etudiants/photo?name_file={num_carte}.jpg"
+                self.ids.ellipse.source = f'http://{self.host}/api/v1/ancien_etudiants/photo?name_file={num_carte}.jpg'
             except Exception as e:
                 print(e)
                 pass

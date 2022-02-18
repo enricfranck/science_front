@@ -1,3 +1,6 @@
+import secrets
+import string
+
 from kivy.core.window import Window
 from kivymd.app import MDApp
 from kivy.uix.screenmanager import ScreenManager, Screen
@@ -29,6 +32,8 @@ class ReinscriptionAddScreen(Screen):
     screenManager = ObjectProperty(None)
 
     def on_enter(self):
+
+        print(MDApp.get_running_app().ANNEE)
         self.ids.s1_check.active = True
         self.menu_mention = MDDropdownMenu(
             caller=self.ids.mention_field,
@@ -117,8 +122,8 @@ class ReinscriptionAddScreen(Screen):
         num_carte = self.ids.num_ce.text
         nom = self.ids.nom.text
         prenom = self.ids.prenom.text
-        sexe = self.ids.sexe.text = \
-            date_naiss = self.ids.date_naiss.text
+        sexe = self.ids.sexe.text
+        date_naiss = self.ids.date_naiss.text
         lieu_naiss = self.ids.lieu_naiss.text
         adresse = self.ids.addresse.text
         num_cin = self.ids.num_cin.text
@@ -136,7 +141,7 @@ class ReinscriptionAddScreen(Screen):
         token = MDApp.get_running_app().TOKEN
         annee = MDApp.get_running_app().ANNEE
         uuid_mention = self.selected_mention
-        uuid_parcours = self.selected_parcoursselected_parcours
+        uuid_parcours = self.selected_parcours
         semestre_petit = ""
         semestre_grand = ""
         url_enreg: str = f'http://{host}/api/v1/ancien_etudiants/'
@@ -144,7 +149,8 @@ class ReinscriptionAddScreen(Screen):
                                  nation, adresse, num_cin, date_cin, lieu_cin, quintance, date_quintance, montant,
                                  etat, moyenne, uuid_mention, uuid_parcours, bacc_anne, semestre_petit, semestre_grand)
         if response:
-            print(response)
+            self.reset_champs()
+            MDApp.get_running_app().ALL_ETUDIANT = response
 
     def get_all_mention(self):
         mention = MDApp.get_running_app().ALL_MENTION
@@ -185,3 +191,48 @@ class ReinscriptionAddScreen(Screen):
 
     def read_mention_by_title(self, data: list, titre: str):
         return list(filter(lambda mention: mention["title"].lower() == titre.lower(), data))
+
+    def create_secret(self, nbr: int):
+        res = "".join(secrets.choice(string.ascii_letters + string.digits) for x in range(nbr))
+        return res
+
+    def auto_complete(self):
+        self.ids.num_ce.text = self.create_secret(5)
+        self.ids.nom.text = self.create_secret(20)
+        self.ids.prenom.text = self.create_secret(5)
+        self.ids.sexe.text = "MASCULIN"
+        self.ids.date_naiss.text = "1993-12-10"
+        self.ids.lieu_naiss.text = self.create_secret(12)
+        self.ids.addresse.text = self.create_secret(8)
+        self.ids.num_cin.text = self.create_secret(12)
+        self.ids.date_cin.text = "2012-02-13"
+        self.ids.lieu_cin.text = self.create_secret(4)
+        self.ids.num_quintance.text = self.create_secret(13)
+        self.ids.date_quintance.text = "2020-13-04"
+        self.ids.montant.text = "205000"
+        self.ids.etat.text = "Passant"
+        self.ids.nation.text = "Malagasy"
+        self.ids.moyenne.text = "12"
+        self.ids.bacc_annee.text = "2013"
+
+    def reset_champs(self):
+        self.ids.num_ce.text = ""
+        self.ids.nom.text = ""
+        self.ids.prenom.text = ""
+        self.ids.sexe.text = ""
+        self.ids.date_naiss.text = ""
+        self.ids.lieu_naiss.text = ""
+        self.ids.addresse.text = ""
+        self.ids.num_cin.text = ""
+        self.ids.date_cin.text = ""
+        self.ids.lieu_cin.text = ""
+        self.ids.num_quintance.text = ""
+        self.ids.date_quintance.text = ""
+        self.ids.montant.text = ""
+        self.ids.etat.text = ""
+        self.ids.nation.text = ""
+        self.ids.moyenne.text = ""
+        self.ids.bacc_annee.text = ""
+
+    def read_mention_by_uuid(self, data: list, uuid: str):
+        return list(filter(lambda mention: mention["uuid"] == uuid, data))

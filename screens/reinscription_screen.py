@@ -1,20 +1,22 @@
 import threading
-from kivy.clock import mainthread
 import time
-from kivymd.app import MDApp
-from kivy.uix.screenmanager import ScreenManager, Screen
-from kivy.properties import ObjectProperty, StringProperty
-from kivymd.uix.datatables import MDDataTable
-from kivy.uix.anchorlayout import AnchorLayout
-from kivymd.uix.label import MDLabel
-from kivymd.uix.button import MDFlatButton, MDIconButton
-from kivymd.uix.spinner import MDSpinner
-from kivymd.uix.menu import MDDropdownMenu
-from kivymd.uix.dialog import MDDialog
-from kivy.metrics import dp
-from all_requests import request_utils, request_etudiants
-
 from typing import Any
+
+from kivy.clock import mainthread
+from kivy.metrics import dp
+from kivy.properties import ObjectProperty
+from kivy.uix.anchorlayout import AnchorLayout
+from kivy.uix.screenmanager import Screen
+from kivymd.app import MDApp
+from kivymd.uix.button import MDFlatButton, MDIconButton
+from kivymd.uix.datatables import MDDataTable
+from kivymd.uix.dialog import MDDialog
+from kivymd.uix.label import MDLabel
+from kivymd.uix.menu import MDDropdownMenu
+from kivymd.uix.spinner import MDSpinner
+from kivymd.toast import toast
+
+from all_requests import request_utils, request_etudiants
 
 
 class ReinscriptionScreen(Screen):
@@ -37,7 +39,17 @@ class ReinscriptionScreen(Screen):
         self.menu_parcours = None
         self.initialise = True
 
+        # self.search = MDTextField(
+        #     hint_text="Recherche",
+        #     size_hint_x=None,
+        #     pos=(20, 125),
+        #     width=250,
+        #     pos_hint={'center_y': 0.95, 'center_x': 0.18},
+        # )
+
+
     def init_data(self):
+
         self.menu_mention = MDDropdownMenu(
             caller=self.ids.mention_button,
             items=self.get_all_mention(),
@@ -94,12 +106,13 @@ class ReinscriptionScreen(Screen):
             pos_hint={'center_y': 0.95, 'center_x': 0.95},
             on_release=self.show_dialog
         )
-
+        # self.add_widget(self.search)
         self.add_widget(self.titre)
         self.add_widget(self.annee)
         self.add_widget(self.edit_etudiant)
         self.add_widget(self.delete_etudiant)
         self.add_widget(self.spinner)
+
 
     def load_table(self):
         layout = AnchorLayout()
@@ -107,7 +120,7 @@ class ReinscriptionScreen(Screen):
             pos_hint={'center_y': 0.55, 'center_x': 0.5},
             size_hint=(0.98, 0.75),
             use_pagination=True,
-            rows_num=8,
+            rows_num=7,
             column_data=[
                 ("N°", dp(20)),
                 ("CE", dp(30)),
@@ -140,10 +153,12 @@ class ReinscriptionScreen(Screen):
         if not MDApp.get_running_app().IS_INITIALISE:
             self.load_table()
             self.init_data()
+            # self.search.bind(on_text=self.serch_etudiant(self.search.text))
             MDApp.get_running_app().IS_INITIALISE = True
         else:
             MDApp.get_running_app().NUM_CARTE = ""
             self.inactive_button()
+        self.data_tables.row_data = self.transforme_data(MDApp.get_running_app().ALL_ETUDIANT)
 
     def get_all_mention(self):
         response = Any
@@ -270,9 +285,12 @@ class ReinscriptionScreen(Screen):
         data = []
         k: int = 1
         for un_et in all_data:
-            etudiant = (k, un_et["num_carte"], f'{un_et["nom"]} {un_et["prenom"]}', (un_et["parcours"]).upper())
+            etudiant = (k, ("human-female",
+                        [39 / 256, 174 / 256, 96 / 256, 1],un_et["num_carte"]), f'{un_et["nom"]} {un_et["prenom"]}', (un_et["parcours"]).upper())
+
             data.append(etudiant)
             k += 1
+        data.append(("", "", "", ""))
         return data
 
     def process_spiner(self):
@@ -295,6 +313,7 @@ class ReinscriptionScreen(Screen):
 
     def menu_calback_annee(self, text_item):
         self.annee.text = f"{text_item}"
+        MDApp.get_running_app().ANNEE = text_item
         self.menu_annee_univ.dismiss()
 
     def calback(self, button):
@@ -303,16 +322,19 @@ class ReinscriptionScreen(Screen):
     def row_selected(self, table, row):
         start_index, end_index = row.table.recycle_data[row.index]["range"]
         num_carte = row.table.recycle_data[start_index + 1]["text"]
-        MDApp.get_running_app().NUMERO_CARTE = num_carte
-        self.data_tables.background_color_selected_cell = (1, 1, 1)
-        self.active_button()
+        if num_carte != "":
+            MDApp.get_running_app().NUM_CARTE = num_carte
+            self.active_button()
+        else:
+            MDApp.get_running_app().NUM_CARTE = num_carte
+            self.inactive_button()
 
     def show_dialog(self, *args):
         if not self.dialog:
             # create dialog
             self.dialog = MDDialog(
-                title="Log In",
-                text="text",
+                title="Attention!",
+                text=f"Voulez-vous supprimer {MDApp.get_running_app().NUM_CARTE} ?",
                 buttons=[
                     MDFlatButton(
                         text="Ok",
@@ -320,14 +342,29 @@ class ReinscriptionScreen(Screen):
                     ),
                     MDFlatButton(
                         text="Annuler",
-                        # on_release=root.delete_etudiant()
+                        on_release=self.cancel_dialog
                     ),
                 ],
             )
         self.dialog.open()
 
     def delete_etudiant_(self, *args):
-        print("etudiant supprimé")
+        host = MDApp.get_running_app().HOST
+        token = MDApp.get_running_app().TOKEN
+        annee = MDApp.get_running_app().ANNEE
+        num_carte = MDApp.get_running_app().NUM_CARTE
+
+        url = f"http://{host}/api/v1/ancien_etudiants/"
+        if num_carte != "":
+            response = request_etudiants.delete_ancien_etudiant(url, annee, num_carte, token)
+            if response:
+                self.dialog.dismiss()
+                MDApp.get_running_app().ALL_ETUDIANT = response
+                toast(f"{num_carte} bien supprimé")
+                MDApp.get_running_app().NUM_CARTE = ""
+                self.data_tables.row_data = self.transforme_data(MDApp.get_running_app().ALL_ETUDIANT)
+
+    def cancel_dialog(self):
         self.dialog.dismiss()
 
     def back_main(self):
@@ -348,3 +385,21 @@ class ReinscriptionScreen(Screen):
 
     def read_mention_by_title(self, data: list, titre: str):
         return list(filter(lambda mention: mention["title"].lower() == titre.lower(), data))
+
+    def find_key(self, lettre: str, key: str):
+        value = lettre.lower()
+        key_value = key.lower()
+        return value.find(key_value)
+
+    def serch_etudiant(self, titre: str):
+        data = MDApp.get_running_app().ALL_ETUDIANT
+        value = list(
+            filter(lambda mention: self.find_key(mention["num_carte"], titre) != -1 or
+                                   self.find_key(mention["nom"], titre) != -1 or
+                                   self.find_key(mention["prenom"], titre) != -1 or
+                                   self.find_key(mention["adresse"], titre) != -1 or
+                                   self.find_key(mention["sexe"], titre) != -1 or
+                                   self.find_key(mention["etat"], titre) != -1 or
+                                   self.find_key(mention["parcours"], titre) != -1,
+                   data))
+        self.data_tables.row_data = self.transforme_data(value)

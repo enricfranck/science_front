@@ -3,7 +3,9 @@ import os
 from kivy.config import Config
 from kivy.lang.builder import Builder
 from kivy.properties import StringProperty
+from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.image import AsyncImage
 from kivymd.app import MDApp
 from kivymd.uix.button import MDFlatButton
 from kivymd.uix.dialog import MDDialog
@@ -42,6 +44,10 @@ class ReinscriptionUpdateScreen(ReinscriptionUpdateScreen):
 
 class FloatLayout_(FloatLayout):
     source = StringProperty()
+
+
+class ImageButton(ButtonBehavior, AsyncImage):
+    pass
 
 
 class ScienceApp(MDApp):
