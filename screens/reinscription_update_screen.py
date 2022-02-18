@@ -9,6 +9,10 @@ class ReinscriptionUpdateScreen(Screen):
     # http://localhost/api/v1/ancien_etudiants/photo?name_file=4465.jpg
     screenManager = ObjectProperty(None)
 
+    def __init__(self, **kw):
+        super().__init__(kw)
+        self.selected_parcours = None
+
     def on_enter(self):
         self.ids.s1_check.active = True
         self.menu_mention = MDDropdownMenu(
@@ -22,7 +26,7 @@ class ReinscriptionUpdateScreen(Screen):
             items=self.get_all_parcours(),
             width_mult=4,
         )
-        num_carte = MDApp.get_running_app().NUMERO_CARTE
+        num_carte = MDApp.get_running_app().NUM_CARTE
         self.host = MDApp.get_running_app().HOST
         if num_carte != "":
             un_etudiant = self.read_by_num_carte(MDApp.get_running_app().ALL_ETUDIANT, num_carte)[0]
@@ -47,7 +51,7 @@ class ReinscriptionUpdateScreen(Screen):
             self.ids.mention_field.text = self.read_mention_by_uuid(MDApp.get_running_app().ALL_MENTION,
                                                                     MDApp.get_running_app().MENTION)[0]["title"]
             try:
-                self.ids.ellipse.source = f'http://{self.host}/api/v1/ancien_etudiants/photo?name_file={num_carte}.jpg'
+                self.ids.ellipse.source = f'http://{self.host}/api/v1/ancien_etudiants/photo?name_file={str(un_etudiant["photo"])}'
             except Exception as e:
                 print(e)
                 pass

@@ -364,7 +364,7 @@ class ReinscriptionScreen(Screen):
                 MDApp.get_running_app().NUM_CARTE = ""
                 self.data_tables.row_data = self.transforme_data(MDApp.get_running_app().ALL_ETUDIANT)
 
-    def cancel_dialog(self):
+    def cancel_dialog(self, *args):
         self.dialog.dismiss()
 
     def back_main(self):
