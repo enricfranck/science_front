@@ -4,6 +4,12 @@ ScreenManager:
     ReinscriptionScreen:
     ReinscriptionAddScreen:
     ReinscriptionUpdateScreen:
+    DownloadScreen:
+    SelectionScreen:
+    SelectionAddScreen:
+    SelectionUpdateScreen:
+    PublicScreen:
+    PublicAddScreen:
 
 <LoginScreen>:
     id: login_screen
@@ -82,7 +88,7 @@ ScreenManager:
                     MDToolbar:
                         title: 'Menue Principale'
                         left_action_items:[["menu",lambda x: nav_drawer.set_state("toggle")]]
-                        right_action_items:[["logout",lambda x: root.logout()]]
+                        right_action_items:[["logout",lambda x: app.logout()]]
                         elevation:5
                     Widget:
                     
@@ -161,7 +167,7 @@ ScreenManager:
         MDToolbar:
             title: 'Réinscription'
             type:'bottom'
-            left_action_items:[["keyboard-backspace",lambda x: root.back_main()]]
+            left_action_items:[["keyboard-backspace",lambda x: root.back_main()],["card-account-details",lambda x: root.calback_carte(x)],["clipboard-list",lambda x: root.calback_list(x)]]
             elevation:5
             mode:"end"
             icon:"account-plus"
@@ -255,6 +261,7 @@ ScreenManager:
                     size_hint_x: None
                     helper_text_mode:"on_error"
                     width:100
+                    readonly: True
                     required: True
 
                 MDTextField:
@@ -289,6 +296,7 @@ ScreenManager:
                     size_hint_x: None
                     helper_text_mode:"on_error"
                     width:150
+                    readonly: True
                     required: True
 
                 MDTextField:
@@ -384,6 +392,7 @@ ScreenManager:
                     size_hint_x: None
                     helper_text_mode:"on_error"
                     width:100
+                    readonly: True
                     required: True
 
                 MDTextField:
@@ -428,6 +437,7 @@ ScreenManager:
                     size: 20,20
                     size_hint:None, None
                     pos_hint: {"center_y": 1.12,"center_x": 0.04}
+                    on_active: root.disabled_check_master_one_two()
 
                 MDLabel:
                     id:s3
@@ -438,6 +448,7 @@ ScreenManager:
                     size: 20,20
                     size_hint:None, None
                     pos_hint: {"center_y": 1.12,"center_x": 0.08}
+                    on_active: root.disabled_check_master_one_two()
 
                 MDLabel:
                     id:s5
@@ -448,6 +459,7 @@ ScreenManager:
                     size: 20,20
                     size_hint:None, None
                     pos_hint: {"center_y": 1.12,"center_x": 0.12}
+                    on_active: root.disabled_check_master_one_two()
 
                 MDLabel:
                     id:s7
@@ -458,7 +470,7 @@ ScreenManager:
                     size: 20,20
                     size_hint:None, None
                     pos_hint: {"center_y": 1.12,"center_x": 0.16}
-
+                    on_active: root.disabled_check_licence_master_two()
                 MDLabel:
                     id:s9
                     text:"S9"
@@ -468,6 +480,7 @@ ScreenManager:
                     size: 20,20
                     size_hint:None, None
                     pos_hint: {"center_y": 1.12,"center_x": 0.2}
+                    on_active:root.disabled_check_licence_master_one()
 
 
                 MDLabel:
@@ -479,6 +492,7 @@ ScreenManager:
                     size: 20,20
                     size_hint:None, None
                     pos_hint: {"center_y": 0.95,"center_x": 0.04}
+                    on_active: root.disabled_check_master_one_two()
 
                 MDLabel:
                     id:s4
@@ -489,6 +503,7 @@ ScreenManager:
                     size: 20,20
                     size_hint:None, None
                     pos_hint: {"center_y": 0.95,"center_x": 0.08}
+                    on_active: root.disabled_check_master_one_two()
 
                 MDLabel:
                     id:s6
@@ -499,6 +514,7 @@ ScreenManager:
                     size: 20,20
                     size_hint:None, None
                     pos_hint: {"center_y": 0.95,"center_x": 0.12}
+                    on_active: root.disabled_check_master_one_two()
 
                 MDLabel:
                     id:s8
@@ -509,6 +525,7 @@ ScreenManager:
                     size: 20,20
                     size_hint:None, None
                     pos_hint: {"center_y": 0.95,"center_x": 0.16}
+                    on_active: root.disabled_check_licence_master_two()
 
                 MDLabel:
                     id:s10
@@ -519,6 +536,7 @@ ScreenManager:
                     size: 20,20
                     size_hint:None, None
                     pos_hint: {"center_y": 0.95,"center_x": 0.2}
+                    on_active:root.disabled_check_licence_master_one()
 
 <ReinscriptionUpdateScreen>:
     name: 'Reinscription_update'
@@ -593,6 +611,7 @@ ScreenManager:
                     size_hint_x: None
                     helper_text_mode:"on_error"
                     width:100
+                    readonly: True
                     required: True
 
                 MDTextField:
@@ -627,6 +646,7 @@ ScreenManager:
                     size_hint_x: None
                     helper_text_mode:"on_error"
                     width:150
+                    readonly: True
                     required: True
 
                 MDTextField:
@@ -721,6 +741,7 @@ ScreenManager:
                     size_hint_x: None
                     helper_text_mode:"on_error"
                     width:180
+                    readonly: True
                     required: True
 
                 MDTextField:
@@ -739,6 +760,7 @@ ScreenManager:
                     width:100
                     disabled: True if (mention_field.text == "" or parcours_field.text == "" or montant.text == "" or bacc_annee.text == "" or moyenne.text == "" or etat.text =="" or num_quintance.text == "" or addresse.text=="" or nom.text == "" or num_ce.text == "" or nation.text == "" or lieu_naiss.text == "") else False
                     icon: "content-save"
+                    on_release:root.enreg_etudiant()
                     md_bg_color:(0,0,0,0)
 
                 MDSpinner:
@@ -757,6 +779,7 @@ ScreenManager:
                     size: 20,20
                     size_hint:None, None
                     pos_hint: {"center_y": 1.12,"center_x": 0.04}
+                    on_active: root.disabled_check_master_one_two()
 
                 MDLabel:
                     id:s3
@@ -767,6 +790,7 @@ ScreenManager:
                     size: 20,20
                     size_hint:None, None
                     pos_hint: {"center_y": 1.12,"center_x": 0.08}
+                    on_active: root.disabled_check_master_one_two()
 
                 MDLabel:
                     id:s5
@@ -777,6 +801,7 @@ ScreenManager:
                     size: 20,20
                     size_hint:None, None
                     pos_hint: {"center_y": 1.12,"center_x": 0.12}
+                    on_active: root.disabled_check_master_one_two()
 
                 MDLabel:
                     id:s7
@@ -787,7 +812,7 @@ ScreenManager:
                     size: 20,20
                     size_hint:None, None
                     pos_hint: {"center_y": 1.12,"center_x": 0.16}
-
+                    on_active: root.disabled_check_licence_master_two()
                 MDLabel:
                     id:s9
                     text:"S9"
@@ -797,6 +822,7 @@ ScreenManager:
                     size: 20,20
                     size_hint:None, None
                     pos_hint: {"center_y": 1.12,"center_x": 0.2}
+                    on_active:root.disabled_check_licence_master_one()
 
 
                 MDLabel:
@@ -808,6 +834,7 @@ ScreenManager:
                     size: 20,20
                     size_hint:None, None
                     pos_hint: {"center_y": 0.95,"center_x": 0.04}
+                    on_active: root.disabled_check_master_one_two()
 
                 MDLabel:
                     id:s4
@@ -818,6 +845,7 @@ ScreenManager:
                     size: 20,20
                     size_hint:None, None
                     pos_hint: {"center_y": 0.95,"center_x": 0.08}
+                    on_active: root.disabled_check_master_one_two()
 
                 MDLabel:
                     id:s6
@@ -828,6 +856,7 @@ ScreenManager:
                     size: 20,20
                     size_hint:None, None
                     pos_hint: {"center_y": 0.95,"center_x": 0.12}
+                    on_active: root.disabled_check_master_one_two()
 
                 MDLabel:
                     id:s8
@@ -838,6 +867,7 @@ ScreenManager:
                     size: 20,20
                     size_hint:None, None
                     pos_hint: {"center_y": 0.95,"center_x": 0.16}
+                    on_active: root.disabled_check_licence_master_two()
 
                 MDLabel:
                     id:s10
@@ -848,8 +878,825 @@ ScreenManager:
                     size: 20,20
                     size_hint:None, None
                     pos_hint: {"center_y": 0.95,"center_x": 0.2}
+                    on_active:root.disabled_check_licence_master_one()
+
+<DownloadScreen>:
+    name: 'download_file'
+    MDBoxLayout:
+        orientation:'vertical'
+        MDToolbar:
+            id:toolbar
+            title: 'Download'
+            left_action_items:[["keyboard-backspace",lambda x: root.back_home()]]
+        MDBoxLayout:
+            orientation:'horizontal'
+            FloatLayout:
+                MDTextField:
+                    id:path
+                    hint_text:'Path'
+                    pos: 200, 300
+                    size_hint_x: None
+                    readonly:True
+                    width:500
+
+                MDIconButton:
+                    id: foder
+                    icon: 'folder'
+                    pos: 700, 300
+                    on_release: root.file_manager_open()
+
+                ProgressBar:
+                    id:progress_bar
+                    pos_hint: {"center_y": 0.95}
+                    size_hint_x: 1
+                    max: 1
+                    value: 0
+
+                MDFillRoundFlatIconButton:
+                    id: download
+                    text: "Télécharger"
+                    pos: 400, 240
+                    width:100
+                    disabled: True if path.text == "" else False
+                    icon: "content-save"
+                    on_release:root.download_file()
+                    md_bg_color:(0,0,0,0)
 
 
+<SelectionScreen>:
+    name: 'Selection'
+    MDBoxLayout:
+        orientation:'vertical'
+        size_hint_y:1
+        MDBoxLayout:
+            orientation:'horizontal'
+            size_hint_y:0.5
+            size_hint_x:0.3
+            MDLabel:
+                id:parcours_label
+                pos_hint:{"center_y": 0.9}
+                size_hint:(0.3,0.15)
+            MDTextField:
+                id:search
+                hint_text:"Recherche"
+                pos_hint:{"center_y": 0.9, "center_x":0.2}
+                size_hint_x:None
+                width:250
+                on_text: root.serch_etudiant(search.text)
+
+        MDBoxLayout:
+            orientation:'horizontal'
+            size_hint_y:0.5
+            size_hint_x:0.8
+            MDFlatButton:
+                id:mention_button
+                text:"Mention"
+                pos_hint:{"center_y": 0.25}
+                on_release:root.menu_mention.open()
+            MDLabel:
+                id:mention_label
+                text:""
+                pos_hint:{"center_y": 0.25}
+                size_hint_x:1.2
+
+            MDFlatButton:
+                id:niveau_button
+                text:"Niveau"
+                pos_hint:{"center_y": 0.25}
+                on_release:root.menu_niveau.open()
+
+            MDLabel:
+                id:niveau_label
+                text:""
+                pos_hint:{"center_y": 0.25}
+                size_hint:(0.3,0.15)
+
+            MDFlatButton:
+                id:annee_button
+                text:"Année universitaire"
+                pos_hint:{"center_y": 0.25}
+                on_release:root.menu_annee_univ.open()
+
+    MDBottomAppBar:
+        orientation:'vertical'
+        MDToolbar:
+            title: 'Selection de dossier'
+            type:'bottom'
+            left_action_items:[["keyboard-backspace",lambda x: root.back_main()],["clipboard-list",lambda x: root.menu_calback_list(x)]]
+            elevation:5
+            mode:"end"
+            icon:"account-plus"
+            on_action_button: root.add_new_etudiant()
+
+<SelectionAddScreen>:
+    name: 'SelectionAdd'
+    MDBoxLayout:
+        orientation:'vertical'
+        MDToolbar:
+            title: 'Ajout etudiant'
+            left_action_items:[["keyboard-backspace",lambda x: root.back_home()]]
+            elevation:5
+        Widget:
+        BoxLayout:
+            orientation: 'vertical'
+            FloatLayout_:
+                id: ellipse
+                canvas:
+                    Color:
+                        rgb: 1, 1, 1
+                    Ellipse:
+                        pos: 80, 430
+                        size: 100 , 120
+                        angle_start: 0
+                        source: self.source
+                        angle_end: 360
+                MDIconButton:
+                    id: camera
+                    icon: 'camera'
+                    pos: 140, 415
+                    on_release: root.file_manager_open()
+
+                MDTextField:
+                    id: num_select
+                    hint_text: "Numéro selection"
+                    pos: 70, 370
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:120
+                    required: True
+
+                MDTextField:
+                    id:mention_field
+                    hint_text:"Mention"
+                    size_hint_x: None
+                    pos: 280, 240
+                    width: 250
+                    readonly: True
+                    on_focus: if self.focus: root.menu_mention.open()
 
 
-            
+                MDTextField:
+                    id:niveau_field
+                    hint_text:"Niveau"
+                    size_hint_x: None
+                    pos: 550, 240
+                    width: 180
+                    readonly: True
+                    on_focus: if self.focus: root.menu_niveau.open()
+
+                MDTextField:
+                    id: nom
+                    hint_text: "Nom"
+                    pos: 280, 480
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:300
+                    required: True
+
+                MDTextField:
+                    id: prenom
+                    hint_text: "Prénom"
+                    pos: 600, 480
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:150
+                    required: False
+
+                MDTextField:
+                    id: sexe
+                    hint_text: "Sexe"
+                    pos: 770, 480
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:100
+                    readonly: True
+                    required: True
+                    on_focus: if self.focus: root.menu_sexe.open()
+
+                MDTextField:
+                    id: date_naiss
+                    hint_text: "Né(e) le"
+                    pos: 280, 420
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:100
+                    readonly: True
+                    text:""
+
+                MDIconButton:
+                    id:calend_naiss
+                    icon: 'calendar'
+                    pos: 375, 420
+                    on_release:root.show_date_picker_naiss()
+
+                MDTextField:
+                    id: lieu_naiss
+                    hint_text: "à"
+                    pos: 440, 420
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:245
+                    required: True
+
+                MDTextField:
+                    id: nation
+                    hint_text: "Nationalité"
+                    pos: 725, 420
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:150
+                    readonly: True
+                    required: True
+                    on_focus: if self.focus: root.menu_nation.open()
+
+                MDTextField:
+                    id: addresse
+                    hint_text: "Addresse"
+                    pos: 280, 360
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:600
+                    required: True
+
+                MDTextField:
+                    id: num_cin
+                    hint_text: "CIN"
+                    pos: 280, 300
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:150
+
+                MDTextField:
+                    id: date_cin
+                    hint_text: "du"
+                    pos: 450, 300
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:100
+                    readonly: True
+                    required:True if num_cin.text != "" else False
+                    text:""
+
+                MDIconButton:
+                    id:calend_cin
+                    icon: 'calendar'
+                    pos: 540, 300
+                    on_release:root.show_date_picker_cin()
+
+                MDTextField:
+                    id: lieu_cin
+                    hint_text: "à"
+                    pos: 600, 300
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:270
+                    required: True if num_cin.text != "" else False
+
+                MDLabel:
+                    id:s10
+                    text:"Séléctioner"
+                    pos: 30, 145
+                MDCheckbox:
+                    id:select
+                    size: 20,20
+                    size_hint:None, None
+                    pos_hint: {"center_y": 1,"center_x": 0.13}
+
+
+                MDFillRoundFlatIconButton:
+                    id: save_etudiant
+                    text: "Sauvegarder"
+                    pos: 750, 150
+                    width:100
+                    disabled: True if (niveau_field.text == "" or date_naiss.text == "" or mention_field.text == "" or addresse.text=="" or nom.text == "" or num_select.text == "" or nation.text == "" or lieu_naiss.text == "") else False
+                    icon: "content-save"
+                    on_release:root.enreg_etudiant()
+                    md_bg_color:(0,0,0,0)
+
+                MDFillRoundFlatIconButton:
+                    id: auto
+                    text: "auto"
+                    pos: 650, 150
+                    on_release:root.auto_complete()
+                    width:100
+
+<SelectionUpdateScreen>:
+    name: 'SelectionUpdate'
+    MDBoxLayout:
+        orientation:'vertical'
+        MDToolbar:
+            title: 'Ajout etudiant'
+            left_action_items:[["keyboard-backspace",lambda x: root.back_home()]]
+            elevation:5
+        BoxLayout:
+            orientation: 'vertical'
+            FloatLayout_:
+                ImageButton:
+                    id: ellipse
+                    pos: 80, 430
+                    size: 100 , 120
+                    angle_start: 0
+                    size_hint: None, None
+                    source:self.source
+                MDIconButton:
+                    id: camera
+                    icon: 'camera'
+                    pos: 140, 415
+                    on_release: root.file_manager_open()
+
+                MDTextField:
+                    id: num_select
+                    hint_text: "Numéro selection"
+                    pos: 70, 370
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:120
+                    readonly: True
+
+                MDTextField:
+                    id:mention_field
+                    hint_text:"Mention"
+                    size_hint_x: None
+                    pos: (20, 300) if validation.active else (280, 280)
+                    width: 230
+                    readonly: True
+                    on_focus: if self.focus: root.menu_mention.open()
+
+
+                MDTextField:
+                    id:niveau_field
+                    hint_text:"Niveau"
+                    size_hint_x: None
+                    pos: (20, 240) if validation.active else (530,280)
+                    width: 180
+                    readonly: True
+                    on_focus: if self.focus: root.menu_niveau.open()
+
+                MDTextField:
+                    id:parcours_field
+                    hint_text:"Parcours"
+                    size_hint_x: None
+                    pos: 20, 180
+                    width: 180
+                    readonly: True
+                    on_focus: if self.focus and mention_field.text != "" : root.menu_parcours.open()
+                    readonly: True
+                    opacity: 1 if(validation.active) else 0
+
+
+                MDTextField:
+                    id: nom
+                    hint_text: "Nom"
+                    pos: 280, 520
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:300
+                    required: True
+
+                MDTextField:
+                    id: prenom
+                    hint_text: "Prénom"
+                    pos: 600, 520
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:150
+                    required: False
+
+                MDTextField:
+                    id: sexe
+                    hint_text: "Sexe"
+                    pos: 770, 520
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:100
+                    readonly: True
+                    required: True
+                    on_focus: if self.focus: root.menu_sexe.open()
+
+                MDTextField:
+                    id: date_naiss
+                    hint_text: "Né(e) le"
+                    pos: 280, 460
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:100
+                    readonly: True
+                    text:""
+
+                MDIconButton:
+                    id:calend_naiss
+                    icon: 'calendar'
+                    pos: 375, 460
+                    on_release:root.show_date_picker_naiss()
+
+                MDTextField:
+                    id: lieu_naiss
+                    hint_text: "à"
+                    pos: 440, 460
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:245
+                    required: True
+
+                MDTextField:
+                    id: nation
+                    hint_text: "Nationalité"
+                    pos: 725, 460
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:150
+                    readonly: True
+                    required: True
+                    on_focus: if self.focus: root.menu_nation.open()
+
+                MDTextField:
+                    id: addresse
+                    hint_text: "Addresse de l'étudiant"
+                    pos: 280, 400
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:400 if validation.active else 600
+                    required: True
+
+                MDTextField:
+                    id: prof_et
+                    hint_text: "Profession"
+                    pos: 700, 400
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:150
+                    required: validation.active
+                    opacity: 1 if(validation.active) else 0
+
+                MDTextField:
+                    id: num_cin
+                    hint_text: "CIN"
+                    pos: 280, 340
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:150
+
+                MDTextField:
+                    id: date_cin
+                    hint_text: "délivré le"
+                    pos: 450, 340
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:100
+                    readonly: True
+                    required:True if num_cin.text != "" else False
+                    text:""
+
+                MDIconButton:
+                    id:calend_cin
+                    icon: 'calendar'
+                    pos: 540, 340
+                    on_release:root.show_date_picker_cin()
+
+                MDTextField:
+                    id: lieu_cin
+                    hint_text: "à"
+                    pos: 600, 340
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:270
+                    required: True if num_cin.text != "" else False
+
+                MDTextField:
+                    id: situation
+                    hint_text: "Situation familiale"
+                    pos: 280, 280
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:200
+                    required: validation.active
+                    disabled: not validation.active
+                    opacity: 1 if(validation.active) else 0
+
+                MDTextField:
+                    id: phone
+                    hint_text: "Télephone"
+                    pos: 520, 280
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:100
+                    required: validation.active
+                    disabled: not validation.active
+                    opacity: 1 if(validation.active) else 0
+
+                MDTextField:
+                    id: serie_bacc
+                    hint_text: "Bacc serie"
+                    pos: 640, 280
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:
+                    required: validation.active
+                    opacity: 1 if(validation.active) else 0
+
+                MDTextField:
+                    id: num_bacc
+                    hint_text: "Numéro du bacc"
+                    pos: 280, 220
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:150
+                    required: validation.active
+                    opacity: 1 if(validation.active) else 0
+
+                MDTextField:
+                    id: annee_bacc
+                    hint_text: "Annéé d'optention"
+                    pos: 450, 220
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:150
+                    required: validation.active
+                    opacity: 1 if(validation.active) else 0
+
+                MDTextField:
+                    id: centre_bacc
+                    hint_text: "Centre bacc"
+                    pos: 620, 220
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:200
+                    required: validation.active
+                    opacity: 1 if(validation.active) else 0
+
+                MDCheckbox:
+                    id:select
+                    size: 20,20
+                    size_hint:None, None
+                    pos_hint: {"center_y": 0.679,"center_x": 0.23}
+                    disabled: validation.active
+
+                MDTextField:
+                    id: num_quintance
+                    hint_text: "Quintance"
+                    pos: 280, 170
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:150
+                    required: validation.active
+                    opacity: 1 if(validation.active) else 0
+
+                MDTextField:
+                    id: date_quintance
+                    hint_text: "du"
+                    pos: 450, 170
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:100
+                    readonly: True
+                    text:""
+                    required: validation.active
+                    opacity: 1 if(validation.active) else 0
+
+                MDIconButton:
+                    id: calend_quint
+                    icon: 'calendar'
+                    pos: 540, 170
+                    on_release:root.show_date_picker_quint()
+                    disabled: False if validation.active else True
+                    opacity: 1 if(validation.active) else 0
+
+                MDTextField:
+                    id: montant
+                    hint_text: "Montant"
+                    pos: 600, 170
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:270
+                    required: validation.active
+                    opacity: 1 if(validation.active) else 0
+
+                MDTextField:
+                    id: nom_pere
+                    hint_text: "Nom du père"
+                    pos: 280, 120
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:400
+                    opacity: 1 if(validation.active) else 0
+
+                MDTextField:
+                    id: prof_pere
+                    hint_text: "Profession"
+                    pos: 700, 120
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:150
+                    opacity: 1 if(validation.active) else 0
+
+                MDTextField:
+                    id: nom_mere
+                    hint_text: "Nom de la mère"
+                    pos: 280, 70
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:400
+                    opacity: 1 if(validation.active) else 0
+
+                MDTextField:
+                    id: prof_mere
+                    hint_text: "Profession"
+                    pos: 700, 70
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:150
+                    opacity: 1 if(validation.active) else 0
+
+                MDTextField:
+                    id: addresse_parent
+                    hint_text: "Addresse des parent"
+                    pos: 280, 10
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:500
+                    required: validation.active
+                    opacity: 1 if(validation.active) else 0
+
+                MDFillRoundFlatIconButton:
+                    id: save_etudiant
+                    text: "Sauvegarder"
+                    pos: (800, 10) if validation.active else (700,220)
+                    width:100
+                    disabled: False if ( not validation.active and (niveau_field.text != "" and sexe.text != "" and date_naiss.text != "" and mention_field.text != "" and addresse.text != "" and nom.text != "" and num_select.text != "" and nation.text != "" and lieu_naiss.text != "") or validation.active and (niveau_field.text != "" and date_naiss.text != "" and mention_field.text != "" and addresse.text != "" and nom.text != "" and num_select.text != "" and nation.text != "" and lieu_naiss.text != "" and prof_et.text != "" and montant.text != "" and num_quintance.text != "" and date_quintance.text != "" and centre_bacc.text != "" and annee_bacc.text != "" and num_bacc.text != "" and serie_bacc.text != "" and situation.text != "" and parcours_field.text != "")) else True
+                    icon: "content-save"
+                    on_release:root.enreg_etudiant()
+                    md_bg_color:(0,0,0,0)
+
+                MDCheckbox:
+                    id:validation
+                    size: 20,20
+                    size_hint:None, None
+                    pos_hint: {"center_y": 0.05,"center_x": 0.97} if validation.active else {"center_y": 0.40,"center_x": 0.88}
+                    disabled: False if select.active else True
+
+                MDFillRoundFlatIconButton:
+                    id: auto
+                    text: "auto"
+                    pos: 20, 10
+                    on_release:root.auto_complete()
+                    width:100
+
+<PublicScreen>:
+    name: 'Public'
+
+    MDBoxLayout:
+        orientation:'vertical'
+        size_hint_y:1
+        MDBoxLayout:
+            orientation:'horizontal'
+            size_hint_y:0.5
+            size_hint_x:0.3
+            MDLabel:
+                id:parcours_label
+                pos_hint:{"center_y": 0.9}
+                size_hint:(0.3,0.15)
+            MDTextField:
+                id:search
+                hint_text:"Recherche"
+                pos_hint:{"center_y": 0.9, "center_x":0.2}
+                size_hint_x:None
+                width:250
+                on_text: root.serch_etudiant(search.text)
+
+    MDBottomAppBar:
+        orientation:'vertical'
+        MDToolbar:
+            title: 'Back Office'
+            type:'bottom'
+            left_action_items:[["menu",lambda x: root.callback(x)]]
+            right_action_items:[["logout",lambda x: app.logout()]]
+            elevation:5
+            mode:"center"
+            icon:"plus"
+            on_action_button: root.add_new()
+
+<PublicAddScreen>:
+    name: 'Public_add'
+    MDBoxLayout:
+        orientation:'vertical'
+        MDToolbar:
+            title: 'Ajout etudiant'
+            left_action_items:[["keyboard-backspace",lambda x: root.back_home()]]
+            elevation:5
+        Widget:
+        BoxLayout:
+            orientation: 'vertical'
+            FloatLayout_:
+                MDTextField:
+                    id: email
+                    hint_text: "Email"
+                    pos: 280, 520
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:300
+                    required: True
+
+                MDTextField:
+                    id: nom
+                    hint_text: "Nom"
+                    pos: 280, 460
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:300
+                    required: True
+
+                MDTextField:
+                    id: prenom
+                    hint_text: "Prenom"
+                    pos: 600, 460
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:200
+                    required: True
+
+                MDTextField:
+                    id: mention
+                    hint_text: "Mention"
+                    pos: 280, 400
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:300
+                    required: True
+
+                MDTextField:
+                    id: password
+                    hint_text: "Password"
+                    pos: 600, 520
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:200
+                    required: True
+
+                MDTextField:
+                    id: role
+                    hint_text: "Role"
+                    pos: 600, 400
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:200
+                    required: True
+
+                MDFillRoundFlatIconButton:
+                    id: save_users
+                    text: "Sauvegarder"
+                    pos: 600, 320
+                    icon: "content-save"
+                    disabled: False if(email.hint_text == "Email" and password.text != "" and email.text != "" and nom.text != "" and prenom.text != "" and mention.text != "" and role.text != "" ) else True
+                    on_release:root.save_users()
+                    width:200
+                    md_bg_color:(0,0,0,0)
+
+                MDFillRoundFlatIconButton:
+                    id: save_mention
+                    text: "Sauvegarder"
+                    pos: 600, 320
+                    icon: "content-save"
+                    on_release:root.save_mention()
+                    disabled: False if (email.hint_text == "Titre mention" and email.text != ""  and nom.text != "" and password != "" and prenom != "" ) else True
+                    width:200
+                    md_bg_color:(0,0,0,0)
+
+                MDFillRoundFlatIconButton:
+                    id: save_parcours
+                    text: "Sauvegarder"
+                    pos: 600, 320
+                    icon: "content-save"
+                    on_release:root.save_parcours()
+                    disabled: False if (email.hint_text == "Titre parcours" and email.text != ""  and nom.text != "" and password != "" and mention != "" ) else True
+                    width:100
+                    md_bg_color:(0,0,0,0)
+
+                MDFillRoundFlatIconButton:
+                    id: save_annee
+                    text: "Sauvegarder"
+                    pos: 600, 320
+                    icon: "content-save"
+                    on_release:root.save_annee()
+                    disabled: False if (email.hint_text == "Titre année"  and email.text != "" and password.text != "") else True
+                    width:100
+                    md_bg_color:(0,0,0,0)
+
+                MDFillRoundFlatIconButton:
+                    id: save_role
+                    text: "Sauvegarder"
+                    pos: 600, 320
+                    icon: "content-save"
+                    on_release:root.save_role()
+                    disabled: False if (email.hint_text == "Titre role" and email.text != "") else True
+                    width:100
+                    md_bg_color:(0,0,0,0)
+
+                MDFillRoundFlatIconButton:
+                    id: save_droit
+                    text: "Sauvegarder"
+                    pos: 600, 320
+                    icon: "content-save"
+                    on_release:root.save_droit()
+                    disabled: False if (email.hint_text == "Montant"  and email.text != ""  and nom.text != ""  and password.text != ""  and mention.text != ""  ) else True
+                    width:100
+                    md_bg_color:(0,0,0,0)

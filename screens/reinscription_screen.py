@@ -1,5 +1,6 @@
 import threading
 import time
+import urllib
 from typing import Any
 
 from kivy.clock import mainthread
@@ -25,6 +26,8 @@ class ReinscriptionScreen(Screen):
 
     def __init__(self, **kw):
         super().__init__(**kw)
+        self.menu_list = None
+        self.menu_carte = None
         self.semestre = None
         self.all_semestre = None
         self.data_tables = None
@@ -47,7 +50,6 @@ class ReinscriptionScreen(Screen):
         #     pos_hint={'center_y': 0.95, 'center_x': 0.18},
         # )
 
-
     def init_data(self):
 
         self.menu_mention = MDDropdownMenu(
@@ -56,21 +58,48 @@ class ReinscriptionScreen(Screen):
             width_mult=4,
         )
 
-        self.menu_parcours = MDDropdownMenu(
-            caller=self.ids.parcours_button,
-            items=self.get_all_parcours(),
-            width_mult=4,
-        )
-
         self.menu_semestre = MDDropdownMenu(
             caller=self.ids.semestre_button,
             items=self.get_all_semestre(),
+            width_mult=4,
+        )
+        self.menu_parcours = MDDropdownMenu(
+            caller=self.ids.parcours_button,
+            items=[],
             width_mult=4,
         )
 
         self.menu_annee_univ = MDDropdownMenu(
             caller=self.ids.annee_button,
             items=self.get_annee_univ(),
+            width_mult=4,
+        )
+        carte = ['Face carte', 'Arriere carte']
+        menu_carte = [
+            {
+                "viewclass": "OneLineListItem",
+                "text": f"{i}",
+                "height": dp(50),
+                "on_release": lambda x=f"{i}": self.menu_calback_carte(x),
+            } for i in carte
+        ]
+        titre = ['Étudiant inscrit', 'Bourse passant', 'Bourse rédoublant']
+        menu_list = [
+            {
+                "viewclass": "OneLineListItem",
+                "text": f"{i}",
+                "height": dp(50),
+                "on_release": lambda x=f"{i}": self.menu_calback_list(x),
+            } for i in titre
+        ]
+
+        self.menu_carte = MDDropdownMenu(
+            items=menu_carte,
+            width_mult=4,
+        )
+
+        self.menu_list = MDDropdownMenu(
+            items=menu_list,
             width_mult=4,
         )
 
@@ -112,7 +141,6 @@ class ReinscriptionScreen(Screen):
         self.add_widget(self.edit_etudiant)
         self.add_widget(self.delete_etudiant)
         self.add_widget(self.spinner)
-
 
     def load_table(self):
         layout = AnchorLayout()
@@ -161,26 +189,9 @@ class ReinscriptionScreen(Screen):
         self.data_tables.row_data = self.transforme_data(MDApp.get_running_app().ALL_ETUDIANT)
 
     def get_all_mention(self):
-        response = Any
-        host = MDApp.get_running_app().HOST
-        token = MDApp.get_running_app().TOKEN
-        uuid_mention = MDApp.get_running_app().ALL_UUID_MENTION
         mention = []
-        print("etoooo", uuid_mention)
-        if len(uuid_mention) != 0:
-            url_mention: str = f'http://{host}/api/v1/mentions/by_uuid'
-            for uuid in uuid_mention:
-                response = request_utils.get_mention_uuid(url_mention, uuid, token)
-                if response:
-                    MDApp.get_running_app().ALL_MENTION.append(response)
-                    mention.append(str(response['title']))
-        else:
-            url_mention: str = f'http://{host}/api/v1/mentions/'
-            response = request_utils.get_mention(url_mention, token)
-            if response:
-                mention.append(str(response[0]['title']))
-                MDApp.get_running_app().ALL_MENTION = response
-
+        for titre in MDApp.get_running_app().ALL_MENTION:
+            mention.append(titre['title'])
         menu_items = [
             {
                 "viewclass": "OneLineListItem",
@@ -191,45 +202,32 @@ class ReinscriptionScreen(Screen):
         ]
         return menu_items
 
-    def get_all_parcours(self):
-        parcours = []
-        self.semestre = []
-        host = MDApp.get_running_app().HOST
-        token = MDApp.get_running_app().TOKEN
-        uuid_mention = MDApp.get_running_app().MENTION
-        url_parcours: str = f'http://{host}/api/v1/parcours/by_mention/'
-        response = request_utils.get_parcours_by_mention(url_parcours, uuid_mention, token)
-        if response:
-            MDApp.get_running_app().ALL_PARCOURS = response
-            for rep in response:
-                parcours.append(str(rep['abreviation']))
+    def get_all_parcours(self, *args):
+        """
+        add al parcours in menu
+        :return:
+        """
+        parcours = MDApp.get_running_app().get_list_parcours()
 
         menu_items = [
             {
                 "viewclass": "OneLineListItem",
-                "text": f"{parcours[i]}",
+                "text": f"{parcours[i].upper()}",
                 "height": dp(50),
-                "on_release": lambda x=f"{parcours[i]}": self.menu_calback_parcours(i, x),
+                "on_release": lambda x=f"{parcours[i].upper()}": self.menu_calback_parcours(i, x),
             } for i in range(len(parcours))
         ]
         return menu_items
 
     def get_annee_univ(self):
-        host = MDApp.get_running_app().HOST
-        token = MDApp.get_running_app().TOKEN
-        annee_univ = []
-        url_annee_univ: str = f'http://{host}/api/v1/anne_univ/'
-        response = request_utils.get_annee_univ(url_annee_univ, token)
-        if response:
-            print(response)
-            annee_univ.append(str(response[0]['title']))
+        annee_univ = MDApp.get_running_app().ALL_ANNEE
 
         menu_items = [
             {
                 "viewclass": "OneLineListItem",
-                "text": f"{annee_univ[i]}",
+                "text": f"{annee_univ[i]['title']}",
                 "height": dp(50),
-                "on_release": lambda x=f"{annee_univ[i]}": self.menu_calback_annee(x),
+                "on_release": lambda x=f"{annee_univ[i]['title']}": self.menu_calback_annee(x),
             } for i in range(len(annee_univ))
         ]
         return menu_items
@@ -246,10 +244,18 @@ class ReinscriptionScreen(Screen):
         return menu_items
 
     def menu_calback_mention(self, text_item):
-        print(MDApp.get_running_app().ALL_MENTION)
+        mention = MDApp.get_running_app().read_by_key(
+            MDApp.get_running_app().ALL_MENTION, 'title', text_item)[0]['uuid']
+        if MDApp.get_running_app().MENTION != mention:
+            MDApp.get_running_app().MENTION = mention
+            MDApp.get_running_app().get_list_parcours()
+            self.menu_parcours = MDDropdownMenu(
+                caller=self.ids.parcours_button,
+                items=self.get_all_parcours(),
+                width_mult=4,
+            )
+            self.initialise = True
         if self.initialise:
-            MDApp.get_running_app().MENTION = self.read_mention_by_title(
-                MDApp.get_running_app().ALL_MENTION, text_item)[0]['uuid']
             if self.annee.text != "":
                 self.spinner_toggle()
                 self.process_spiner()
@@ -278,15 +284,16 @@ class ReinscriptionScreen(Screen):
         token = MDApp.get_running_app().TOKEN
         uuid_mention = MDApp.get_running_app().MENTION
         url_etudiant: str = f'http://{host}/api/v1/ancien_etudiants/by_mention/'
-        MDApp.get_running_app().ALL_ETUDIANT = request_etudiants.get_ancien_by_mention(url_etudiant, self.annee.text,
-                                                                                       uuid_mention, token)
+        MDApp.get_running_app().ALL_ETUDIANT = request_etudiants.get_by_mention(url_etudiant, self.annee.text,
+                                                                                uuid_mention, token)
 
     def transforme_data(self, all_data: list):
         data = []
         k: int = 1
         for un_et in all_data:
             etudiant = (k, ("human-female",
-                        [39 / 256, 174 / 256, 96 / 256, 1],un_et["num_carte"]), f'{un_et["nom"]} {un_et["prenom"]}', (un_et["parcours"]).upper())
+                            [39 / 256, 174 / 256, 96 / 256, 1], un_et["num_carte"]),
+                        f'{un_et["nom"]} {un_et["prenom"]}', (un_et["parcours"]).upper())
 
             data.append(etudiant)
             k += 1
@@ -300,7 +307,7 @@ class ReinscriptionScreen(Screen):
 
     def menu_calback_parcours(self, i, text_item):
         self.ids.parcours_label.text = text_item
-        all_etudiant = self.read_by_parcours(MDApp.get_running_app().ALL_ETUDIANT, text_item)
+        all_etudiant = MDApp.get_running_app().read_by_key(MDApp.get_running_app().ALL_ETUDIANT, "parcours", text_item)
         self.data_tables.row_data = self.transforme_data(all_etudiant)
         self.menu_parcours.dismiss()
 
@@ -316,8 +323,63 @@ class ReinscriptionScreen(Screen):
         MDApp.get_running_app().ANNEE = text_item
         self.menu_annee_univ.dismiss()
 
-    def calback(self, button):
-        self.menu_mention.open()
+    def menu_calback_carte(self, text_item):
+        self.menu_carte.dismiss()
+        MDApp.get_running_app().TITRE_FILE = f"{text_item}"
+        annee = MDApp.get_running_app().ANNEE
+        schemas = "anne_" + annee[0:4] + "_" + annee[5:9]
+        values = {'schema': f'{schemas}', 'uuid_mention': f'{MDApp.get_running_app().MENTION}'}
+        params = urllib.parse.urlencode(values)
+        host = MDApp.get_running_app().HOST
+        if text_item == "Face carte":
+            url = f"http://{host}/api/v1/carte/carte_etudiant/"
+        else:
+            url = f"http://{host}/api/v1/carte/carte_etudiant_ariere/"
+        MDApp.get_running_app().URL_DOWNLOAD = f"{url}?{params}"
+        MDApp.get_running_app().NAME_DOWNLOAD = f"{text_item}_{self.ids.mention_label.text}.pdf"
+        MDApp.get_running_app().PARENT = "Reinscription"
+        if len(annee) != 0:
+            MDApp.get_running_app().root.current = 'download_file'
+
+    def calback_carte(self, button):
+        self.menu_carte.caller = button
+        self.menu_carte.open()
+
+    def menu_calback_list(self, text_item):
+        self.menu_list.dismiss()
+        MDApp.get_running_app().TITRE_FILE = text_item
+        annee = MDApp.get_running_app().ANNEE
+        mention = MDApp.get_running_app().MENTION
+        parcours = MDApp.get_running_app().read_by_key(MDApp.get_running_app().ALL_PARCOURS, "abreviation",
+                                                       self.ids.parcours_label.text)
+        uuid_parcours = ""
+        if parcours:
+            uuid_parcours = parcours[0]['uuid']
+        semestre = self.ids.semestre_label.text
+        schemas = "anne_" + annee[0:4] + "_" + annee[5:9]
+        host = MDApp.get_running_app().HOST
+        MDApp.get_running_app().NAME_DOWNLOAD = f"{text_item}_{self.ids.mention_label.text}.pdf"
+        if text_item == "Étudiant inscrit":
+            url = f"http://{host}/api/v1/liste/list_inscrit/"
+            values = {'schema': f'{schemas}', 'uuid_mention': f'{mention}', 'uuid_parcours': uuid_parcours,
+                      'semestre': semestre}
+            MDApp.get_running_app().NAME_DOWNLOAD = f"{text_item}_{self.ids.parcours_label.text}_{semestre}.pdf"
+        elif text_item == "Bourse passant":
+            url = f"http://{host}/api/v1/liste/list_bourse_passant/"
+            values = {'schema': f'{schemas}', 'uuid_mention': f'{mention}'}
+        else:
+            url = f"http://{host}/api/v1/liste/list_bourse_redoublant/"
+            values = {'schema': f'{schemas}', 'uuid_mention': f'{mention}'}
+
+        params = urllib.parse.urlencode(values)
+        MDApp.get_running_app().URL_DOWNLOAD = f"{url}?{params}"
+        MDApp.get_running_app().PARENT = "Reinscription"
+        if len(annee) != 0 and len(mention) != 0 and len(semestre) != 0 and len(uuid_parcours) != 0:
+            MDApp.get_running_app().root.current = 'download_file'
+
+    def calback_list(self, button):
+        self.menu_list.caller = button
+        self.menu_list.open()
 
     def row_selected(self, table, row):
         start_index, end_index = row.table.recycle_data[row.index]["range"]
@@ -356,7 +418,7 @@ class ReinscriptionScreen(Screen):
 
         url = f"http://{host}/api/v1/ancien_etudiants/"
         if num_carte != "":
-            response = request_etudiants.delete_ancien_etudiant(url, annee, num_carte, token)
+            response = request_etudiants.delete(url, annee, 'num_carte', num_carte, token)
             if response:
                 self.dialog.dismiss()
                 MDApp.get_running_app().ALL_ETUDIANT = response
@@ -376,15 +438,9 @@ class ReinscriptionScreen(Screen):
     def update_etudiant(self, *args):
         MDApp.get_running_app().root.current = 'Reinscription_update'
 
-    def read_by_parcours(self, data: list, parcours: str):
-        return list(filter(lambda etudiant: etudiant["parcours"] == parcours, data))
-
     def read_by_semestre_and_parcours(self, data: list, parcours: str, semestre: str):
-        return list(filter(lambda etudiant: etudiant["parcours"] == parcours and (
+        return list(filter(lambda etudiant: etudiant["parcours"].lower() == parcours.lower() and (
                 etudiant["semestre_petit"] == semestre or etudiant["semestre_grand"] == semestre), data))
-
-    def read_mention_by_title(self, data: list, titre: str):
-        return list(filter(lambda mention: mention["title"].lower() == titre.lower(), data))
 
     def find_key(self, lettre: str, key: str):
         value = lettre.lower()

@@ -13,7 +13,7 @@ from functools import partial
 from kivymd.uix.datatables import MDDataTable
 from kivy.uix.anchorlayout import AnchorLayout
 
-from all_requests import request_login
+from all_requests import request_login, request_utils
 from kivy.metrics import dp
 
 parent = Path(__file__).resolve().parent.parent / ""
@@ -78,12 +78,18 @@ class LoginScreen(Screen):
             sleep(1)
             if "access_token" in response:
                 self.ids.spinner.active = False
-                MDApp.get_running_app().root.current = 'Reinscription'
                 MDApp.get_running_app().TOKEN = response["access_token"]
                 MDApp.get_running_app().ALL_UUID_MENTION = response["mention"]
-                MDApp.get_running_app().MENTION = MDApp.get_running_app().ALL_UUID_MENTION[0]
+                # MDApp.get_running_app().MENTION = MDApp.get_running_app().ALL_UUID_MENTION[0]
+                self.get_all_mention()
+                self.get_annee_univ()
                 self.ids.email.text = ""
                 self.ids.password.text = ""
+                if response['role'] == "supperuser":
+                    MDApp.get_running_app().root.current = 'Public'
+                else:
+                    MDApp.get_running_app().root.current = 'Selection'
+                # MDApp.get_running_app().root.current = 'Reinscription'
             else:
                 self.ids.spinner.active = False
                 MDApp.get_running_app().show_dialog(str(response['detail']))
@@ -91,7 +97,33 @@ class LoginScreen(Screen):
             self.ids.password.require = True
 
     def auto_remplir(self):
-        self.ids.email.text = "enricfranck@gmail.com"
-        self.ids.password.text = "123"
-        # self.ids.email.text = "admin@science.com"
-        # self.ids.password.text = "aze135azq35sfsnf6353sfh3xb68yyp31gf68k5sf6h3s5d68jd5"
+        # self.ids.email.text = "enricfranck@gmail.com"
+        # self.ids.password.text = "123"
+        self.ids.email.text = "admin@science.com"
+        self.ids.password.text = "aze135azq35sfsnf6353sfh3xb68yyp31gf68k5sf6h3s5d68jd5"
+
+    def get_all_mention(self):
+        host = MDApp.get_running_app().HOST
+        token = MDApp.get_running_app().TOKEN
+        uuid_mention = MDApp.get_running_app().ALL_UUID_MENTION
+        if len(uuid_mention) != 0:
+            url_mention: str = f'http://{host}/api/v1/mentions/by_uuid'
+            for uuid in uuid_mention:
+                response = request_utils.get_mention_uuid(url_mention, uuid, token)
+                if response:
+                    MDApp.get_running_app().ALL_MENTION.append(response)
+        else:
+            url_mention: str = f'http://{host}/api/v1/mentions/'
+            response = request_utils.get_mention(url_mention, token)
+            if response:
+                MDApp.get_running_app().ALL_MENTION = response
+
+    def get_annee_univ(self):
+        host = MDApp.get_running_app().HOST
+        token = MDApp.get_running_app().TOKEN
+        url_annee_univ: str = f'http://{host}/api/v1/anne_univ/'
+        response = request_utils.get_annee_univ(url_annee_univ, token)
+        if response:
+            MDApp.get_running_app().ALL_ANNEE = response
+
+

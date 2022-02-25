@@ -4,8 +4,8 @@
 # from kivy.metrics import dp
 # from kivy.uix.anchorlayout import AnchorLayout
 # from kivy.lang.builder import Builder
+import json
 import urllib.parse
-
 
 # KV = """
 # ScreenManager:
@@ -73,6 +73,23 @@ import urllib.parse
 #     def build(self):
 #         screen = Builder.load_string(KV)
 #         return screen
+from kivy.network.urlrequest import UrlRequest
+
+
+def success(req, result):
+    print('success')
+
+
+def fail(req, result):
+    print(req, result)
+
+
+def error(req, result):
+    print(req, result)
+
+
+def progress(req, result, chunk):
+    print('loading')
 
 
 def find_key(lettre: str, key: str):
@@ -82,14 +99,44 @@ def find_key(lettre: str, key: str):
 
 
 def read_mention_by_title(data: list, titre: str):
-    return list(filter(lambda mention: find_key(mention["name"], titre) != -1 or find_key(mention["adresse"], titre) != -1, data))
+    return list(
+        filter(lambda mention: find_key(mention["name"], titre) != -1 or find_key(mention["adresse"], titre) != -1,
+               data))
+
+
+def create_face_carte(url: str, token: str, payload):
+    headers = {'accept': 'application/json',
+               'Content-Type': 'application/json',
+               'Authorization': f'Bearer {token}'
+               }
+    payload_ = json.dumps(payload)
+    print(payload_)
+    # req = UrlRequest(url, on_success=success, on_failure=fail, on_error=error, on_progress=progress,
+    #                  req_headers=headers, file_path="/home/enric/Documents/test.pdf", verify=False, method="GET")
+    req = UrlRequest(url, on_success=success, on_failure=fail, on_error=error, on_progress=progress,
+                     req_headers=headers, req_body=payload, verify=False, method="POST")
+    req.wait()
+    return req.result
 
 
 if __name__ == "__main__":
     # MainWindow().run()
-    data = [{"name": "franck", "age": 26, "adresse": "paris"},
-            {"name": "françois", "age": 27, "adresse": "france"},
-            {"name": "frame", "age": 15, "adresse": "parisho"}
-            ]
-    value = read_mention_by_title(data, "PA")
-    print(value)
+    # data = [{"name": "franck", "age": 26, "adresse": "paris"},
+    #         {"name": "françois", "age": 27, "adresse": "france"},
+    #         {"name": "frame", "age": 15, "adresse": "parisho"}
+    #         ]
+    # value = read_mention_by_title(data, "PA")
+    # url = 'http://localhost/api/v1/liste/list_inscrit/?schemas=anne_2020_2021&semestre=S8&uuid_parcours=d7b9b12a-9d26-4fa7-8c18-cc5f8a3f01b8&uuid_mention=993e2bd1-8608-4885-aed9-3436d1736373'
+    # url_= "http://localhost/api/v1/liste/list_inscrit/?schema=anne_2020_2021&uuid_mention=993e2bd1-8608-4885-aed9-3436d1736373&uuid_parcours=d7b9b12a-9d26-4fa7-8c18-cc5f8a3f01b8&semestre=S8"
+    # token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDUyODM1ODIsInV1aWQiOiJkM2FkMmQ5OC1hYjM3LTQyMjQtYjU2OS1mNGM1NGRlZjVlMDkifQ.wvpt1ViX2EZI8jKzsNcLMRkLZdgOTQ9d3ZOZc4k3gMQ "
+
+    url = "http://localhost/api/v1/nouveau_etudiants/?schema=anne_2020_2021'"
+    payload = {"num_select": "3", "nom": "zf2Bk9XUUBhQYCjjWFxL", "prenom": "iGjrj", "date_naiss": "1993-12-10",
+     "lieu_naiss": "piGOiStUyzyD", "adresse": "zHpcIuGJ", "num_cin": "ZuivPshSHeKM", "date_cin": "2012-02-13",
+     "lieu_cin": "3xoO", "uuid_mention": "993e2bd1-8608-4885-aed9-3436d1736373", "niveau": "L1",
+     "branche": "mathematiques", "select": False, "nation": "Malagasy", "sexe": "MASCULIN",
+     "uuid": "993e2bd1-8608-4885-aed9-3436d1736373"}
+
+    token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDU1MzExNTQsInV1aWQiOiJmYWJmNTM5Ni1mMWJiLTRjOTQtOGQxNC1kZGM2MDI5ZmQ5ZmMifQ.8zNTp0-75hwXSu1q1mFMFqY21NoLUuttY9NlaQhbLmo"
+
+    print(type(create_face_carte(url, token, payload)))

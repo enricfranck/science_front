@@ -1,38 +1,118 @@
+import os.path
+
+from kivy.core.window import Window
 from kivy.lang import Builder
+from kivy.uix.boxlayout import BoxLayout
 
 from kivymd.app import MDApp
+from kivymd.toast import toast
+from kivymd.uix.button import MDFlatButton
+from kivymd.uix.dialog import MDDialog
+from kivymd.uix.filemanager import MDFileManager
 
 KV = '''
-BoxLayout:
-    padding: "10dp"
+<Content>
+    orientation: "vertical"
+    spacing: "12dp"
+    size_hint_y: None
+    height: "120dp"
+    BoxLayout
+        orientation: "horizontal"
+        spacing: "12dp"
+        MDLabel:
+            id: text
+            text:"bal"
+            pos_hint: {'center_x': .5, 'center_y': .6}
+        MDRoundFlatIconButton:
+            icon: "folder"
+            pos_hint: {'center_x': .5, 'center_y': .6}
+            on_release: root.file_manager_open()
+    ProgressBar:
+        id: progress
+        max:1
+        value:0
 
-    MDTextField:
-        id: text_field_error
-        hint_text: "Helper text on error (press 'Enter')"
-        helper_text: "There will always be a mistake"
-        helper_text_mode: "on_error"
-        pos_hint: {"center_y": .5}
-        on_text:app.on_texte(text_field_error.text)
+
+
+MDFloatLayout:
+
+    MDFlatButton:
+        text: "ALERT DIALOG"
+        pos_hint: {'center_x': .5, 'center_y': .5}
+        on_release: app.show_confirmation_dialog()
 '''
 
 
-class Test(MDApp):
+class Content(BoxLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.screen = Builder.load_string(KV)
+        Window.bind(on_keyboard=self.events)
+        self.manager_open = False
+        self.file_manager = MDFileManager(
+            exit_manager=self.exit_manager,
+            select_path=self.select_path,
+            preview=True,
+        )
+
+    def file_manager_open(self):
+        self.file_manager.show('/')  # output manager to the screen
+        self.manager_open = True
+
+    def select_path(self, path):
+        '''It will be called when you click on the file name
+        or the catalog selection button.
+
+        :type path: str;
+        :param path: path to the selected directory or file;
+        '''
+
+        self.exit_manager()
+        if os.path.isdir(path):
+            self.ids.text.text = path
+        else:
+            self.ids.text.text = str(path).rsplit('/', 1)[0]
+
+    def exit_manager(self, *args):
+        '''Called when the user reaches the root of the directory tree.'''
+
+        self.manager_open = False
+        self.file_manager.close()
+
+    def events(self, instance, keyboard, keycode, text, modifiers):
+        '''Called when buttons are pressed on the mobile device.'''
+
+        if keyboard in (1001, 27):
+            if self.manager_open:
+                self.file_manager.back()
+        return True
+
+
+class Example(MDApp):
+    dialog = None
 
     def build(self):
-        self.screen.ids.text_field_error.bind(
-            on_text_validate=self.set_error_message,
-            on_focus=self.set_error_message,
-        )
-        return self.screen
+        return Builder.load_string(KV)
 
-    def set_error_message(self, instance_textfield):
-        self.screen.ids.text_field_error.error = True
+    def show_confirmation_dialog(self):
+        if not self.dialog:
+            self.dialog = MDDialog(
+                title="Address:",
+                type="custom",
+                content_cls=Content(),
+                buttons=[
+                    MDFlatButton(
+                        text="CANCEL",
+                        theme_text_color="Custom",
+                        text_color=self.theme_cls.primary_color,
+                    ),
+                    MDFlatButton(
+                        text="OK",
+                        theme_text_color="Custom",
+                        text_color=self.theme_cls.primary_color,
+                    ),
+                ],
+            )
+        self.dialog.open()
 
-    def on_texte(self, text:str):
-        print(text)
 
-
-Test().run()
+Example().run()
