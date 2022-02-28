@@ -1621,7 +1621,9 @@ ScreenManager:
                     size_hint_x: None
                     helper_text_mode:"on_error"
                     width:300
+                    readonly: True
                     required: True
+                    on_focus: if self.focus: root.menu_mention.open()
 
                 MDTextField:
                     id: password

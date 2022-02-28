@@ -112,6 +112,10 @@ class ScienceApp(MDApp):
     DATE_TEXTE: str = ""
     ERROR: str = ""
     PUBLIC_TITRE: str = ""
+    ALL_ROLE: list = []
+    ALL_DROIT: list = []
+    ALL_USERS: list = []
+    UUID_SELECTED: str = ""
 
     def build(self):
         self.theme_cls.theme_style = "Dark"
@@ -149,6 +153,12 @@ class ScienceApp(MDApp):
         res = "".join(secrets.choice(string.ascii_letters + string.digits) for x in range(nbr))
         return res
 
+    def read_by_key_multiple(self, data: list, key_1: str, key_2: str, key_3: str,
+                             value_1: str, value_2: str, value_3: str):
+        return list(filter(lambda elements: elements[f"{key_1}"].lower() == value_1.lower() and
+                                            elements[f"{key_2}"].lower() == value_2.lower() and
+                                            elements[f"{key_3}"].lower() == value_3.lower(), data))
+
     def read_by_key(self, data: list, key: str, value: str):
         return list(filter(lambda elements: elements[f"{key}"].lower() == value.lower(), data))
 
@@ -184,13 +194,28 @@ class ScienceApp(MDApp):
         token = MDApp.get_running_app().TOKEN
         uuid_mention = MDApp.get_running_app().MENTION
         url_parcours: str = f'http://{host}/api/v1/parcours/by_mention/'
-        response = request_utils.get_parcours_by_mention(url_parcours, uuid_mention, token)
-        print(response)
+        response = request_utils.get_with_params(url_parcours, ["uuid_mention"], [uuid_mention], token)
         if response:
             MDApp.get_running_app().ALL_PARCOURS = response
             for rep in response:
                 parcours.append(str(rep['abreviation']))
         return parcours
+
+    def transform_data(self, list_key: list, all_data: list):
+        data = []
+        k: int = 1
+        if len(all_data) != 0:
+            for on_data in all_data:
+                data_value = [k]
+                for key in list_key:
+                    data_value.append(on_data[key])
+                data.append(tuple(data_value))
+                k += 1
+        data_vide = [""]
+        for key in list_key:
+            data_vide.append("")
+        data.append(tuple(data_vide))
+        return data
 
     def logout(seld):
         MDApp.get_running_app().root.current = 'Login'

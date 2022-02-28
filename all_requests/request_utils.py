@@ -11,6 +11,7 @@ def success(req, result):
 
 def fail(req, result):
     print('fail')
+    print(req, result)
 
 
 def error(req, result):
@@ -35,62 +36,62 @@ def trasnform_list(data: list) -> List[Dict[Any, Any]]:
 
 
 def create_json(list_key: list, list_value: list):
-    data = list_key + list_value
+    """
+    Create a dict with two list key and value
+    :param list_key:
+    :param list_value:
+    :return:
+    """
+    data = [list_key, list_value]
+    return trasnform_list(data)[0]
 
 
+def get(url: str, token: str):
+    """
+    Retrieve data from the server
+    :param url:
+    :param token:
+    :return:
+    """
+    return get_connexion(url, token)
 
-def get_mention_uuid(url: str, uuid_mention: str, token: str):
-    values = {'uuid': f'{uuid_mention}'}
-    # converted data to json type 
-    params = urllib.parse.urlencode(values)
-    url = f"{url}?{params}"
+
+def get_connexion(url: str, token: str):
+    """
+    create a default get to retrieve data with url and token
+    :param url:
+    :param token:
+    :return:
+    """
     headers = {'accept': 'application/json',
                'Authorization': f'Bearer {token}'
                }
     req = UrlRequest(url, on_success=success, on_failure=fail, on_error=error, on_progress=progress,
                      req_headers=headers, verify=False, method='GET')
     req.wait()
-    return req.result
+    return [req.result, req.resp_status]
 
 
-def get_mention(url: str, token: str):
-    headers = {'accept': 'application/json',
-               'Authorization': f'Bearer {token}'
-               }
-    req = UrlRequest(url, on_success=success, on_failure=fail, on_error=error, on_progress=progress,
-                     req_headers=headers, verify=False, method='GET')
-    req.wait()
-    print(req.result)
-    return req.result
+def get_with_params(url: str, list_key: list, list_value: list, token: str):
+    """
+    to retrieve data with parameters
+    :param url: the api url
+    :param list_key: the parameter of the api
+    :param list_value: the value of the parameter
+    :param token:
+    :return:
+    """
 
-
-def get_annee_univ(url: str, token: str):
-    headers = {'accept': 'application/json',
-               'Authorization': f'Bearer {token}'
-               }
-    req = UrlRequest(url, on_success=success, on_failure=fail, on_error=error, on_progress=progress,
-                     req_headers=headers, verify=False, method='GET')
-    req.wait()
-    return req.result
-
-
-def get_parcours_by_mention(url: str, uuid_mention: str, token: str):
-    values = {'uuid_mention': f'{uuid_mention}'}
+    values = create_json(list_key, list_value)
     # converted data to json type
     params = urllib.parse.urlencode(values)
     url = f"{url}?{params}"
-    headers = {'accept': 'application/json',
-               'Authorization': f'Bearer {token}'
-               }
-    req = UrlRequest(url, on_success=success, on_failure=fail, on_error=error, on_progress=progress,
-                     req_headers=headers, verify=False, method='GET')
-    req.wait()
-    return req.result
+    return get_connexion(url, token)
 
 
-def create_mention(url: str, token: str, payload: str):
+def create(url: str, token: str, payload: str):
     """
-    To create the MENTION
+    To create
     :param url:
     :param token:
     :param payload:
@@ -118,4 +119,4 @@ def create_connection(url: str, values: dict, payload: Any, token: str, methode:
     req = UrlRequest(url, on_success=success, on_failure=fail, on_error=error, on_progress=progress,
                      req_headers=headers, req_body=payload, verify=False, method=methode, timeout=15)
     req.wait()
-    return req.result
+    return [req.result, req.resp_status]

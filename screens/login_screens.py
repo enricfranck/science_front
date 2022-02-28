@@ -1,20 +1,18 @@
-from dotenv import load_dotenv
-import os
 import sys
-from pathlib import Path
-from time import sleep, time
-
-from kivymd.app import MDApp
-from kivy.uix.screenmanager import ScreenManager, Screen
-from kivy.properties import ObjectProperty, StringProperty, BooleanProperty
-from kivymd.uix.textfield import MDTextField
-from kivy.clock import Clock
 from functools import partial
-from kivymd.uix.datatables import MDDataTable
-from kivy.uix.anchorlayout import AnchorLayout
+from pathlib import Path
+from time import sleep
+
+from dotenv import load_dotenv
+from kivy.clock import Clock
+from kivy.metrics import dp
+from kivy.properties import ObjectProperty, BooleanProperty
+from kivy.uix.screenmanager import Screen
+from kivymd.app import MDApp
+from kivymd.toast import toast
+from kivymd.uix.textfield import MDTextField
 
 from all_requests import request_login, request_utils
-from kivy.metrics import dp
 
 parent = Path(__file__).resolve().parent.parent / ""
 sys.path.append(str(parent))
@@ -64,11 +62,15 @@ class MyMDTextField(MDTextField):
 class LoginScreen(Screen):
     screenManager = ObjectProperty(None)
 
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        self.host = MDApp.get_running_app().HOST
+        self.token = ""
+
     def login(self):
-        host = MDApp.get_running_app().HOST
         email = self.ids.email.text
         password = self.ids.password.text
-        url_login: str = f"http://{host}/api/v1/login/access-token"
+        url_login: str = f"http://{self.host}/api/v1/login/access-token"
 
         if len(email) != 0 and len(password) != 0:
             self.ids.spinner.active = True
@@ -79,14 +81,19 @@ class LoginScreen(Screen):
             if "access_token" in response:
                 self.ids.spinner.active = False
                 MDApp.get_running_app().TOKEN = response["access_token"]
+                self.token = MDApp.get_running_app().TOKEN
                 MDApp.get_running_app().ALL_UUID_MENTION = response["mention"]
                 # MDApp.get_running_app().MENTION = MDApp.get_running_app().ALL_UUID_MENTION[0]
                 self.get_all_mention()
                 self.get_annee_univ()
+                self.get_all_droit()
                 self.ids.email.text = ""
                 self.ids.password.text = ""
                 if response['role'] == "supperuser":
                     MDApp.get_running_app().root.current = 'Public'
+                    self.get_all_parcours()
+                    self.get_all_role()
+                    self.get_all_users()
                 else:
                     MDApp.get_running_app().root.current = 'Selection'
                 # MDApp.get_running_app().root.current = 'Reinscription'
@@ -103,27 +110,86 @@ class LoginScreen(Screen):
         self.ids.password.text = "aze135azq35sfsnf6353sfh3xb68yyp31gf68k5sf6h3s5d68jd5"
 
     def get_all_mention(self):
-        host = MDApp.get_running_app().HOST
-        token = MDApp.get_running_app().TOKEN
+        """
+        retrieve all mention from the database
+        :return:
+        """
         uuid_mention = MDApp.get_running_app().ALL_UUID_MENTION
+
         if len(uuid_mention) != 0:
-            url_mention: str = f'http://{host}/api/v1/mentions/by_uuid'
+            url_mention: str = f'http://{self.host}/api/v1/mentions/by_uuid'
             for uuid in uuid_mention:
-                response = request_utils.get_mention_uuid(url_mention, uuid, token)
+                response = request_utils.get_with_params(url_mention, ["uuid"], [uuid], self.token)
                 if response:
-                    MDApp.get_running_app().ALL_MENTION.append(response)
+                    if response[1] == 200:
+                        MDApp.get_running_app().ALL_MENTION.append(response[0])
+                    elif response[1] == 400:
+                        toast(response[0]["detail"])
+                    else:
+                        toast(response)
         else:
-            url_mention: str = f'http://{host}/api/v1/mentions/'
-            response = request_utils.get_mention(url_mention, token)
-            if response:
-                MDApp.get_running_app().ALL_MENTION = response
+            url_mention: str = f'http://{self.host}/api/v1/mentions/'
+        MDApp.get_running_app().ALL_MENTION = self.get_response(url_mention)
 
     def get_annee_univ(self):
-        host = MDApp.get_running_app().HOST
-        token = MDApp.get_running_app().TOKEN
-        url_annee_univ: str = f'http://{host}/api/v1/anne_univ/'
-        response = request_utils.get_annee_univ(url_annee_univ, token)
+        """
+        retrieve all years from the database
+        :return:
+        """
+        url_annee_univ: str = f'http://{self.host}/api/v1/anne_univ/'
+        MDApp.get_running_app().ALL_ANNEE = self.get_response(url_annee_univ)
+
+    def get_all_parcours(self):
+        """
+        retrieve all parcours from the database
+        :return:
+        """
+        url_parcours: str = f'http://{self.host}/api/v1/parcours/'
+        MDApp.get_running_app().ALL_PARCOURS = self.get_response(url_parcours)
+
+    def get_all_role(self):
+        """
+        Retrieve all role from the api
+        :return:
+        """
+        url_role: str = f"http://{self.host}/api/v1/roles/"
+        MDApp.get_running_app().ALL_ROLE = self.get_response(url_role)
+
+    def get_all_droit(self):
+        """
+        Retrieve all role from the api
+        :return:
+        """
+        url_droit: str = f"http://{self.host}/api/v1/droit/"
+        MDApp.get_running_app().ALL_DROIT = self.get_response(url_droit)
+        all_droit = []
+        for droit in MDApp.get_running_app().ALL_DROIT:
+            droit_ = {"uuid": droit['uuid'], "niveau": droit["niveau"], "montant": droit["droit"], "annee": droit["annee"],
+                      "mention": MDApp.get_running_app().read_by_key(MDApp.get_running_app().ALL_MENTION,
+                                                                     "uuid", droit["uuid_mention"])[0]["title"]}
+            all_droit.append(droit_)
+        MDApp.get_running_app().ALL_DROIT = all_droit
+
+    def get_all_users(self):
+        url_user = f'http://{self.host}/api/v1/users/get_all/'
+        MDApp.get_running_app().ALL_USERS = self.get_response(url_user)
+        all_users = []
+        for user in MDApp.get_running_app().ALL_USERS:
+            if not user['is_superuser']:
+                users = {"uuid": user['uuid'], "email": user["email"], "prenom": user["last_name"],
+                         "role": MDApp.get_running_app().read_by_key(MDApp.get_running_app().ALL_ROLE,
+                                                                     "uuid", user["uuid_role"])[0]["title"],
+                         "mention": MDApp.get_running_app().read_by_key(MDApp.get_running_app().ALL_MENTION,
+                                                                        "uuid", user["uuid_mention"][0])[0]["title"]}
+                all_users.append(users)
+        MDApp.get_running_app().ALL_USERS = all_users
+
+    def get_response(self, url: str):
+        response = request_utils.get(url, self.token)
         if response:
-            MDApp.get_running_app().ALL_ANNEE = response
-
-
+            if response[1] == 200:
+                return response[0]
+            elif response[1] == 400:
+                toast(response[0]["detail"])
+            else:
+                toast(response)
