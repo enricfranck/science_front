@@ -9,11 +9,11 @@ from kivymd.uix.filemanager import MDFileManager
 
 
 def fail(req, result):
-    print(req, result)
+    print("fail",req, result)
 
 
 def error(req, result):
-    print(req, result)
+    print("error",req, result)
 
 
 class DownloadScreen(Screen):

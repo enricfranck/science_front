@@ -279,7 +279,7 @@ class SelectionScreen(Screen):
         ALL_ETUDIANT_SELECTIONNER = MDApp.get_running_app().read_by_key(
             MDApp.get_running_app().ALL_ETUDIANT_SELECTIONNER, "niveau", text_item)
         self.data_tables.row_data = self.transforme_data(ALL_ETUDIANT_SELECTIONNER)
-        self.menue_niveau.dismiss()
+        self.menu_niveau.dismiss()
 
     # def read_by_niveau(self, data: list, key: str, niveau: str):
     #     return list(filter(lambda etudiant: etudiant[f"{key}"].lower() == niveau.lower(), data))
@@ -287,8 +287,13 @@ class SelectionScreen(Screen):
     def add_new_etudiant(self):
         MDApp.get_running_app().root.current = 'SelectionAdd'
 
+    def find_key(self, lettre: str, key: str):
+        value = lettre.lower()
+        key_value = key.lower()
+        return value.find(key_value)
+
     def serch_etudiant(self, titre: str):
-        data = MDApp.get_running_app().All_ETUDIANT_SELECTIONNER
+        data = MDApp.get_running_app().ALL_ETUDIANT_SELECTIONNER
         value = list(
             filter(lambda mention: self.find_key(mention["num_select"], titre) != -1 or
                                    self.find_key(mention["nom"], titre) != -1 or

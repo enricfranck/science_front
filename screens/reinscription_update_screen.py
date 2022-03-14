@@ -203,9 +203,14 @@ class ReinscriptionUpdateScreen(Screen):
                                            photo, etat, moyenne, uuid_mention, uuid_parcours, bacc_anne, semestre_petit,
                                            semestre_grand)
                 if response:
-                    self.reset_champs()
-                    MDApp.get_running_app().ALL_ETUDIANT = response
-                    MDApp.get_running_app().root.current = 'Reinscription'
+                    if response[1] == 200:
+                        self.reset_champs()
+                        MDApp.get_running_app().ALL_ETUDIANT = response[0]
+                        MDApp.get_running_app().root.current = 'Reinscription'
+                    elif response[1] == 400:
+                        toast(str(response[0]))
+                    else:
+                        toast(str(response))
             else:
                 toast("Sélectioner d'abord le(s) semestre(s)")
         else:

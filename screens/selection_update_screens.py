@@ -254,8 +254,6 @@ class SelectionUpdateScreen(Screen):
                                                           self.selected_mention)[0]["branche"]
             niveau = self.ids.niveau_field.text
             uuid_mention = MDApp.get_running_app().MENTION
-            uuid_parcours = MDApp.get_running_app().read_by_key(MDApp.get_running_app().ALL_PARCOURS, "abreviation",
-                                                                self.ids.parcours_field.text)[0]["uuid"]
             if not self.ids.validation.active:
                 url = f"http://{host}/api/v1/nouveau_etudiants/update_etudiant_by_num_select/"
                 response = request_etudiants.update_select_etudiant(
@@ -264,6 +262,8 @@ class SelectionUpdateScreen(Screen):
                     num_cin=num_cin, date_cin=date_cin, lieu_cin=lieu_cin, uuid_mention=uuid_mention, niveau=niveau,
                     select=self.ids.select.active)
             else:
+                uuid_parcours = MDApp.get_running_app().read_by_key(
+                    MDApp.get_running_app().ALL_PARCOURS, "abreviation", self.ids.parcours_field.text)[0]["uuid"]
                 url = f"http://{host}/api/v1/nouveau_etudiants/update_etudiant_by_num_select_admis/"
                 response = request_etudiants.update_selected_etudiant(
                     url=url, annee=annee, token=token, num_select=num_select, nom=nom, prenom=prenom,
@@ -277,8 +277,12 @@ class SelectionUpdateScreen(Screen):
                     select=self.ids.select.active)
 
             if response:
-                MDApp.get_running_app().ALL_ETUDIANT_SELECTIONNER = response
-                self.reset_champs()
+                if response[1] == 200:
+                    MDApp.get_running_app().ALL_ETUDIANT_SELECTIONNER = response[0]
+                elif response[1] == 400:
+                    toast(str(response[0]))
+                else:
+                    toast(str(response))
         else:
             toast("Choisir l'annee universitaire")
 

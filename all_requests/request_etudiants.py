@@ -289,7 +289,6 @@ def update_selected_etudiant(url: str, annee: str, token: str, num_select: str, 
 
     payload = json.dumps(etudiant)
 
-    print(payload)
     schemas = "anne_" + annee[0:4] + "_" + annee[5:9]
     values = {'schema': f'{schemas}', 'num_select': num_select}
     return create_connection(url, values, payload, token, "PUT")

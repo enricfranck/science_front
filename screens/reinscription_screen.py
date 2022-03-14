@@ -447,7 +447,7 @@ class ReinscriptionScreen(Screen):
         key_value = key.lower()
         return value.find(key_value)
 
-    def serch_etudiant(self, titre: str):
+    def search_etudiant(self, titre: str):
         data = MDApp.get_running_app().ALL_ETUDIANT
         value = list(
             filter(lambda mention: self.find_key(mention["num_carte"], titre) != -1 or

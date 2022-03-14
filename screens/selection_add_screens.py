@@ -100,7 +100,7 @@ class SelectionAddScreen(Screen):
 
     def menu_calback_niveau(self, text_item):
         self.ids.niveau_field.text = text_item
-        self.menue_niveau.dismiss()
+        self.menu_niveau.dismiss()
 
     def menu_calback_sexe(self, text_item):
         self.ids.sexe.text = text_item
@@ -176,7 +176,12 @@ class SelectionAddScreen(Screen):
                                                                   niveau=niveau
                                                                   )
                 if response:
-                    MDApp.get_running_app().ALL_ETUDIANT_SELECTIONNER = response
+                    if response[1] == 200:
+                        MDApp.get_running_app().ALL_ETUDIANT_SELECTIONNER = response[0]
+                    elif response[1] == 400:
+                        toast(str(response[0]))
+                    else:
+                        toast(str(response))
             else:
                 toast("Choisir l'annee universitaire")
         else:

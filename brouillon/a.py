@@ -40,15 +40,15 @@ class Test(MDApp):
     def spinner_toggle(self):
         print('Spinner Toggle')
         app = self.get_running_app()
-        if app.root.ids.spinner.active == False:
+        if not app.root.ids.spinner.active:
             app.root.ids.spinner.active = True
         else:
             app.root.ids.spinner.active = False
 
-    def long_process(self, bala):
+    def long_process(self, *args):
         time.sleep(5)
         for x in range(100):
-            print(bala)
+            print("bala")
         self.spinner_toggle()
 
     def long_process_thread(self):
