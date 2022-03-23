@@ -1,27 +1,39 @@
 from kivy.app import App
-from kivy.lang import Builder
+from kivy.uix.camera import Camera
+from kivy.uix.gridlayout import GridLayout
+from kivy.uix.button import Button
+from kivy.core.window import Window
 
-DEMO_APP_KV_LANG = """
-#:import ZBarCam kivy_garden.zbarcam.ZBarCam
-#:import ZBarSymbol pyzbar.pyzbar.ZBarSymbol
-BoxLayout:
-    orientation: 'vertical'
-    ZBarCam:
-        id: zbarcam
-        # optional, by default checks all types
-        code_types: ZBarSymbol.QRCODE, ZBarSymbol.EAN13
-    Label:
-        size_hint: None, None
-        size: self.texture_size[0], 50
-        text: ', '.join([str(symbol.data) for symbol in zbarcam.symbols])
-"""
+# set window size
+Window.size = (500, 550)
 
 
-class DemoApp(App):
-
+class cameraApp(App):
     def build(self):
-        return Builder.load_string(DEMO_APP_KV_LANG)
+        global cam
+        # create camera instance
+        cam = Camera()
+        # ceate button
+        btn = Button(text="Capture Image")
+        btn.size_hint = (.1, .1)
+        btn.font_size = 35
+        btn.background_color = 'blue'
+        btn.bind(on_press=self.capture_image)
+        # create grid layout
+        layout = GridLayout(rows=2, cols=1)
+        # add widgets in layout
+        layout.add_widget(cam)
+        layout.add_widget(btn)
+        return layout
+
+    def capture_image(self, *args):
+        global cam
+        # save captured image
+        cam.export_to_png('image.png')
+        # print message after capturing the image
+        print('Image captured and saved in current working directory')
 
 
 if __name__ == '__main__':
-    DemoApp().run()
+    # run app
+    cameraApp().run()

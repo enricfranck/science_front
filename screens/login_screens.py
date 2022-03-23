@@ -87,10 +87,11 @@ class LoginScreen(Screen):
                         MDApp.get_running_app().get_all_mention()
                         MDApp.get_running_app().get_annee_univ()
                         MDApp.get_running_app().get_all_droit()
-                        MDApp.get_running_app().ALL_UE = \
-                            MDApp.get_running_app().get_all_ue(annee=MDApp.get_running_app().ALL_ANNEE[0]['title'])
-                        MDApp.get_running_app().ALL_EC = \
-                            MDApp.get_running_app().get_all_ec(annee=MDApp.get_running_app().ALL_ANNEE[0]['title'])
+                        if len(MDApp.get_running_app().ALL_ANNEE) != 0:
+                            MDApp.get_running_app().ALL_UE = \
+                                MDApp.get_running_app().get_all_ue(annee=MDApp.get_running_app().ALL_ANNEE[0]['title'])
+                            MDApp.get_running_app().ALL_EC = \
+                                MDApp.get_running_app().get_all_ec(annee=MDApp.get_running_app().ALL_ANNEE[0]['title'])
                         self.ids.email.text = ""
                         self.ids.password.text = ""
                         if response[0]['role'] == "supperuser":
@@ -112,7 +113,7 @@ class LoginScreen(Screen):
             self.ids.password.require = True
 
     def auto_remplir(self):
-        self.ids.email.text = "enricfranck@gmail.com"
-        self.ids.password.text = "123"
-        # self.ids.email.text = "admin@science.com"
-        # self.ids.password.text = "aze135azq35sfsnf6353sfh3xb68yyp31gf68k5sf6h3s5d68jd5"
+        # self.ids.email.text = "enricfranck@gmail.com"
+        # self.ids.password.text = "123"
+        self.ids.email.text = "admin@science.com"
+        self.ids.password.text = "aze135azq35sfsnf6353sfh3xb68yyp31gf68k5sf6h3s5d68jd5"
