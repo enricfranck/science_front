@@ -14,6 +14,7 @@ class SelectionAddScreen(Screen):
 
     def __init__(self, **kw):
         super().__init__(**kw)
+        self.menu_nation = None
         self.menu_sexe = None
         self.selected_mention = None
         self.menu_niveau = None

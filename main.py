@@ -26,7 +26,6 @@ from screens.public_add_screen import PublicAddScreen
 from screens.public_screen import PublicScreen
 from screens.reinscription_add_screen import ReinscriptionAddScreen
 from screens.reinscription_screen import ReinscriptionScreen
-from screens.reinscription_update_screen import ReinscriptionUpdateScreen
 from screens.selection_add_screens import SelectionAddScreen
 from screens.selection_screens import SelectionScreen
 from screens.selection_update_screens import SelectionUpdateScreen
@@ -51,10 +50,6 @@ class ReinscriptionScreen(ReinscriptionScreen):
 
 
 class ReinscriptionAddScreen(ReinscriptionAddScreen):
-    pass
-
-
-class ReinscriptionUpdateScreen(ReinscriptionUpdateScreen):
     pass
 
 
@@ -136,6 +131,7 @@ class ScienceApp(MDApp):
     ERROR: str = ""
     PUBLIC_TITRE: str = ""
     PUBLIC_ACTION_TYPE: str = ""
+    REINSCRIPTION_ACTION_TYPE: str = ""
     ALL_ROLE: list = []
     ALL_DROIT: list = []
     ALL_USERS: list = []

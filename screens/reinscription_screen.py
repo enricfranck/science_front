@@ -26,6 +26,9 @@ class ReinscriptionScreen(Screen):
 
     def __init__(self, **kw):
         super().__init__(**kw)
+        self.menu_etat = None
+        self.menu_nation = None
+        self.menu_sexe = None
         self.menu_list = None
         self.menu_carte = None
         self.semestre = None
@@ -433,10 +436,12 @@ class ReinscriptionScreen(Screen):
         MDApp.get_running_app().root.current = 'Main'
 
     def add_new_etudiant(seld):
+        MDApp.get_running_app().REINSCRIPTION_ACTION_TYPE = "ADD"
         MDApp.get_running_app().root.current = 'Reinscription_add'
 
     def update_etudiant(self, *args):
-        MDApp.get_running_app().root.current = 'Reinscription_update'
+        MDApp.get_running_app().REINSCRIPTION_ACTION_TYPE = "UPDATE"
+        MDApp.get_running_app().root.current = 'Reinscription_add'
 
     def read_by_semestre_and_parcours(self, data: list, parcours: str, semestre: str):
         return list(filter(lambda etudiant: etudiant["parcours"].lower() == parcours.lower() and (

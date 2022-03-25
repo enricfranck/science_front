@@ -11,12 +11,13 @@ from kivymd.toast import toast
 from kivymd.uix.filemanager import MDFileManager
 from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.picker import MDDatePicker
-from all_requests.request_etudiants import save_etudiant, post_photo
+from all_requests.request_etudiants import save_etudiant, post_photo, update_etudiant
 
 
 class ReinscriptionAddScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.host = None
         self.master_two = None
         self.master_one = None
         self.license = None
@@ -54,6 +55,49 @@ class ReinscriptionAddScreen(Screen):
     screenManager = ObjectProperty(None)
 
     def on_enter(self):
+        menu_etat = [
+            {
+                "viewclass": "OneLineListItem",
+                "text": f"{i}",
+                "height": dp(50),
+                "on_release": lambda x=f"{i}": self.menu_calback_etat(x),
+            } for i in MDApp.get_running_app().ALL_ETAT
+        ]
+
+        self.menu_etat = MDDropdownMenu(
+            caller=self.ids.etat,
+            items=menu_etat,
+            width_mult=4,
+        )
+        menu_sexe = [
+            {
+                "viewclass": "OneLineListItem",
+                "text": f"{i}",
+                "height": dp(50),
+                "on_release": lambda x=f"{i}": self.menu_calback_sexe(x),
+            } for i in MDApp.get_running_app().ALL_SEXE
+        ]
+
+        self.menu_sexe = MDDropdownMenu(
+            caller=self.ids.sexe,
+            items=menu_sexe,
+            width_mult=4,
+        )
+
+        menu_nation = [
+            {
+                "viewclass": "OneLineListItem",
+                "text": f"{i}",
+                "height": dp(50),
+                "on_release": lambda x=f"{i}": self.menu_calback_nation(x),
+            } for i in MDApp.get_running_app().ALL_NATION
+        ]
+
+        self.menu_nation = MDDropdownMenu(
+            caller=self.ids.nation,
+            items=menu_nation,
+            width_mult=4,
+        )
         self.s1 = self.ids.s1_check
         self.s2 = self.ids.s2_check
         self.s3 = self.ids.s3_check
@@ -79,9 +123,61 @@ class ReinscriptionAddScreen(Screen):
             items=self.get_all_parcours(),
             width_mult=4,
         )
+        if MDApp.get_running_app().REINSCRIPTION_ACTION_TYPE == "UPDATE":
+            num_carte = MDApp.get_running_app().NUM_CARTE
+            self.host = MDApp.get_running_app().HOST
+            if num_carte != "":
+                un_etudiant = self.read_by_num_carte(MDApp.get_running_app().ALL_ETUDIANT, num_carte)[0]
+                self.photo = str(un_etudiant["photo"])
+                self.ids.num_ce.text = str(un_etudiant["num_carte"])
+                self.ids.nom.text = str(un_etudiant["nom"])
+                self.ids.prenom.text = str(un_etudiant["prenom"])
+                self.ids.sexe.text = str(un_etudiant["sexe"])
+                self.ids.date_naiss.text = str(un_etudiant["date_naiss"])
+                self.ids.lieu_naiss.text = str(un_etudiant["lieu_naiss"])
+                self.ids.addresse.text = str(un_etudiant["adresse"])
+                self.ids.num_cin.text = str(un_etudiant["num_cin"])
+                self.ids.date_cin.text = str(un_etudiant["date_cin"])
+                self.ids.lieu_cin.text = str(un_etudiant["lieu_cin"])
+                self.ids.num_quintance.text = str(un_etudiant["num_quitance"])
+                self.ids.date_quintance.text = str(un_etudiant["date_quitance"])
+                self.ids.montant.text = str(un_etudiant["montant"])
+                self.ids.etat.text = str(un_etudiant["etat"])
+                self.ids.nation.text = str(un_etudiant["nation"])
+                self.ids.moyenne.text = str(un_etudiant["moyenne"])
+                self.ids.bacc_annee.text = str(un_etudiant["bacc_anne"])
+                self.ids.parcours_field.text = str(un_etudiant["parcours"]).upper()
+                self.ids.mention_field.text = \
+                    MDApp.get_running_app().read_by_key(MDApp.get_running_app().ALL_MENTION, "uuid",
+                                                        MDApp.get_running_app().MENTION)[0]["title"]
+                self.selected_parcours = \
+                    MDApp.get_running_app().read_by_key(MDApp.get_running_app().ALL_PARCOURS,
+                                                        "abreviation", un_etudiant["parcours"])[0]["uuid"]
+                self.selected_mention = MDApp.get_running_app().MENTION
+                self.set_semestre([un_etudiant["semestre_petit"], un_etudiant["semestre_grand"]])
+                try:
+                    self.ids.ellipse.source = f'http://{self.host}/api/v1/ancien_etudiants/photo?name_file={str(un_etudiant["photo"])}'
+                except Exception as e:
+                    print(e)
+                    pass
 
     def back_home(self):
         MDApp.get_running_app().root.current = 'Reinscription'
+
+    def read_by_num_carte(self, data: list, num_carte: str):
+        return list(filter(lambda etudiant: etudiant["num_carte"] == num_carte, data))
+
+    def menu_calback_sexe(self, text_item):
+        self.ids.sexe.text = text_item
+        self.menu_sexe.dismiss()
+
+    def menu_calback_nation(self, text_item):
+        self.ids.nation.text = text_item
+        self.menu_nation.dismiss()
+
+    def menu_calback_etat(self, text_item):
+        self.ids.etat.text = text_item
+        self.menu_etat.dismiss()
 
     def file_manager_open(self):
         self.file_manager.show('/')  # output manager to the screen
@@ -153,64 +249,102 @@ class ReinscriptionAddScreen(Screen):
         self.selected_semestre = self.get_semestre()
         annee = MDApp.get_running_app().ANNEE
         num_carte = self.ids.num_ce.text
-        test_num = MDApp.get_running_app().read_by_key(
-            MDApp.get_running_app().ALL_ETUDIANT, "num_carte", num_carte)
-        if len(test_num) == 0:
-            if len(annee) != 0:
-                if len(self.selected_semestre) != 0:
-                    photo = num_carte
-                    if self.path != "":
-                        try:
-                            photo = self.post_photo(num_carte, self.path)["filename"]
-                        except Exception as e:
-                            toast(photo)
-                        if 'detail' not in photo:
-                            nom = self.ids.nom.text
-                            prenom = self.ids.prenom.text
-                            sexe = self.ids.sexe.text
-                            date_naiss = self.ids.date_naiss.text
-                            lieu_naiss = self.ids.lieu_naiss.text
-                            adresse = self.ids.addresse.text
-                            num_cin = self.ids.num_cin.text
-                            date_cin = self.ids.date_cin.text
-                            lieu_cin = self.ids.lieu_cin.text
-                            quintance = self.ids.num_quintance.text
-                            date_quintance = self.ids.date_quintance.text
-                            montant = self.ids.montant.text
-                            etat = self.ids.etat.text
-                            nation = self.ids.nation.text
-                            moyenne = self.ids.moyenne.text
-                            bacc_anne = self.ids.bacc_annee.text
+        if len(annee) != 0:
+            if len(self.selected_semestre) != 0:
+                photo = num_carte
+                response = None
+                if MDApp.get_running_app().REINSCRIPTION_ACTION_TYPE == "ADD":
+                    test_num = MDApp.get_running_app().read_by_key(
+                        MDApp.get_running_app().ALL_ETUDIANT, "num_carte", num_carte)
+                    if len(test_num) == 0:
+                        if self.path != "":
+                            try:
+                                photo = self.post_photo(num_carte, self.path)["filename"]
+                            except Exception as e:
+                                toast(photo)
+                            if 'detail' not in photo:
+                                nom = self.ids.nom.text
+                                prenom = self.ids.prenom.text
+                                sexe = self.ids.sexe.text
+                                date_naiss = self.ids.date_naiss.text
+                                lieu_naiss = self.ids.lieu_naiss.text
+                                adresse = self.ids.addresse.text
+                                num_cin = self.ids.num_cin.text
+                                date_cin = self.ids.date_cin.text
+                                lieu_cin = self.ids.lieu_cin.text
+                                quintance = self.ids.num_quintance.text
+                                date_quintance = self.ids.date_quintance.text
+                                montant = self.ids.montant.text
+                                etat = self.ids.etat.text
+                                nation = self.ids.nation.text
+                                moyenne = self.ids.moyenne.text
+                                bacc_anne = self.ids.bacc_annee.text
 
-                            host = MDApp.get_running_app().HOST
-                            token = MDApp.get_running_app().TOKEN
-                            uuid_mention = self.selected_mention
-                            uuid_parcours = self.selected_parcours
-                            semestre_petit = MDApp.get_running_app().get_semestre_petit(self.selected_semestre)
-                            semestre_grand = MDApp.get_running_app().get_semestre_grand(self.selected_semestre)
-                            url_enreg: str = f'http://{host}/api/v1/ancien_etudiants/'
-                            response = save_etudiant(url_enreg, annee, token, num_carte, nom, prenom, sexe, date_naiss, lieu_naiss,
-                                                     nation, adresse, num_cin, date_cin, lieu_cin, quintance, date_quintance,
-                                                     montant,
-                                                     photo, etat, moyenne, uuid_mention, uuid_parcours, bacc_anne, semestre_petit,
-                                                     semestre_grand)
-                            if response:
-                                if response[1] == 200:
-                                    self.reset_champs()
-                                    MDApp.get_running_app().ALL_ETUDIANT = response[0]
-                                    MDApp.get_running_app().root.current = 'Reinscription'
-                                elif response[1] == 400:
-                                    toast(str(response[0]))
-                                else:
-                                    toast(str(response))
+                                host = MDApp.get_running_app().HOST
+                                token = MDApp.get_running_app().TOKEN
+                                uuid_mention = self.selected_mention
+                                uuid_parcours = self.selected_parcours
+                                semestre_petit = MDApp.get_running_app().get_semestre_petit(self.selected_semestre)
+                                semestre_grand = MDApp.get_running_app().get_semestre_grand(self.selected_semestre)
+                                url_enreg: str = f'http://{host}/api/v1/ancien_etudiants/'
+                                response = save_etudiant(url_enreg, annee, token, num_carte, nom, prenom, sexe, date_naiss, lieu_naiss,
+                                                         nation, adresse, num_cin, date_cin, lieu_cin, quintance, date_quintance,
+                                                         montant,
+                                                         photo, etat, moyenne, uuid_mention, uuid_parcours, bacc_anne, semestre_petit,
+                                                         semestre_grand)
+                        else:
+                            toast("Sélectioner d'abord la photo")
                     else:
-                        toast("Sélectioner d'abord la photo")
+                        toast("Numéro carte déjà inscrit")
+
                 else:
-                    toast("Sélectioner d'abord le(s) semestre(s)")
+                    num_carte = self.ids.num_ce.text
+                    photo = self.photo
+                    nom = self.ids.nom.text
+                    prenom = self.ids.prenom.text
+                    sexe = self.ids.sexe.text
+                    date_naiss = self.ids.date_naiss.text
+                    lieu_naiss = self.ids.lieu_naiss.text
+                    adresse = self.ids.addresse.text
+                    num_cin = self.ids.num_cin.text
+                    date_cin = self.ids.date_cin.text
+                    lieu_cin = self.ids.lieu_cin.text
+                    quintance = self.ids.num_quintance.text
+                    date_quintance = self.ids.date_quintance.text
+                    montant = self.ids.montant.text
+                    etat = self.ids.etat.text
+                    nation = self.ids.nation.text
+                    moyenne = self.ids.moyenne.text
+                    bacc_anne = self.ids.bacc_annee.text
+
+                    host = MDApp.get_running_app().HOST
+                    token = MDApp.get_running_app().TOKEN
+                    uuid_mention = self.selected_mention
+                    uuid_parcours = self.selected_parcours
+                    semestre_petit = MDApp.get_running_app().get_semestre_petit(self.selected_semestre)
+                    semestre_grand = MDApp.get_running_app().get_semestre_grand(self.selected_semestre)
+                    url_enreg: str = f'http://{host}/api/v1/ancien_etudiants/update_etudiant/'
+                    response = update_etudiant(url_enreg, annee, token, num_carte, nom, prenom, sexe, date_naiss,
+                                               lieu_naiss,
+                                               nation, adresse, num_cin, date_cin, lieu_cin, quintance,
+                                               date_quintance,
+                                               montant,
+                                               photo, etat, moyenne, uuid_mention, uuid_parcours, bacc_anne,
+                                               semestre_petit,
+                                               semestre_grand)
+                if response:
+                    if response[1] == 200:
+                        self.reset_champs()
+                        MDApp.get_running_app().ALL_ETUDIANT = response[0]
+                        MDApp.get_running_app().root.current = 'Reinscription'
+                    elif response[1] == 400:
+                        toast(str(response[0]))
+                    else:
+                        toast(str(response))
             else:
-                toast("Sélectioner d'abord l'année universitaires")
+                toast("Sélectioner d'abord le(s) semestre(s)")
         else:
-            toast("Numéro carte déjà inscrit")
+            toast("Sélectioner d'abord l'année universitaires")
 
     def get_all_mention(self):
         mention = MDApp.get_running_app().ALL_MENTION
@@ -376,3 +510,11 @@ class ReinscriptionAddScreen(Screen):
                 self.selected_semestre.append(self.list_semestre[index])
         return self.selected_semestre
 
+    def set_semestre(self, semestre: list):
+        self.check_box = self.license + self.master_one + self.master_two
+        if len(semestre) != 0:
+            for sems in semestre:
+                if len(sems) != 0:
+                    indice: int = int(sems[1:len(sems)])
+                    print(indice)
+                    self.check_box[indice - 1].active = True
