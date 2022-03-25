@@ -73,9 +73,7 @@ class LoginScreen(Screen):
 
         if len(email) != 0 and len(password) != 0:
             self.ids.spinner.active = True
-            response = {}
             response = login_post(url_login, email, password)
-            # response["access_token"] = "blablabla"
             sleep(1)
             if response:
                 if response[1] == 200:

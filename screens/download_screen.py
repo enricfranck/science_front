@@ -25,7 +25,7 @@ class DownloadScreen(Screen):
         self.file_manager = MDFileManager(
             exit_manager=self.exit_manager,
             select_path=self.select_path,
-            preview=True,
+            # preview=True,
         )
 
     def file_manager_open(self):

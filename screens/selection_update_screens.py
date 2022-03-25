@@ -1,4 +1,5 @@
 from kivy.metrics import dp
+from kivy.utils import get_color_from_hex
 from kivymd.app import MDApp
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.properties import ObjectProperty, StringProperty
@@ -327,7 +328,17 @@ class SelectionUpdateScreen(Screen):
         self.ids.date_cin.text = str(value)
 
     def show_date_picker_cin(self, ):
-        date_dialog = MDDatePicker(min_year=1980, max_year=2030)
+        date_dialog = MDDatePicker(
+            min_year=1980,
+            max_year=2030,
+            primary_color=get_color_from_hex("#72225b"),
+            accent_color=get_color_from_hex("#5d1a4a"),
+            selector_color=get_color_from_hex("#e93f39"),
+            text_toolbar_color=get_color_from_hex("#cccccc"),
+            text_color="#ffffff",
+            text_current_color=get_color_from_hex("#e93f39"),
+            input_field_background_color=(1, 1, 1, 0.2),
+        )
         date_dialog.bind(on_save=self.on_save_cin, on_cancel=self.on_cancel)
         date_dialog.open()
 
@@ -337,7 +348,15 @@ class SelectionUpdateScreen(Screen):
         self.ids.date_naiss.text = str(value)
 
     def show_date_picker_naiss(self):
-        date_dialog = MDDatePicker(min_year=1980, max_year=2030)
+        date_dialog = MDDatePicker(min_year=1980,
+                                   max_year=2030,
+                                   primary_color=get_color_from_hex("#72225b"),
+                                   accent_color=get_color_from_hex("#5d1a4a"),
+                                   selector_color=get_color_from_hex("#e93f39"),
+                                   text_toolbar_color=get_color_from_hex("#cccccc"),
+                                   text_color="#ffffff",
+                                   text_current_color=get_color_from_hex("#e93f39"),
+                                   input_field_background_color=(1, 1, 1, 0.2), )
         date_dialog.bind(on_save=self.on_save_naiss, on_cancel=self.on_cancel)
         date_dialog.open()
 
@@ -347,6 +366,14 @@ class SelectionUpdateScreen(Screen):
         self.ids.date_quintance.text = str(value)
 
     def show_date_picker_quint(self):
-        date_dialog = MDDatePicker(min_year=1980, max_year=2030)
+        date_dialog = MDDatePicker(min_year=1980,
+                                   max_year=2030,
+                                   primary_color=get_color_from_hex("#72225b"),
+                                   accent_color=get_color_from_hex("#5d1a4a"),
+                                   selector_color=get_color_from_hex("#e93f39"),
+                                   text_toolbar_color=get_color_from_hex("#cccccc"),
+                                   text_color="#ffffff",
+                                   text_current_color=get_color_from_hex("#e93f39"),
+                                   input_field_background_color=(1, 1, 1, 0.2), )
         date_dialog.bind(on_save=self.on_save_quint, on_cancel=self.on_cancel)
         date_dialog.open()
