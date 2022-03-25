@@ -1,5 +1,6 @@
 /venv
 .env
+/.idea
 /screens/__pycache__
 /all_requests/__pycache__
 /brouillon
@@ -9,3 +10,4 @@
 /dist
 *.spec
 *.pdf
+image.jpg
