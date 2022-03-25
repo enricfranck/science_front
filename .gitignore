@@ -1,9 +1,9 @@
 /venv
 .env
-screens/__pycache__
-brouillon/
+/screens/__pycache__
+/brouillon
 /__pycache__
-__pycache__/
 /build
 /dist
 *.spec
+*.pdf

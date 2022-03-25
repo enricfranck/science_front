@@ -117,7 +117,7 @@ class ScienceApp(MDApp):
     NUM_CARTE: str = ""
     NUM_SELECT: str = ""
     MENTION: str = ""
-    HOST: str = os.getenv("host")
+    HOST: str = "192.168.88.30"
     IS_INITIALISE = False
     TITRE_FILE: str = ""
     PARENT: str = ""
