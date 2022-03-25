@@ -99,8 +99,8 @@ class LoginScreen(Screen):
                             MDApp.get_running_app().get_all_users()
                         else:
                             # MDApp.get_running_app().root.current = 'Selection'
-                            MDApp.get_running_app().root.current = 'Reinscription'
-                            # MDApp.get_running_app().root.current = 'NoteAdd'
+                            # MDApp.get_running_app().root.current = 'Reinscription'
+                            MDApp.get_running_app().root.current = 'Main'
                 elif response[1] == 400:
                     self.ids.spinner.active = False
                     MDApp.get_running_app().show_dialog(str(response[0]['detail']))

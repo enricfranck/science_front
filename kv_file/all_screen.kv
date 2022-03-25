@@ -92,10 +92,60 @@ ScreenManager:
                         left_action_items:[["menu",lambda x: nav_drawer.set_state("toggle")]]
                         right_action_items:[["logout",lambda x: app.logout()]]
                         elevation:5
-                    Widget:
+                    MDGridLayout:
+                        spacing: 10
+                        padding: 10
+                        cols: 2
+                        rows: 2
+                        MDCard:
+                            orientation: "vertical"
+                            padding: "8dp"
+                            MDLabel:
+                                halign: "center"
+                                text: "Inscription et Sélection de dossier"
+                                theme_text_color: "Secondary"
+                                size_hint_y: None
+                                height: self.texture_size[1]
+
+                            MDSeparator:
+                                height: "1dp"
+
+                            MDLabel:
+                                text: "Body"
+                        MDCard:
+                            orientation: "vertical"
+                            padding: "8dp"
+                            MDLabel:
+                                halign: "center"
+                                text: "Réinscription"
+                                theme_text_color: "Secondary"
+                                size_hint_y: None
+                                height: self.texture_size[1]
+
+                            MDSeparator:
+                                height: "1dp"
+
+                            MDLabel:
+                                text: "Body"
+                        MDCard:
+                            orientation: "vertical"
+                            padding: "8dp"
+                            MDLabel:
+                                text: "Note"
+                                theme_text_color: "Secondary"
+                                size_hint_y: None
+                                height: self.texture_size[1]
+
+                            MDSeparator:
+                                height: "1dp"
+
+                            MDLabel:
+                                text: "Body"
+
                     
         MDNavigationDrawer:
             id:nav_drawer
+            type:'standard'
 
 <ReinscriptionScreen>:
     name: 'Reinscription'
