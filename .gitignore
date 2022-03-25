@@ -1,7 +1,9 @@
 /venv
 .env
 /screens/__pycache__
+/all_requests/__pycache__
 /brouillon
+/icons
 /__pycache__
 /build
 /dist
