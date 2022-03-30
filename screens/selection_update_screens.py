@@ -18,7 +18,6 @@ class SelectionUpdateScreen(Screen):
         self.menu_parcours = None
         self.menu_sexe = None
         self.menu_nation = None
-        self.menue_parcours = None
         self.selected_parcours = None
         self.host = None
         self.selected_mention = None
@@ -216,7 +215,7 @@ class SelectionUpdateScreen(Screen):
         self.selected_parcours = MDApp.get_running_app().read_by_key(
             MDApp.get_running_app().ALL_PARCOURS, "abreviation", text_item)[0]['uuid']
         self.ids.parcours_field.text = text_item
-        self.menue_parcours.dismiss()
+        self.menu_parcours.dismiss()
 
     def enreg_etudiant(self):
         annee = MDApp.get_running_app().ANNEE

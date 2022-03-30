@@ -8,15 +8,7 @@ from kivymd.app import MDApp
 from kivymd.uix.filemanager import MDFileManager
 
 
-def fail(req, result):
-    print("fail",req, result)
-
-
-def error(req, result):
-    print("error",req, result)
-
-
-class DownloadScreen(Screen):
+class UploadScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         Window.bind(on_keyboard=self.events)
@@ -47,13 +39,13 @@ class DownloadScreen(Screen):
             self.ids.path.text = str(path).rsplit('/', 1)[0]
 
     def exit_manager(self, *args):
-        '''Called when the user reaches the root of the directory tree.'''
+        """Called when the user reaches the root of the directory tree."""
 
         self.manager_open = False
         self.file_manager.close()
 
     def events(self, instance, keyboard, keycode, text, modifiers):
-        '''Called when buttons are pressed on the mobile device.'''
+        """Called when buttons are pressed on the mobile device."""
 
         if keyboard in (1001, 27):
             if self.manager_open:
@@ -70,23 +62,17 @@ class DownloadScreen(Screen):
     def update_progress(self, req, current_size, total_size):
         self.ids.progress_bar.value = current_size / total_size
 
-    def download_file(self):
-        url = MDApp.get_running_app().URL_DOWNLOAD
+    def upload_file(self):
+        url = MDApp.get_running_app().URL_UPLOAD
         params = MDApp.get_running_app().PARAMS
         token = MDApp.get_running_app().TOKEN
-        path = f"{self.ids.path.text}/{MDApp.get_running_app().NAME_DOWNLOAD}"
+        path = f"{self.ids.path.text}"
         headers = {'accept': 'application/json',
                    'Authorization': f'Bearer {token}'
                    }
-        if params != "":
-            url = f"{url}?{params}"
-        req = UrlRequest(url, on_success=self.success, on_failure=fail, on_error=error, on_progress=self.update_progress,
-                         chunk_size=1024, req_headers=headers, file_path=path, verify=False, method="GET")
-        req.wait()
-        return req.result
-
-    def success(self, req, result):
+        url = f"{url}?{params}"
+        req = requests.post(url=url, headers=headers, files={"uploaded_file": open(f'{path}', 'rb')})
         self.ids.path.text = ""
-        MDApp.get_running_app().PARAMS = ""
         self.back_home()
-        print('success')
+        return req.json()
+
