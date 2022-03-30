@@ -181,11 +181,11 @@ class ReinscriptionScreen(Screen):
         self.delete_etudiant.md_bg_color = (0, 0, 0, 0)
 
     def on_enter(self):
-        if not MDApp.get_running_app().IS_INITIALISE:
+        if self.initialise:
             self.load_table()
             self.init_data()
             # self.search.bind(on_text=self.serch_etudiant(self.search.text))
-            MDApp.get_running_app().IS_INITIALISE = True
+            self.initialise = False
         else:
             MDApp.get_running_app().NUM_CARTE = ""
             self.inactive_button()
@@ -249,7 +249,7 @@ class ReinscriptionScreen(Screen):
     def menu_calback_mention(self, text_item):
         mention = MDApp.get_running_app().read_by_key(
             MDApp.get_running_app().ALL_MENTION, 'title', text_item)[0]['uuid']
-        if MDApp.get_running_app().MENTION != mention:
+        if MDApp.get_running_app().MENTION != mention or not self.initialise:
             MDApp.get_running_app().MENTION = mention
             MDApp.get_running_app().get_list_parcours()
             self.menu_parcours = MDDropdownMenu(
@@ -434,6 +434,7 @@ class ReinscriptionScreen(Screen):
 
     def back_main(self):
         MDApp.get_running_app().root.current = 'Main'
+        MDApp.get_running_app().IS_INITIALISE = False
 
     def add_new_etudiant(seld):
         MDApp.get_running_app().REINSCRIPTION_ACTION_TYPE = "ADD"

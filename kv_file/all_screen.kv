@@ -100,48 +100,83 @@ ScreenManager:
                         MDCard:
                             orientation: "vertical"
                             padding: "8dp"
-                            MDLabel:
-                                halign: "center"
-                                text: "Inscription et Sélection de dossier"
-                                theme_text_color: "Secondary"
-                                size_hint_y: None
-                                height: self.texture_size[1]
+                            MDRectangleFlatButton:
+                                text: "Séléction des dossier et inscription"
+                                pos_hint: {"center_x": .5, "center_y": .5}
+                                theme_text_color: "Custom"
+                                text_color: 1, 1, 1, 1
+                                line_color: 0, 0, 0, 0
+                                on_press: root.back_select()
 
                             MDSeparator:
                                 height: "1dp"
 
-                            MDLabel:
-                                text: "Body"
+                            FitImage:
+                                id: bg_image
+                                source: "images/logo_science.jpg"
+                                size_hint: .5, .5
+                                pos_hint: {"center_x": .5, "center_y": .5}
+                                radius: 10, 10, 10, 10
                         MDCard:
                             orientation: "vertical"
                             padding: "8dp"
-                            MDLabel:
-                                halign: "center"
+                            MDRectangleFlatButton:
                                 text: "Réinscription"
-                                theme_text_color: "Secondary"
-                                size_hint_y: None
-                                height: self.texture_size[1]
+                                pos_hint: {"center_x": .5, "center_y": .5}
+                                theme_text_color: "Custom"
+                                text_color: 1, 1, 1, 1
+                                line_color: 0, 0, 0, 0
+                                on_press: root.back_reins()
 
                             MDSeparator:
                                 height: "1dp"
 
-                            MDLabel:
-                                text: "Body"
+                            FitImage:
+                                id: bg_image
+                                source: "images/logo_science.jpg"
+                                size_hint: .5, .5
+                                pos_hint: {"center_x": .5, "center_y": .5}
+                                radius: 10, 10, 10, 10
+
                         MDCard:
                             orientation: "vertical"
                             padding: "8dp"
-                            MDLabel:
-                                text: "Note"
-                                theme_text_color: "Secondary"
-                                size_hint_y: None
-                                height: self.texture_size[1]
+                            MDRectangleFlatButton:
+                                text: "Gestion des Notes"
+                                pos_hint: {"center_x": .5, "center_y": .5}
+                                theme_text_color: "Custom"
+                                text_color: 1, 1, 1, 1
+                                line_color: 0, 0, 0, 0
+                                on_press: root.back_notes()
 
                             MDSeparator:
                                 height: "1dp"
 
-                            MDLabel:
-                                text: "Body"
+                            FitImage:
+                                id: bg_image
+                                source: "images/logo_science.jpg"
+                                size_hint: .5, .5
+                                pos_hint: {"center_x": .5, "center_y": .5}
+                                radius: 10, 10, 10, 10
+                        MDCard:
+                            orientation: "vertical"
+                            padding: "8dp"
+                            MDRectangleFlatButton:
+                                text: "Service scolarité"
+                                pos_hint: {"center_x": .5, "center_y": .5}
+                                theme_text_color: "Custom"
+                                text_color: 1, 1, 1, 1
+                                line_color: 0, 0, 0, 0
 
+                            MDSeparator:
+                                height: "1dp"
+
+                            FitImage:
+                                id: bg_image
+                                source: "images/logo_science.jpg"
+                                size_hint: .5, .5
+                                pos_hint: {"center_x": .5, "center_y": .5}
+                                radius: 10, 10, 10, 10
                     
         MDNavigationDrawer:
             id:nav_drawer

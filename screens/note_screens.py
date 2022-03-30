@@ -94,6 +94,9 @@ class NoteScreen(Screen):
         self.ids.annee.text = MDApp.get_running_app().ALL_ANNEE[0]['title']
         MDApp.get_running_app().ANNEE = self.ids.annee.text
 
+    def back_home(self):
+        MDApp.get_running_app().root.current = 'Main'
+
     def load_table(self):
         """
         This methode is use for load the data table

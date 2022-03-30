@@ -11,3 +11,12 @@ class MainScreen(Screen):
         password = self.ids.password.text
         print(email, password)
 
+    def back_select(self):
+        MDApp.get_running_app().root.current = 'Selection'
+
+    def back_reins(self):
+        MDApp.get_running_app().root.current = 'Reinscription'
+
+    def back_notes(self):
+        MDApp.get_running_app().root.current = 'Note'
+

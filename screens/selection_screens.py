@@ -69,16 +69,6 @@ class SelectionScreen(Screen):
             width_mult=4,
         )
 
-        titre = ['Étudiant inscrit', 'Bourse passant', 'Bourse rédoublant']
-        menu_list = [
-            {
-                "viewclass": "OneLineListItem",
-                "text": f"{i}",
-                "height": dp(50),
-                "on_release": lambda x=f"{i}": self.menu_calback_list(x),
-            } for i in titre
-        ]
-
         self.titre = MDLabel(text="Liste des étudiants:",
                              pos_hint={'center_y': 0.95, 'center_x': 0.5},
                              text_size="12dp",
@@ -136,14 +126,17 @@ class SelectionScreen(Screen):
         return layout
 
     def on_enter(self):
-        if not MDApp.get_running_app().IS_INITIALISE:
+        if self.initialise:
             self.load_table()
             self.init_data()
-            MDApp.get_running_app().IS_INITIALISE = True
+            self.initialise = False
         else:
             MDApp.get_running_app().NUM_CARTE = ""
             self.inactive_button()
         self.data_tables.row_data = self.transforme_data(MDApp.get_running_app().ALL_ETUDIANT_SELECTIONNER)
+
+    def back_main(self):
+        MDApp.get_running_app().root.current = 'Main'
 
     def active_button(self, *args):
         self.edit_etudiant.opacity = 1
@@ -223,7 +216,7 @@ class SelectionScreen(Screen):
     def menu_calback_mention(self, text_item):
         mention = MDApp.get_running_app().read_by_key(
             MDApp.get_running_app().ALL_MENTION, 'title', text_item)[0]['uuid']
-        if MDApp.get_running_app().MENTION != mention:
+        if MDApp.get_running_app().MENTION != mention or not self.initialise:
             MDApp.get_running_app().MENTION = mention
             MDApp.get_running_app().get_list_parcours()
             self.initialise = True
