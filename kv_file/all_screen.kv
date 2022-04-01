@@ -1768,7 +1768,7 @@ ScreenManager:
             title: 'Gestion des notes'
             type:'bottom'
             left_action_items:[["keyboard-backspace",lambda x: root.back_home()]]
-            right_action_items:[["logout",lambda x: app.logout()]]
+            right_action_items:[["download-circle",lambda x: root.download_note()],["logout",lambda x: app.logout()]]
             elevation:5
             mode:"center"
             icon:"plus"

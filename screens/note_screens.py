@@ -409,3 +409,10 @@ class NoteScreen(Screen):
         MDApp.get_running_app().PARENT = "Note"
         if len(annee) != 0:
             MDApp.get_running_app().root.current = 'download_file'
+
+    def download_note(self):
+        annee = MDApp.get_running_app().ANNEE
+        schemas = "anne_" + annee[0:4] + "_" + annee[5:9]
+        values = {'schema': f'{schemas}', 'session': f'{self.ids.session.text}',
+                  'semestre': f'{self.ids.semestre.text}', 'uuid_parcours': MDApp.get_running_app().PARCOURS_SELECTED,
+                  'value_ue': f'{self.ids.matier.text[3:len(self.ids.matier.text)]}'}

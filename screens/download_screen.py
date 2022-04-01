@@ -72,14 +72,11 @@ class DownloadScreen(Screen):
 
     def download_file(self):
         url = MDApp.get_running_app().URL_DOWNLOAD
-        params = MDApp.get_running_app().PARAMS
         token = MDApp.get_running_app().TOKEN
         path = f"{self.ids.path.text}/{MDApp.get_running_app().NAME_DOWNLOAD}"
         headers = {'accept': 'application/json',
                    'Authorization': f'Bearer {token}'
                    }
-        if params != "":
-            url = f"{url}?{params}"
         req = UrlRequest(url, on_success=self.success, on_failure=fail, on_error=error, on_progress=self.update_progress,
                          chunk_size=1024, req_headers=headers, file_path=path, verify=False, method="GET")
         req.wait()

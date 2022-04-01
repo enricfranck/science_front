@@ -172,11 +172,10 @@ class ScienceApp(MDApp):
                     MDFlatButton(
                         text="Ok",
                         text_color=self.theme_cls.primary_color,
-                        # on_release=""
+                        on_release=self.close
                     ),
                 ],
             )
-
         self.dialog.open()
 
     def close(self, *args):
