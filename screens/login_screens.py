@@ -1,5 +1,5 @@
 import sys
-from kivy.clock import mainthread
+from kivy.clock import mainthread, Clock
 from functools import partial
 from pathlib import Path
 from time import sleep, time
@@ -65,34 +65,39 @@ class LoginScreen(Screen):
 
     def __init__(self, **kw):
         super().__init__(**kw)
+        self.response = None
         self.host = MDApp.get_running_app().HOST
         self.token = ""
 
-    @mainthread
-    def spinner_toggle(self):
+    def thread_login_(self):
+        Clock.schedule_interval(self.spinner_toggle, .05)
+        self.login()
+
+    def reset_champ(self):
+        self.ids.email.text = ""
+        self.ids.password.text = ""
+
+    # @mainthread
+    def spinner_toggle(self, *args):
         if not self.ids.spinner.active:
             self.ids.spinner.active = True
         else:
             self.ids.spinner.active = False
 
     def thread_login(self):
-        self.spinner_toggle()
         threading.Thread(target=(
-            self.login)).start()
-        # self.spinner_toggle()
+            self.thread_login_)).start()
 
+    @mainthread
     def login(self):
         email = self.ids.email.text
         password = self.ids.password.text
         url_login: str = f"http://{self.host}/api/v1/login/access-token"
-        sleep(1)
         if len(email) != 0 and len(password) != 0:
-            self.ids.spinner.active = True
             response = login_post(url_login, email, password)
             if response:
                 if response[1] == 200:
                     if "access_token" in response[0]:
-                        self.ids.spinner.active = False
                         MDApp.get_running_app().TOKEN = response[0]["access_token"]
                         self.token = MDApp.get_running_app().TOKEN
                         MDApp.get_running_app().ALL_UUID_MENTION = response[0]["mention"]
@@ -106,14 +111,6 @@ class LoginScreen(Screen):
                             processes.append(executor.submit(get_ec, MDApp.get_running_app().ALL_ANNEE[0]['title']))
 
                         print(f'Time taken: {time() - start}')
-
-                        # if len(MDApp.get_running_app().ALL_ANNEE) != 0:
-                        #     MDApp.get_running_app().ALL_UE = \
-                        #         MDApp.get_running_app().get_all_ue(annee=MDApp.get_running_app().ALL_ANNEE[0]['title'])
-                        #     MDApp.get_running_app().ALL_EC = \
-                        #         MDApp.get_running_app().get_all_ec(annee=MDApp.get_running_app().ALL_ANNEE[0]['title'])
-                        self.ids.email.text = ""
-                        self.ids.password.text = ""
                         if response[0]['role'] == "supperuser":
                             MDApp.get_running_app().root.current = 'Public'
 
@@ -126,6 +123,7 @@ class LoginScreen(Screen):
                             print(f'Time taken: {time() - start}')
                         else:
                             MDApp.get_running_app().root.current = 'Main'
+                    self.reset_champ()
                 elif response[1] == 400:
                     MDApp.get_running_app().show_dialog(str(response[0]['detail']))
                     self.ids.spinner.active = False

@@ -388,7 +388,7 @@ class NoteScreen(Screen):
 
     def get_all_parcours(self):
         parcours = MDApp.get_running_app().get_list_parcours()
-        print("First",parcours)
+        print("First", parcours)
         menu_items = [
             {
                 "viewclass": "OneLineListItem",
@@ -472,7 +472,7 @@ class NoteScreen(Screen):
             self.spinner_toggle()
             self.process_parcours_toogle()
             self.spinner_toggle()
-            
+
             self.menu_parcours = MDDropdownMenu(
                 caller=self.ids.parcours,
                 items=self.get_all_parcours(),
