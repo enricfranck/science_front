@@ -1,3 +1,4 @@
+
 import os
 import secrets
 import string
@@ -13,6 +14,7 @@ from kivymd.toast import toast
 from kivymd.uix.button import MDFlatButton
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.picker import MDDatePicker
+from kivymd.uix.boxlayout import MDBoxLayout
 
 from all_requests import request_utils
 from screens.download_screen import DownloadScreen
@@ -105,7 +107,6 @@ class NoteScreen(NoteScreen):
 class NoteAddScreen(NoteAddScreen):
     pass
 
-
 class ScienceApp(MDApp):
     dialog = None
     TOKEN: str = ""
@@ -176,6 +177,7 @@ class ScienceApp(MDApp):
                     ),
                 ],
             )
+
         self.dialog.open()
 
     def close(self, *args):
@@ -363,6 +365,7 @@ class ScienceApp(MDApp):
                       "mention": MDApp.get_running_app().read_by_key(MDApp.get_running_app().ALL_MENTION,
                                                                      "uuid", droit["uuid_mention"])[0]["title"]}
             all_droit.append(droit_)
+        print(all_droit)
         MDApp.get_running_app().ALL_DROIT = all_droit
 
     def get_all_users(self):
@@ -414,7 +417,7 @@ class ScienceApp(MDApp):
         data.append(tuple(data_vide))
         return data
 
-    def logout(self):
+    def logout(seld):
         MDApp.get_running_app().root.current = 'Login'
         MDApp.get_running_app().TOKEN = ""
         MDApp.get_running_app().TITRE_FILE = ""

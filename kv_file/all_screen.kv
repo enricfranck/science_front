@@ -14,6 +14,39 @@ ScreenManager:
     NoteScreen:
     NoteAddScreen:
 
+<Content>
+    orientation: "vertical"
+    spacing: "8dp"
+    size_hint_y: None
+    height: "40dp"
+    md_bg_color: (1,1,1,1)
+    MDCard:
+        size_hint_y: None
+        height: "40dp"
+        haling: "center"
+        orientation: "horizontal"
+        MDSpinner:
+            id:spinner
+            size_hint: None, None
+            size: dp(20), dp(20)
+            pos_hint: {"center_y": 0.5,"center_x": 0.5}
+            active: False
+        MDFlatButton:
+            text:"Valider" if not check.active else "Supprimer"
+            theme_text_color:"Custom"
+            on_release:
+                root.spinner_toggle()
+                root.process_enreg_semestre()
+                root.spinner_toggle()
+        MDCheckbox:
+            id:check
+            size: 20,20
+            size_hint:None, None
+            pos_hint: {"center_y": 0.5,"center_x": 0.5}
+            active: False
+            disabled: True
+            opacity: 0
+
 <LoginScreen>:
     id: login_screen
     name: 'Login'
@@ -40,7 +73,7 @@ ScreenManager:
             size_hint: None, None
             size: dp(20), dp(20)
             pos_hint: {'center_x': 0.5}
-            active:False
+            active: False
         
         MDTextField:
             id: email
@@ -74,7 +107,10 @@ ScreenManager:
             halign:'center'
             MDRectangleFlatButton:
                 text: 'login'
-                on_press: root.login()
+                on_press:
+                    root.spinner_toggle()
+                    root.thread_login()
+                    root.spinner_toggle()
 
             MDRectangleFlatButton:
                 text: 'auto'

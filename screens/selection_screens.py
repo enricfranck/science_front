@@ -17,6 +17,7 @@ from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.spinner import MDSpinner
 
 from all_requests import request_etudiants
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
 class SelectionScreen(Screen):
@@ -91,7 +92,8 @@ class SelectionScreen(Screen):
 
         self.spinner = MDSpinner(
             pos_hint={'center_y': 0.5, 'center_x': 0.5},
-            size=(dp(46), dp(46)),
+            size_hint=(None, None),
+            size=(dp(30), dp(30)),
             active=False
         )
 
@@ -216,27 +218,44 @@ class SelectionScreen(Screen):
     def menu_calback_mention(self, text_item):
         mention = MDApp.get_running_app().read_by_key(
             MDApp.get_running_app().ALL_MENTION, 'title', text_item)[0]['uuid']
-        if MDApp.get_running_app().MENTION != mention or not self.initialise:
+        if (MDApp.get_running_app().MENTION != mention or not self.initialise) and self.annee.text != "":
+            start = time.time()
             MDApp.get_running_app().MENTION = mention
-            MDApp.get_running_app().get_list_parcours()
+            self.spinner_toggle()
+            self.process_spinner_toogle()
+            self.spinner_toggle()
             self.initialise = True
-        if self.initialise:
-            if self.annee.text != "":
-                self.spinner_toggle()
-                self.process_spiner()
-                self.spinner_toggle()
             self.ids.mention_label.text = text_item
             self.menu_mention.dismiss()
+            print(f'Time taken: {time.time() - start}')
         self.menu_mention.dismiss()
 
     def read_mention_by_title(self, data: list, titre: str):
         return list(filter(lambda mention: mention["title"].lower() == titre.lower(), data))
 
     def insert_data(self):
-        time.sleep(2)
-        self.get_data()
         self.data_tables.row_data = self.transforme_data(MDApp.get_running_app().ALL_ETUDIANT_SELECTIONNER)
+
+    @mainthread
+    def spinner_toggle(self):
+        if not self.spinner.active:
+            self.spinner.active = True
+        else:
+            self.spinner.active = False
+
+    def process_spiner(self):
+        time.sleep(2)
+        processes = []
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            processes.append(executor.submit(get_parcours))
+            processes.append(executor.submit(self.get_data))
+        self.insert_data()
         self.spinner_toggle()
+
+    def process_spinner_toogle(self):
+        self.spinner_toggle()
+        threading.Thread(target=(
+            self.process_spiner)).start()
 
     def get_data(self):
         self.initialise = False
@@ -248,19 +267,6 @@ class SelectionScreen(Screen):
             url_etudiant,
             self.annee.text,
             uuid_mention, token)
-
-    def process_spiner(self):
-        self.spinner_toggle()
-        threading.Thread(target=(
-            self.insert_data())).start()
-
-    @mainthread
-    def spinner_toggle(self):
-        print('Spinner Toggle')
-        if not self.spinner.active:
-            self.spinner.active = True
-        else:
-            self.spinner.active = False
 
     def menu_calback_annee(self, text_item):
         self.annee.text = f"{text_item}"
@@ -338,7 +344,6 @@ class SelectionScreen(Screen):
         num_select = MDApp.get_running_app().NUM_SELECT
         etudiant = MDApp.get_running_app().read_by_key(MDApp.get_running_app().ALL_ETUDIANT_SELECTIONNER, "num_select",
                                                        num_select)[0]["num_quitance"]
-        print(etudiant)
         url = f"http://{host}/api/v1/nouveau_etudiants/"
         if str(etudiant) == "" or str(etudiant) == "None":
             if num_select != "":
@@ -355,3 +360,7 @@ class SelectionScreen(Screen):
 
     def cancel_dialog(self, *args):
         self.dialog.dismiss()
+
+
+def get_parcours():
+    MDApp.get_running_app().get_list_parcours()

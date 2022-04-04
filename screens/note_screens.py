@@ -1,5 +1,7 @@
 import urllib
+import threading
 
+from kivy.clock import mainthread
 from kivy.metrics import dp
 from kivy.uix.anchorlayout import AnchorLayout
 from kivymd.app import MDApp
@@ -7,18 +9,103 @@ from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.properties import ObjectProperty, StringProperty
 from kivymd.toast import toast
 from kivymd.uix.button import MDIconButton
+from kivymd.uix.button import MDFlatButton
 from kivymd.uix.datatables import MDDataTable
 from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.spinner import MDSpinner
+import time
+import json
+from kivymd.uix.dialog import MDDialog
 
-from all_requests.request_utils import create_with_params, get_with_params
+from all_requests.request_utils import create_with_params, get_with_params, create_json
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from kivymd.uix.boxlayout import MDBoxLayout
+
+
+class Content(MDBoxLayout):
+
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        self.process_spinner_toogle()
+
+    @mainthread
+    def spinner_toggle(self):
+        print(self.ids.spinner.active)
+        if not self.ids.spinner.active:
+            self.ids.spinner.active = True
+        else:
+            self.ids.spinner.active = False
+
+    def active_check(self):
+        annee = MDApp.get_running_app().ANNEE
+        schemas = "anne_" + annee[0:4] + "_" + annee[5:9]
+        host = MDApp.get_running_app().HOST
+        url = f"http://{host}/api/v1/semestre_valide/by_num_carte"
+        key_params = ["schema", "num_carte"]
+        value_params = [schemas, MDApp.get_running_app().NUM_CARTE]
+        token = MDApp.get_running_app().TOKEN
+        response = get_with_params(url, key_params, value_params, token)
+        if response:
+            if response[1] == 200:
+                if MDApp.get_running_app().SEMESTRE_SELECTED in response[0]["semestre"]:
+                    self.ids.check.active = True
+            elif response[1] == 400:
+                print(response[0]['detail'])
+            else:
+                print(str(response))
+
+    def enreg_semestre(self):
+        annee = MDApp.get_running_app().ANNEE
+        schemas = "anne_" + annee[0:4] + "_" + annee[5:9]
+        host = MDApp.get_running_app().HOST
+        url = f"http://{host}/api/v1/semestre_valide/"
+        key_params = ["schema"]
+        value_params = [schemas]
+
+        validation_key = ["uuid", "num_carte", "semestre"]
+        validation_value = ["3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                            MDApp.get_running_app().NUM_CARTE,
+                            [MDApp.get_running_app().SEMESTRE_SELECTED]]
+        token = MDApp.get_running_app().TOKEN
+        validation = create_json(validation_key, validation_value)
+        payload = json.dumps(validation)
+        response = create_with_params(url, key_params, value_params, token, payload)
+        if response:
+            if response[1] == 200:
+                if response[0]["semestre"] is not None:
+                    if MDApp.get_running_app().SEMESTRE_SELECTED in response[0]["semestre"]:
+                        self.ids.check.active = True
+                    else:
+                        self.ids.check.active = False
+                else:
+                    self.ids.check.active = False
+
+            elif response[1] == 400:
+                print(response[0]['detail'])
+            else:
+                print(str(response))
+        self.spinner_toggle()
+
+    def process_spinner_toogle(self):
+        threading.Thread(target=(
+            self.active_check)).start()
+
+    def process_enreg_semestre(self):
+        self.spinner_toggle()
+        threading.Thread(target=(
+            self.enreg_semestre)).start()
 
 
 class NoteScreen(Screen):
     screenManager = ObjectProperty(None)
+    dialog = None
 
     def __init__(self, **kw):
         super().__init__(**kw)
+        self.content = None
+        self.semestre = None
+        self.num = None
+        self.menu_condition = None
         self.data = None
         self.nombre = None
         self.selected_mention = None
@@ -43,11 +130,6 @@ class NoteScreen(Screen):
         pass
 
     def init_data(self):
-        self.spinner = MDSpinner(
-            pos_hint={'center_y': 0.5, 'center_x': 0.5},
-            size=(dp(46), dp(46)),
-            active=False
-        )
 
         self.menu_mention = MDDropdownMenu(
             caller=self.ids.mention,
@@ -61,11 +143,11 @@ class NoteScreen(Screen):
             width_mult=4,
         )
 
-        self.menu_parcours = MDDropdownMenu(
-            caller=self.ids.parcours,
-            items=self.get_all_parcours(),
-            width_mult=4,
-        )
+        # self.menu_parcours = MDDropdownMenu(
+        #     caller=self.ids.parcours,
+        #     items=self.get_all_parcours(),
+        #     width_mult=4,
+        # )
 
         self.menu_semestre = MDDropdownMenu(
             caller=self.ids.mention,
@@ -91,6 +173,15 @@ class NoteScreen(Screen):
             width_mult=4,
         )
 
+        self.spinner = MDSpinner(
+            pos_hint={'center_y': 0.5, 'center_x': 0.5},
+            size_hint=(None, None),
+            size=(dp(30), dp(30)),
+            active=False
+        )
+
+        self.add_widget(self.spinner)
+
         self.ids.annee.text = MDApp.get_running_app().ALL_ANNEE[0]['title']
         MDApp.get_running_app().ANNEE = self.ids.annee.text
 
@@ -108,9 +199,20 @@ class NoteScreen(Screen):
             column_data=[],
         )
 
-        # self.data_tables.bind(on_row_press=self.row_selected)
         self.add_widget(self.data_tables)
         return self.layout
+
+    def row_selected(self, table, row):
+        start_index, end_index = row.table.recycle_data[row.index]["range"]
+        num_carte = row.table.recycle_data[start_index + 1]["text"]
+        semestre = self.ids.semestre.text
+        if num_carte != "":
+            MDApp.get_running_app().NUM_CARTE = num_carte
+            MDApp.get_running_app().SEMESTRE_SELECTED = semestre
+            # self.spinner_toggle()
+            # self.process_spinner_dialog()
+            # self.spinner_toggle()
+            self.show_confirmation_dialog()
 
     def create_list_tuple(self, list_data: list):
         response = [("N°", dp(10))]
@@ -141,7 +243,7 @@ class NoteScreen(Screen):
             row_data=list_row,
         )
         self.add_widget(self.data_tables)
-        # self.data_tables.bind(on_row_press=self.row_selected)
+        self.data_tables.bind(on_row_press=self.row_selected)
         return self.layout
 
     def get_all_session(self):
@@ -183,8 +285,10 @@ class NoteScreen(Screen):
     def menu_calback_annee(self, text_item):
         if MDApp.get_running_app().ANNEE != text_item:
             MDApp.get_running_app().ANNEE = text_item
-            MDApp.get_running_app().ALL_UE = MDApp.get_running_app().get_all_ue(MDApp.get_running_app().ANNEE)
-            MDApp.get_running_app().ALL_EC = MDApp.get_running_app().get_all_ec(MDApp.get_running_app().ANNEE)
+            processes = []
+            with ThreadPoolExecutor(max_workers=10) as executor:
+                processes.append(executor.submit(get_ue, MDApp.get_running_app().ANNEE))
+                processes.append(executor.submit(get_ec, MDApp.get_running_app().ANNEE))
             self.complet_table()
         self.ids.annee.text = text_item
         self.menu_annee.dismiss()
@@ -219,7 +323,6 @@ class NoteScreen(Screen):
 
     def get_etudiants(self, *args):
         if self.ids.parcours.text != "" and self.ids.semestre.text != "":
-            self.get_all_colums()
             annee = MDApp.get_running_app().ANNEE
             schemas = "anne_" + annee[0:4] + "_" + annee[5:9]
             host = MDApp.get_running_app().HOST
@@ -232,12 +335,14 @@ class NoteScreen(Screen):
             if response:
                 if response[1] == 200:
                     self.data = list(response[0])
-                    data = MDApp.get_running_app().transform_data(self.all_column, self.data)
-                    self.transform_table(self.create_list_tuple(self.all_column), data)
                 elif response[1] == 400:
                     toast(response[0]['detail'])
                 else:
                     toast(str(response))
+
+    def insert_data(self):
+        data = MDApp.get_running_app().transform_data(self.all_column, self.data)
+        self.transform_table(self.create_list_tuple(self.all_column), data)
 
     def get_all_semestre(self):
         semestre = MDApp.get_running_app().ALL_SEMESTRE
@@ -255,7 +360,9 @@ class NoteScreen(Screen):
         MDApp.get_running_app().SEMESTRE_SELECTED = text_item
         self.ids.semestre.text = text_item
         if self.ids.parcours.text != "" and self.ids.semestre.text != "":
-            self.get_etudiants()
+            self.spinner_toggle()
+            self.process_spinner_toogle()
+            self.spinner_toggle()
         self.menu_semestre.dismiss()
 
     def menu_calback_condition(self, text_item):
@@ -280,7 +387,8 @@ class NoteScreen(Screen):
         self.menu_condition.dismiss()
 
     def get_all_parcours(self):
-        parcours = MDApp.get_running_app().ALL_PARCOURS
+        parcours = MDApp.get_running_app().get_list_parcours()
+        print("First",parcours)
         menu_items = [
             {
                 "viewclass": "OneLineListItem",
@@ -297,8 +405,50 @@ class NoteScreen(Screen):
         MDApp.get_running_app().PARCOURS_SELECTED = self.selected_parcours
         self.ids.parcours.text = text_item
         if self.ids.parcours.text != "" and self.ids.semestre.text != "":
-            self.get_etudiants()
+            self.spinner_toggle()
+            self.process_spinner_toogle()
+            self.spinner_toggle()
         self.menu_parcours.dismiss()
+
+    @mainthread
+    def spinner_toggle(self):
+        print(self.spinner.active)
+        if not self.spinner.active:
+            self.spinner.active = True
+        else:
+            self.spinner.active = False
+
+    def process_spiner(self):
+        processes = []
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            processes.append(executor.submit(self.get_all_colums))
+            processes.append(executor.submit(self.get_etudiants))
+        self.insert_data()
+        self.spinner_toggle()
+
+    def process_spinner_toogle(self):
+        self.spinner_toggle()
+        threading.Thread(target=(
+            self.process_spiner)).start()
+
+    def process_parcours(self):
+        processes = []
+        with ThreadPoolExecutor(max_workers=3) as executor:
+            processes.append(executor.submit(self.get_all_parcours))
+        self.spinner_toggle()
+
+    def process_parcours_toogle(self):
+        self.spinner_toggle()
+        threading.Thread(target=(
+            self.process_parcours)).start()
+
+    def show_spinner_dialog(self):
+        self.content = Content()
+
+    def process_spinner_dialog(self):
+        self.spinner_toggle()
+        threading.Thread(target=(
+            self.show_spinner_dialog)).start()
 
     def get_all_mention(self):
         mention = []
@@ -319,7 +469,10 @@ class NoteScreen(Screen):
             MDApp.get_running_app().read_by_key(MDApp.get_running_app().ALL_MENTION, "title", text_item)[0]['uuid']
         if MDApp.get_running_app().MENTION != self.selected_mention:
             MDApp.get_running_app().MENTION = self.selected_mention
-            MDApp.get_running_app().get_list_parcours()
+            self.spinner_toggle()
+            self.process_parcours_toogle()
+            self.spinner_toggle()
+            
             self.menu_parcours = MDDropdownMenu(
                 caller=self.ids.parcours,
                 items=self.get_all_parcours(),
@@ -412,7 +565,52 @@ class NoteScreen(Screen):
 
     def download_note(self):
         annee = MDApp.get_running_app().ANNEE
+        MDApp.get_running_app().TITRE_FILE = \
+            f"note_{self.ids.parcours.text}_{self.ids.session.text}"
         schemas = "anne_" + annee[0:4] + "_" + annee[5:9]
         values = {'schema': f'{schemas}', 'session': f'{self.ids.session.text}',
-                  'semestre': f'{self.ids.semestre.text}', 'uuid_parcours': MDApp.get_running_app().PARCOURS_SELECTED,
-                  'value_ue': f'{self.ids.matier.text[3:len(self.ids.matier.text)]}'}
+                  'uuid_parcours': MDApp.get_running_app().PARCOURS_SELECTED}
+        params = urllib.parse.urlencode(values)
+        host = MDApp.get_running_app().HOST
+        url = f"http://{host}/api/v1/save_data/get_models_notes/"
+        MDApp.get_running_app().URL_DOWNLOAD = f"{url}?{params}"
+        MDApp.get_running_app().NAME_DOWNLOAD = f"{MDApp.get_running_app().TITRE_FILE}.xslx"
+        MDApp.get_running_app().PARENT = "Note"
+        if len(annee) != 0 and self.ids.parcours.text != "":
+            MDApp.get_running_app().root.current = 'download_file'
+
+    def show_confirmation_dialog(self):
+        # if not self.dialog:
+        self.dialog = MDDialog(
+            title=f"Validation {MDApp.get_running_app().NUM_CARTE} semestre {MDApp.get_running_app().SEMESTRE_SELECTED}",
+            type="custom",
+            content_cls=Content(),
+            buttons=[
+                MDFlatButton(
+                    text="Términer",
+                    on_release=self.cancel_dialog
+                ),
+            ],
+        )
+        self.dialog.open()
+        self.spinner_toggle()
+
+    def cancel_dialog(self, *args):
+        self.dialog.dismiss()
+
+
+def get_ue(annee):
+    if len(MDApp.get_running_app().ALL_ANNEE) != 0:
+        MDApp.get_running_app().ALL_UE = \
+            MDApp.get_running_app().get_all_ue(annee=annee)
+
+
+def get_ec(anne):
+    if len(MDApp.get_running_app().ALL_ANNEE) != 0:
+        MDApp.get_running_app().ALL_EC = \
+            MDApp.get_running_app().get_all_ec(annee=anne)
+
+
+def get_parcours():
+    MDApp.get_running_app().get_list_parcours()
+    print("parcours", MDApp.get_running_app().ALL_PARCOURS)

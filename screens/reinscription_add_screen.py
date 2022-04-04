@@ -114,6 +114,10 @@ class ReinscriptionAddScreen(Screen):
         self.license = [self.s1, self.s2, self.s3, self.s4, self.s5, self.s6]
         self.master_one = [self.s7, self.s8]
         self.master_two = [self.s9, self.s10]
+
+        self.check_box = self.license + self.master_one + self.master_two
+        for check in self.check_box:
+            check.active = False
         self.menu_mention = MDDropdownMenu(
             caller=self.ids.mention_field,
             items=self.get_all_mention(),
@@ -533,7 +537,6 @@ class ReinscriptionAddScreen(Screen):
 
     def get_semestre(self) -> list:
         self.selected_semestre = []
-        self.check_box = self.license + self.master_one + self.master_two
         for index, check in enumerate(self.check_box):
             if check.active:
                 self.selected_semestre.append(self.list_semestre[index])

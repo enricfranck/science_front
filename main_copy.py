@@ -1,3 +1,4 @@
+
 import os
 import secrets
 import string
@@ -13,6 +14,7 @@ from kivymd.toast import toast
 from kivymd.uix.button import MDFlatButton
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.picker import MDDatePicker
+from kivymd.uix.boxlayout import MDBoxLayout
 
 from all_requests import request_utils
 from screens.download_screen import DownloadScreen
@@ -105,7 +107,6 @@ class NoteScreen(NoteScreen):
 class NoteAddScreen(NoteAddScreen):
     pass
 
-
 class ScienceApp(MDApp):
     dialog = None
     TOKEN: str = ""
@@ -172,7 +173,7 @@ class ScienceApp(MDApp):
                     MDFlatButton(
                         text="Ok",
                         text_color=self.theme_cls.primary_color,
-                        # on_release=""
+                        on_release=self.close
                     ),
                 ],
             )

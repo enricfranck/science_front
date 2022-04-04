@@ -1,8 +1,9 @@
 import sys
+from kivy.clock import mainthread
 from functools import partial
 from pathlib import Path
-from time import sleep
-
+from time import sleep, time
+import threading
 from dotenv import load_dotenv
 from kivy.clock import Clock
 from kivy.metrics import dp
@@ -12,6 +13,7 @@ from kivymd.app import MDApp
 from kivymd.uix.textfield import MDTextField
 
 from all_requests.request_utils import login_post
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 parent = Path(__file__).resolve().parent.parent / ""
 sys.path.append(str(parent))
@@ -66,15 +68,27 @@ class LoginScreen(Screen):
         self.host = MDApp.get_running_app().HOST
         self.token = ""
 
+    @mainthread
+    def spinner_toggle(self):
+        if not self.ids.spinner.active:
+            self.ids.spinner.active = True
+        else:
+            self.ids.spinner.active = False
+
+    def thread_login(self):
+        self.spinner_toggle()
+        threading.Thread(target=(
+            self.login)).start()
+        # self.spinner_toggle()
+
     def login(self):
         email = self.ids.email.text
         password = self.ids.password.text
         url_login: str = f"http://{self.host}/api/v1/login/access-token"
-
+        sleep(1)
         if len(email) != 0 and len(password) != 0:
             self.ids.spinner.active = True
             response = login_post(url_login, email, password)
-            sleep(1)
             if response:
                 if response[1] == 200:
                     if "access_token" in response[0]:
@@ -82,36 +96,75 @@ class LoginScreen(Screen):
                         MDApp.get_running_app().TOKEN = response[0]["access_token"]
                         self.token = MDApp.get_running_app().TOKEN
                         MDApp.get_running_app().ALL_UUID_MENTION = response[0]["mention"]
-                        MDApp.get_running_app().get_all_mention()
-                        MDApp.get_running_app().get_annee_univ()
-                        MDApp.get_running_app().get_all_droit()
-                        if len(MDApp.get_running_app().ALL_ANNEE) != 0:
-                            MDApp.get_running_app().ALL_UE = \
-                                MDApp.get_running_app().get_all_ue(annee=MDApp.get_running_app().ALL_ANNEE[0]['title'])
-                            MDApp.get_running_app().ALL_EC = \
-                                MDApp.get_running_app().get_all_ec(annee=MDApp.get_running_app().ALL_ANNEE[0]['title'])
+                        start = time()
+                        get_anne()
+                        processes = []
+                        with ThreadPoolExecutor(max_workers=10) as executor:
+                            processes.append(executor.submit(get_mention))
+                            processes.append(executor.submit(get_droit))
+                            processes.append(executor.submit(get_ue, MDApp.get_running_app().ALL_ANNEE[0]['title']))
+                            processes.append(executor.submit(get_ec, MDApp.get_running_app().ALL_ANNEE[0]['title']))
+
+                        print(f'Time taken: {time() - start}')
+
+                        # if len(MDApp.get_running_app().ALL_ANNEE) != 0:
+                        #     MDApp.get_running_app().ALL_UE = \
+                        #         MDApp.get_running_app().get_all_ue(annee=MDApp.get_running_app().ALL_ANNEE[0]['title'])
+                        #     MDApp.get_running_app().ALL_EC = \
+                        #         MDApp.get_running_app().get_all_ec(annee=MDApp.get_running_app().ALL_ANNEE[0]['title'])
                         self.ids.email.text = ""
                         self.ids.password.text = ""
                         if response[0]['role'] == "supperuser":
                             MDApp.get_running_app().root.current = 'Public'
-                            MDApp.get_running_app().get_all_parcours()
-                            MDApp.get_running_app().get_all_role()
-                            MDApp.get_running_app().get_all_users()
+
+                            start = time()
+                            processes = []
+                            with ThreadPoolExecutor(max_workers=10) as executor:
+                                processes.append(executor.submit(MDApp.get_running_app().get_all_parcours()))
+                                processes.append(executor.submit(MDApp.get_running_app().get_all_role()))
+                                processes.append(executor.submit(MDApp.get_running_app().get_all_users()))
+                            print(f'Time taken: {time() - start}')
                         else:
-                            # MDApp.get_running_app().root.current = 'Selection'
-                            # MDApp.get_running_app().root.current = 'Reinscription'
                             MDApp.get_running_app().root.current = 'Main'
                 elif response[1] == 400:
-                    self.ids.spinner.active = False
                     MDApp.get_running_app().show_dialog(str(response[0]['detail']))
-                else:
                     self.ids.spinner.active = False
+                else:
                     MDApp.get_running_app().show_dialog(str(response))
+                    self.ids.spinner.active = False
         else:
             self.ids.password.require = True
+        self.spinner_toggle()
 
     def auto_remplir(self):
         self.ids.email.text = "enricfranck@gmail.com"
         self.ids.password.text = "123"
         # self.ids.email.text = "admin@science.com"
         # self.ids.password.text = "aze135azq35sfsnf6353sfh3xb68yyp31gf68k5sf6h3s5d68jd5"
+
+    def active_spinner(self):
+        self.ids.spinner.active = True
+
+
+def get_mention():
+    MDApp.get_running_app().get_all_mention()
+
+
+def get_anne():
+    MDApp.get_running_app().get_annee_univ()
+
+
+def get_droit():
+    MDApp.get_running_app().get_all_droit()
+
+
+def get_ue(annee):
+    if len(MDApp.get_running_app().ALL_ANNEE) != 0:
+        MDApp.get_running_app().ALL_UE = \
+            MDApp.get_running_app().get_all_ue(annee=annee)
+
+
+def get_ec(anne):
+    if len(MDApp.get_running_app().ALL_ANNEE) != 0:
+        MDApp.get_running_app().ALL_EC = \
+            MDApp.get_running_app().get_all_ec(annee=anne)

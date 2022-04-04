@@ -18,6 +18,7 @@ from kivymd.uix.spinner import MDSpinner
 from kivymd.toast import toast
 
 from all_requests import request_utils, request_etudiants
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
 class ReinscriptionScreen(Screen):
@@ -26,6 +27,8 @@ class ReinscriptionScreen(Screen):
 
     def __init__(self, **kw):
         super().__init__(**kw)
+        self.all_parcours = []
+        self.spinner = None
         self.menu_etat = None
         self.menu_nation = None
         self.menu_sexe = None
@@ -35,7 +38,6 @@ class ReinscriptionScreen(Screen):
         self.all_semestre = None
         self.data_tables = None
         self.delete_etudiant = None
-        self.spinner = None
         self.edit_etudiant = None
         self.annee = None
         self.menu_semestre = None
@@ -128,7 +130,8 @@ class ReinscriptionScreen(Screen):
 
         self.spinner = MDSpinner(
             pos_hint={'center_y': 0.5, 'center_x': 0.5},
-            size=(dp(46), dp(46)),
+            size_hint=(None, None),
+            size=(dp(30), dp(30)),
             active=False
         )
 
@@ -249,37 +252,34 @@ class ReinscriptionScreen(Screen):
     def menu_calback_mention(self, text_item):
         mention = MDApp.get_running_app().read_by_key(
             MDApp.get_running_app().ALL_MENTION, 'title', text_item)[0]['uuid']
-        if MDApp.get_running_app().MENTION != mention or not self.initialise:
+        if (MDApp.get_running_app().MENTION != mention or not self.initialise) and self.annee.text != "":
+            start = time.time()
             MDApp.get_running_app().MENTION = mention
-            MDApp.get_running_app().get_list_parcours()
+            self.spinner_toggle()
+            self.process_spinner_toogle()
+            self.spinner_toggle()
+
             self.menu_parcours = MDDropdownMenu(
                 caller=self.ids.parcours_button,
                 items=self.get_all_parcours(),
                 width_mult=4,
             )
             self.initialise = True
-        if self.initialise:
-            if self.annee.text != "":
-                self.spinner_toggle()
-                self.process_spiner()
-                self.spinner_toggle()
             self.ids.mention_label.text = text_item
             self.menu_mention.dismiss()
+            print(f'Time taken: {time.time() - start}')
         self.menu_mention.dismiss()
 
     @mainthread
     def spinner_toggle(self):
-        print('Spinner Toggle')
+        print(self.spinner.active)
         if not self.spinner.active:
             self.spinner.active = True
         else:
             self.spinner.active = False
 
     def insert_data(self):
-        time.sleep(2)
-        self.get_data()
         self.data_tables.row_data = self.transforme_data(MDApp.get_running_app().ALL_ETUDIANT)
-        self.spinner_toggle()
 
     def get_data(self):
         self.initialise = False
@@ -290,23 +290,19 @@ class ReinscriptionScreen(Screen):
         MDApp.get_running_app().ALL_ETUDIANT = request_etudiants.get_by_mention(url_etudiant, self.annee.text,
                                                                                 uuid_mention, token)
 
-    def transforme_data(self, all_data: list):
-        data = []
-        k: int = 1
-        for un_et in all_data:
-            etudiant = (k, ("human-female",
-                            [39 / 256, 174 / 256, 96 / 256, 1], un_et["num_carte"]),
-                        f'{un_et["nom"]} {un_et["prenom"]}', (un_et["parcours"]).upper())
-
-            data.append(etudiant)
-            k += 1
-        data.append(("", "", "", ""))
-        return data
-
     def process_spiner(self):
+        time.sleep(2)
+        processes = []
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            processes.append(executor.submit(get_parcours))
+            processes.append(executor.submit(self.get_data))
+        self.insert_data()
+        self.spinner_toggle()
+
+    def process_spinner_toogle(self):
         self.spinner_toggle()
         threading.Thread(target=(
-            self.insert_data())).start()
+            self.process_spiner)).start()
 
     def menu_calback_parcours(self, i, text_item):
         self.ids.parcours_label.text = text_item
@@ -395,22 +391,22 @@ class ReinscriptionScreen(Screen):
             self.inactive_button()
 
     def show_dialog(self, *args):
-        if not self.dialog:
-            # create dialog
-            self.dialog = MDDialog(
-                title="Attention!",
-                text=f"Voulez-vous supprimer {MDApp.get_running_app().NUM_CARTE} ?",
-                buttons=[
-                    MDFlatButton(
-                        text="Ok",
-                        on_release=self.delete_etudiant_
-                    ),
-                    MDFlatButton(
-                        text="Annuler",
-                        on_release=self.cancel_dialog
-                    ),
-                ],
-            )
+        # if not self.dialog:
+        # create dialog
+        self.dialog = MDDialog(
+            title="Attention!",
+            text=f"Voulez-vous supprimer {MDApp.get_running_app().NUM_CARTE} ?",
+            buttons=[
+                MDFlatButton(
+                    text="Ok",
+                    on_release=self.delete_etudiant_
+                ),
+                MDFlatButton(
+                    text="Annuler",
+                    on_release=self.cancel_dialog
+                ),
+            ],
+        )
         self.dialog.open()
 
     def delete_etudiant_(self, *args):
@@ -465,3 +461,23 @@ class ReinscriptionScreen(Screen):
                                    self.find_key(mention["parcours"], titre) != -1,
                    data))
         self.data_tables.row_data = self.transforme_data(value)
+
+    def transforme_data(self, all_data: list):
+        data = []
+        k: int = 1
+        for un_et in all_data:
+            etudiant = (k, ("human-female",
+                            [39 / 256, 174 / 256, 96 / 256, 1], un_et["num_carte"]),
+                        f'{un_et["nom"]} {un_et["prenom"]}', (un_et["parcours"]).upper())
+
+            data.append(etudiant)
+            k += 1
+        data.append(("", "", "", ""))
+        return data
+
+    def set_parcours(self):
+        self.all_parcours = self.get_all_parcours(),
+
+
+def get_parcours():
+    MDApp.get_running_app().get_list_parcours()
