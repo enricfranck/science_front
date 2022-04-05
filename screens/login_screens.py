@@ -70,7 +70,6 @@ class LoginScreen(Screen):
         self.token = ""
 
     def thread_login_(self):
-        Clock.schedule_interval(self.spinner_toggle, .05)
         self.login()
 
     def reset_champ(self):

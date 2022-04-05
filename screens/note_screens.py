@@ -203,16 +203,19 @@ class NoteScreen(Screen):
         return self.layout
 
     def row_selected(self, table, row):
-        start_index, end_index = row.table.recycle_data[row.index]["range"]
-        num_carte = row.table.recycle_data[start_index + 1]["text"]
-        semestre = self.ids.semestre.text
-        if num_carte != "":
-            MDApp.get_running_app().NUM_CARTE = num_carte
-            MDApp.get_running_app().SEMESTRE_SELECTED = semestre
-            # self.spinner_toggle()
-            # self.process_spinner_dialog()
-            # self.spinner_toggle()
-            self.show_confirmation_dialog()
+        try:
+            start_index, end_index = row.table.recycle_data[row.index]["range"]
+            num_carte = row.table.recycle_data[start_index + 1]["text"]
+            semestre = self.ids.semestre.text
+            if num_carte != "":
+                MDApp.get_running_app().NUM_CARTE = num_carte
+                MDApp.get_running_app().SEMESTRE_SELECTED = semestre
+                # self.spinner_toggle()
+                # self.process_spinner_dialog()
+                # self.spinner_toggle()
+                self.show_confirmation_dialog()
+        except Exception as e:
+            toast(str(e))
 
     def create_list_tuple(self, list_data: list):
         response = [("N°", dp(10))]
@@ -392,9 +395,9 @@ class NoteScreen(Screen):
         menu_items = [
             {
                 "viewclass": "OneLineListItem",
-                "text": f"{parcours[i]['abreviation'].upper()}",
+                "text": f"{parcours[i].upper()}",
                 "height": dp(50),
-                "on_release": lambda x=f"{parcours[i]['abreviation'].upper()}": self.menu_calback_parcours(x),
+                "on_release": lambda x=f"{parcours[i].upper()}": self.menu_calback_parcours(x),
             } for i in range(len(parcours))
         ]
         return menu_items
@@ -578,6 +581,22 @@ class NoteScreen(Screen):
         MDApp.get_running_app().PARENT = "Note"
         if len(annee) != 0 and self.ids.parcours.text != "":
             MDApp.get_running_app().root.current = 'download_file'
+
+    def upload_note(self):
+        annee = MDApp.get_running_app().ANNEE
+        MDApp.get_running_app().TITRE_FILE = \
+            f"note_{self.ids.parcours.text}_{self.ids.session.text}"
+        schemas = "anne_" + annee[0:4] + "_" + annee[5:9]
+        values = {'schema': f'{schemas}', 'session': f'{self.ids.session.text}',
+                  'uuid_parcours': MDApp.get_running_app().PARCOURS_SELECTED,
+                  'semestre': self.ids.semestre.text}
+        params = urllib.parse.urlencode(values)
+        host = MDApp.get_running_app().HOST
+        url = f"http://{host}/api/v1/save_data/upload_note_file/"
+        MDApp.get_running_app().URL_UPLOAD = f"{url}?{params}"
+        MDApp.get_running_app().PARENT = "Note"
+        if len(annee) != 0 and self.ids.semestre.text != "":
+            MDApp.get_running_app().root.current = 'upload_file'
 
     def show_confirmation_dialog(self):
         # if not self.dialog:

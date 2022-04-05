@@ -1,5 +1,6 @@
 import os
 import urllib
+import requests
 
 from kivy.core.window import Window
 from kivy.network.urlrequest import UrlRequest
@@ -33,7 +34,7 @@ class UploadScreen(Screen):
         '''
 
         self.exit_manager()
-        if os.path.isdir(path):
+        if os.path.isfile(path):
             self.ids.path.text = path
         else:
             self.ids.path.text = str(path).rsplit('/', 1)[0]
@@ -54,25 +55,20 @@ class UploadScreen(Screen):
 
     def on_enter(self, *args):
         self.ids.toolbar.title = MDApp.get_running_app().TITRE_FILE
-        self.ids.progress_bar.value = 0
 
     def back_home(self):
         MDApp.get_running_app().root.current = MDApp.get_running_app().PARENT
 
-    def update_progress(self, req, current_size, total_size):
-        self.ids.progress_bar.value = current_size / total_size
-
     def upload_file(self):
         url = MDApp.get_running_app().URL_UPLOAD
-        params = MDApp.get_running_app().PARAMS
         token = MDApp.get_running_app().TOKEN
         path = f"{self.ids.path.text}"
         headers = {'accept': 'application/json',
                    'Authorization': f'Bearer {token}'
                    }
-        url = f"{url}?{params}"
         req = requests.post(url=url, headers=headers, files={"uploaded_file": open(f'{path}', 'rb')})
         self.ids.path.text = ""
-        self.back_home()
+        # self.back_home()
+        print(req)
         return req.json()
 
