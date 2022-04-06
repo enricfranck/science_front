@@ -736,7 +736,7 @@ ScreenManager:
                     size_hint: None, None
                     size: dp(20), dp(20)
                     pos_hint: {'center_x': 0.5}
-                    active: True
+                    active: False
 
                 MDFillRoundFlatIconButton:
                     id: download
@@ -746,7 +746,9 @@ ScreenManager:
                     disabled: True if path.text == "" else False
                     icon: "content-save"
                     on_release:
-                        root.upload_file()
+                        root.spinner_toggle()
+                        root.thread_upload_note()
+                        root.spinner_toggle()
                     md_bg_color:(0,0,0,0)
 
 

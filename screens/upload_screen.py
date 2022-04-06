@@ -1,11 +1,13 @@
 import os
 import urllib
 import requests
+import threading
 
 from kivy.core.window import Window
 from kivy.network.urlrequest import UrlRequest
 from kivy.uix.screenmanager import Screen
 from kivymd.app import MDApp
+from kivy.clock import mainthread
 from kivymd.uix.filemanager import MDFileManager
 
 
@@ -59,6 +61,22 @@ class UploadScreen(Screen):
     def back_home(self):
         MDApp.get_running_app().root.current = MDApp.get_running_app().PARENT
 
+    @mainthread
+    def spinner_toggle(self, *args):
+        if not self.ids.spinner.active:
+            self.ids.spinner.active = True
+        else:
+            self.ids.spinner.active = False
+
+    def thread_login_(self):
+        self.upload_file()
+        self.spinner_toggle()
+
+    def thread_upload_note(self):
+        self.spinner_toggle()
+        threading.Thread(target=(
+            self.thread_login_)).start()
+
     def upload_file(self):
         url = MDApp.get_running_app().URL_UPLOAD
         token = MDApp.get_running_app().TOKEN
@@ -68,7 +86,6 @@ class UploadScreen(Screen):
                    }
         req = requests.post(url=url, headers=headers, files={"uploaded_file": open(f'{path}', 'rb')})
         self.ids.path.text = ""
-        # self.back_home()
-        print(req)
-        return req.json()
-
+        if req.status_code == 200:
+            self.back_home()
+        return req.text

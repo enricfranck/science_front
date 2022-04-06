@@ -127,7 +127,10 @@ class NoteScreen(Screen):
             self.load_table()
             self.init_data()
             self.initialise = False
-        pass
+        if self.ids.semestre.text != "":
+            self.spinner_toggle()
+            self.process_spinner_toogle()
+            self.spinner_toggle()
 
     def init_data(self):
 
@@ -577,7 +580,7 @@ class NoteScreen(Screen):
         host = MDApp.get_running_app().HOST
         url = f"http://{host}/api/v1/save_data/get_models_notes/"
         MDApp.get_running_app().URL_DOWNLOAD = f"{url}?{params}"
-        MDApp.get_running_app().NAME_DOWNLOAD = f"{MDApp.get_running_app().TITRE_FILE}.xslx"
+        MDApp.get_running_app().NAME_DOWNLOAD = f"{MDApp.get_running_app().TITRE_FILE}.xlsx"
         MDApp.get_running_app().PARENT = "Note"
         if len(annee) != 0 and self.ids.parcours.text != "":
             MDApp.get_running_app().root.current = 'download_file'
