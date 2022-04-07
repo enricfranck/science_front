@@ -13,6 +13,7 @@ ScreenManager:
     MatierAddScreen:
     NoteScreen:
     NoteAddScreen:
+    ScolaScreen:
 
 <Content>
     orientation: "vertical"
@@ -202,6 +203,7 @@ ScreenManager:
                                 theme_text_color: "Custom"
                                 text_color: 1, 1, 1, 1
                                 line_color: 0, 0, 0, 0
+                                on_press: root.back_scola()
 
                             MDSeparator:
                                 height: "1dp"
@@ -1837,3 +1839,76 @@ ScreenManager:
                     MDList:
                         id: container
 
+<ScolaScreen>
+    name: 'Scola'
+    MDBoxLayout:
+        orientation:'vertical'
+        MDToolbar:
+            title: 'Service de scolarité'
+            left_action_items:[["keyboard-backspace",lambda x: root.back_home()]]
+            right_action_items:[["menu",lambda x: root.calback_list(x)]]
+            elevation:5
+        BoxLayout:
+            orientation: 'vertical'
+            FloatLayout_:
+                Label:
+                    id: title
+                    text: "Titre"
+                    pos: 320, 520
+                    size_hint_x: None
+                    width:300
+
+                MDTextField:
+                    id: annee
+                    hint_text: "Annéé universitaire"
+                    pos: 320, 520-120
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    on_focus: if self.focus: root.menu_annee_univ.open()
+                    width:300
+                    readonly:True
+                    required: True
+
+                MDTextField:
+                    id: num_carte
+                    hint_text: "Numéro carte"
+                    pos: 320, 460-120
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:300
+                    required: True
+
+                MDTextField:
+                    id: semestre
+                    hint_text: "Semestre"
+                    pos: 320, 400-120
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    on_focus: if self.focus: root.menu_semestre.open()
+                    width:300
+                    readonly:True
+                    required: True
+                    disabled: True
+                    opacity: 0
+
+                MDFillRoundFlatIconButton:
+                    id: save_relever
+                    text: "Créer"
+                    pos: 560, 200
+                    icon: "content-save"
+                    on_release:root.enreg_releve()
+                    disabled: False if (not semestre.disabled and num_carte.text != "" and annee.text != "") else True
+                    width:100
+                    md_bg_color:(0,0,0,0)
+                    opacity: 0
+
+                MDFillRoundFlatIconButton:
+                    id: save
+                    text: "Créer"
+                    pos: 560, 200
+                    icon: "content-save"
+                    on_release:root.enreg()
+                    disabled: False if (semestre.disabled and num_carte.text != "" and annee.text != "") else True
+                    width:100
+                    opacity: 1
+                    md_bg_color:(0,0,0,0)

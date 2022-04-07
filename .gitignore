@@ -10,4 +10,5 @@
 /dist
 *.spec
 *.pdf
+*.pic
 image.jpg

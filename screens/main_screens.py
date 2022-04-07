@@ -20,3 +20,5 @@ class MainScreen(Screen):
     def back_notes(self):
         MDApp.get_running_app().root.current = 'Note'
 
+    def back_scola(self):
+        MDApp.get_running_app().root.current = 'Scola'

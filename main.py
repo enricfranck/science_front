@@ -1,4 +1,3 @@
-
 import os
 import secrets
 import string
@@ -32,6 +31,7 @@ from screens.selection_add_screens import SelectionAddScreen
 from screens.selection_screens import SelectionScreen
 from screens.selection_update_screens import SelectionUpdateScreen
 from screens.upload_screen import UploadScreen
+from screens.scolarite import ScolaScreen
 from utils import creat_str_from_list
 
 Config.set('graphics', 'resizable', 0)
@@ -105,6 +105,9 @@ class NoteScreen(NoteScreen):
 
 
 class NoteAddScreen(NoteAddScreen):
+    pass
+
+class ScolaScreen(ScolaScreen):
     pass
 
 class ScienceApp(MDApp):
