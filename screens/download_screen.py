@@ -77,8 +77,10 @@ class DownloadScreen(Screen):
         headers = {'accept': 'application/json',
                    'Authorization': f'Bearer {token}'
                    }
-        req = UrlRequest(url, on_success=self.success, on_failure=fail, on_error=error, on_progress=self.update_progress,
-                         chunk_size=1024, req_headers=headers, file_path=path, verify=False, method="GET")
+        req = UrlRequest(url, on_success=self.success, on_failure=fail,
+                         on_error=error, on_progress=self.update_progress,
+                         chunk_size=1024, req_headers=headers, file_path=path,
+                         verify=False, method="GET", timeout=180)
         req.wait()
         return req.result
 
