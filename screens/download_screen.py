@@ -8,12 +8,6 @@ from kivymd.app import MDApp
 from kivymd.uix.filemanager import MDFileManager
 
 
-def fail(req, result):
-    print("fail",req, result)
-
-
-def error(req, result):
-    print("error",req, result)
 
 
 class DownloadScreen(Screen):
@@ -71,21 +65,31 @@ class DownloadScreen(Screen):
         self.ids.progress_bar.value = current_size / total_size
 
     def download_file(self):
+        self.ids.download.disabled = True
         url = MDApp.get_running_app().URL_DOWNLOAD
         token = MDApp.get_running_app().TOKEN
         path = f"{self.ids.path.text}/{MDApp.get_running_app().NAME_DOWNLOAD}"
         headers = {'accept': 'application/json',
                    'Authorization': f'Bearer {token}'
                    }
-        req = UrlRequest(url, on_success=self.success, on_failure=fail,
-                         on_error=error, on_progress=self.update_progress,
+        req = UrlRequest(url, on_success=self.success, on_failure=self.fail,
+                         on_error=self.error, on_progress=self.update_progress,
                          chunk_size=1024, req_headers=headers, file_path=path,
-                         verify=False, method="GET", timeout=180)
+                         verify=False, method="GET", timeout=38000)
         req.wait()
         return req.result
 
     def success(self, req, result):
         self.ids.path.text = ""
+        self.ids.download.disabled = False
         MDApp.get_running_app().PARAMS = ""
         self.back_home()
         print('success')
+
+    def fail(self, req, result):
+        self.ids.download.disabled = False
+        print("fail_", req.resp_status, result)
+
+    def error(self, req, result):
+        self.ids.download.disabled = False
+        print("error_", req.resp_status, result)
