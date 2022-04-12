@@ -1,13 +1,13 @@
 import os
 import urllib
+import threading
+from kivy.clock import mainthread
 
 from kivy.core.window import Window
 from kivy.network.urlrequest import UrlRequest
 from kivy.uix.screenmanager import Screen
 from kivymd.app import MDApp
 from kivymd.uix.filemanager import MDFileManager
-
-
 
 
 class DownloadScreen(Screen):
@@ -21,6 +21,18 @@ class DownloadScreen(Screen):
             select_path=self.select_path,
             # preview=True,
         )
+
+    @mainthread
+    def spinner_toggle(self):
+        if not self.ids.download.disabled:
+            self.ids.download.disabled = True
+        else:
+            self.ids.download.disabled = False
+
+    def process_download_toogle(self):
+        self.spinner_toggle()
+        threading.Thread(target=(
+            self.download_file)).start()
 
     def file_manager_open(self):
         self.file_manager.show('/')  # output manager to the screen
@@ -65,7 +77,6 @@ class DownloadScreen(Screen):
         self.ids.progress_bar.value = current_size / total_size
 
     def download_file(self):
-        self.ids.download.disabled = True
         url = MDApp.get_running_app().URL_DOWNLOAD
         token = MDApp.get_running_app().TOKEN
         path = f"{self.ids.path.text}/{MDApp.get_running_app().NAME_DOWNLOAD}"
@@ -77,6 +88,7 @@ class DownloadScreen(Screen):
                          chunk_size=1024, req_headers=headers, file_path=path,
                          verify=False, method="GET", timeout=38000)
         req.wait()
+        self.spinner_toggle()
         return req.result
 
     def success(self, req, result):
@@ -87,9 +99,9 @@ class DownloadScreen(Screen):
         print('success')
 
     def fail(self, req, result):
-        self.ids.download.disabled = False
+        self.spinner_toggle()
         print("fail_", req.resp_status, result)
 
     def error(self, req, result):
-        self.ids.download.disabled = False
+        self.spinner_toggle()
         print("error_", req.resp_status, result)

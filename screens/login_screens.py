@@ -107,8 +107,9 @@ class LoginScreen(Screen):
                         with ThreadPoolExecutor(max_workers=10) as executor:
                             processes.append(executor.submit(get_mention))
                             processes.append(executor.submit(get_droit))
-                            processes.append(executor.submit(get_ue, MDApp.get_running_app().ALL_ANNEE[0]['title']))
-                            processes.append(executor.submit(get_ec, MDApp.get_running_app().ALL_ANNEE[0]['title']))
+                            if len(MDApp.get_running_app().ALL_ANNEE) != 0:
+                                processes.append(executor.submit(get_ue, MDApp.get_running_app().ALL_ANNEE[0]['title']))
+                                processes.append(executor.submit(get_ec, MDApp.get_running_app().ALL_ANNEE[0]['title']))
 
                         print(f'Time taken: {time() - start}')
                         if response[0]['role'] == "supperuser":
@@ -135,10 +136,10 @@ class LoginScreen(Screen):
         self.spinner_toggle()
 
     def auto_remplir(self):
-        self.ids.email.text = "enricfranck@gmail.com"
-        self.ids.password.text = "123"
-        # self.ids.email.text = "admin@science.com"
-        # self.ids.password.text = "aze135azq35sfsnf6353sfh3xb68yyp31gf68k5sf6h3s5d68jd5"
+        # self.ids.email.text = "enricfranck@gmail.com"
+        # self.ids.password.text = "123"
+        self.ids.email.text = "admin@science.com"
+        self.ids.password.text = "aze135azq35sfsnf6353sfh3xb68yyp31gf68k5sf6h3s5d68jd5"
 
     def active_spinner(self):
         self.ids.spinner.active = True

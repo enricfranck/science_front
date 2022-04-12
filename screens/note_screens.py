@@ -146,11 +146,11 @@ class NoteScreen(Screen):
             width_mult=4,
         )
 
-        # self.menu_parcours = MDDropdownMenu(
-        #     caller=self.ids.parcours,
-        #     items=self.get_all_parcours(),
-        #     width_mult=4,
-        # )
+        self.menu_parcours = MDDropdownMenu(
+            caller=self.ids.parcours,
+            items=[],
+            width_mult=4,
+        )
 
         self.menu_semestre = MDDropdownMenu(
             caller=self.ids.mention,

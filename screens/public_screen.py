@@ -135,8 +135,8 @@ class PublicScreen(Screen):
         self.add_widget(self.create_note)
         self.add_widget(self.delete_note)
         self.add_widget(self.add_etudiant)
-
-        self.ids.annee.text = MDApp.get_running_app().ALL_ANNEE[0]['title']
+        if len(MDApp.get_running_app().ALL_ANNEE) != 0:
+            self.ids.annee.text = MDApp.get_running_app().ALL_ANNEE[0]['title']
         MDApp.get_running_app().ANNEE = self.ids.annee.text
 
     def load_table(self):
@@ -426,6 +426,7 @@ class PublicScreen(Screen):
     def menu_calback_mention(self, text_item):
         self.selected_mention = \
             MDApp.get_running_app().read_by_key(MDApp.get_running_app().ALL_MENTION, "title", text_item)[0]['uuid']
+        print(MDApp.get_running_app().ALL_MENTION)
         if MDApp.get_running_app().MENTION != self.selected_mention:
             MDApp.get_running_app().MENTION = self.selected_mention
             MDApp.get_running_app().get_list_parcours()

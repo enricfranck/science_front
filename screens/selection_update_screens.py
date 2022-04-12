@@ -1,3 +1,6 @@
+import threading
+
+from kivy.clock import mainthread
 from kivy.metrics import dp
 from kivy.utils import get_color_from_hex
 from kivymd.app import MDApp
@@ -15,6 +18,7 @@ class SelectionUpdateScreen(Screen):
 
     def __init__(self, **kw):
         super().__init__(**kw)
+        self.menu_serie = None
         self.menu_parcours = None
         self.menu_sexe = None
         self.menu_nation = None
@@ -81,6 +85,24 @@ class SelectionUpdateScreen(Screen):
             width_mult=4,
         )
 
+        menu_serie = ["Serie A1", "Serie A2", "Serie C", "Serie D", "Technique Génie civile",
+                      "Technique Industrielle", "Technique Tertiaire",
+                      "Technique Agricole", "Technologique", "Autre"]
+
+        menu_serie_list = [
+            {
+                "viewclass": "OneLineListItem",
+                "text": f"{i}",
+                "height": dp(50),
+                "on_release": lambda x=f"{i}": self.menu_calback_serie(x),
+            } for i in menu_serie
+        ]
+        self.menu_serie = MDDropdownMenu(
+            caller=self.ids.serie_bacc,
+            items=menu_serie_list,
+            width_mult=4,
+        )
+
         num_select = MDApp.get_running_app().NUM_SELECT
         self.host = MDApp.get_running_app().HOST
         if num_select != "":
@@ -138,6 +160,18 @@ class SelectionUpdateScreen(Screen):
         ]
         return menu_items
 
+    @mainthread
+    def spinner_toggle(self):
+        if not self.ids.spinner.active:
+            self.ids.spinner.active = True
+        else:
+            self.ids.spinner.active = False
+
+    def process_update_toggle(self):
+        self.spinner_toggle()
+        threading.Thread(target=(
+            self.enreg_etudiant)).start()
+
     def menu_calback_mention(self, text_item):
         self.selected_mention = \
             MDApp.get_running_app().read_by_key(MDApp.get_running_app().ALL_MENTION, "title", text_item)[0]['uuid']
@@ -166,6 +200,10 @@ class SelectionUpdateScreen(Screen):
     def menu_calback_sexe(self, text_item):
         self.ids.sexe.text = text_item
         self.menu_sexe.dismiss()
+
+    def menu_calback_serie(self, text_item):
+        self.ids.serie_bacc.text = text_item
+        self.menu_serie.dismiss()
 
     def menu_calback_nation(self, text_item):
         self.ids.nation.text = text_item
@@ -285,6 +323,7 @@ class SelectionUpdateScreen(Screen):
                     toast(str(response))
         else:
             toast("Choisir l'annee universitaire")
+        self.spinner_toggle()
 
     def reset_champs(self):
 

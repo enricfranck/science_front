@@ -317,7 +317,7 @@ ScreenManager:
                         pos: 80, 430
                         size: 100 , 120
                         angle_start: 0
-                        source: self.source
+                        source: "images/profil.png"
                         angle_end: 360
                 MDIconButton:
                     id: camera
@@ -538,7 +538,10 @@ ScreenManager:
                     width:100
                     disabled: True if (date_naiss.text == "" or date_quintance.text == "" or mention_field.text == "" or parcours_field.text == "" or montant.text == "" or bacc_annee.text == "" or moyenne.text == "" or etat.text =="" or num_quintance.text == "" or addresse.text=="" or nom.text == "" or num_ce.text == "" or nation.text == "" or lieu_naiss.text == "") else False
                     icon: "content-save"
-                    on_release:root.enreg_etudiant()
+                    on_release:
+                        root.spinner_toggle()
+                        root.process_enreg_toggle()
+                        root.spinner_toggle()
                     md_bg_color:(0,0,0,0)
 
                 MDFillRoundFlatIconButton:
@@ -553,7 +556,7 @@ ScreenManager:
                     size_hint: None, None
                     size: dp(50), dp(50)
                     pos: 540, 300
-                    active: True
+                    active: False
 
                 MDLabel:
                     id:s1
@@ -704,7 +707,10 @@ ScreenManager:
                     width:100
                     disabled: True if path.text == "" else False
                     icon: "content-save"
-                    on_release:root.download_file()
+                    on_release:
+                        root.spinner_toggle()
+                        root.process_download_toogle()
+                        root.spinner_toggle()
                     md_bg_color:(0,0,0,0)
 
 <UploadScreen>:
@@ -1210,7 +1216,9 @@ ScreenManager:
                     pos: 640, 280
                     size_hint_x: None
                     helper_text_mode:"on_error"
-                    width:
+                    width:100
+                    readonly: True
+                    on_focus: if self.focus: root.menu_serie.open()
                     required: validation.active
                     opacity: 1 if(validation.active) else 0
 
@@ -1337,6 +1345,13 @@ ScreenManager:
                     required: validation.active
                     opacity: 1 if(validation.active) else 0
 
+                MDSpinner:
+                    id: spinner
+                    size_hint: None, None
+                    size: dp(50), dp(50)
+                    pos: 540, 300
+                    active: False
+
                 MDFillRoundFlatIconButton:
                     id: save_etudiant
                     text: "Sauvegarder"
@@ -1344,7 +1359,10 @@ ScreenManager:
                     width:100
                     disabled: False if ( not validation.active and (niveau_field.text != "" and sexe.text != "" and date_naiss.text != "" and mention_field.text != "" and addresse.text != "" and nom.text != "" and num_select.text != "" and nation.text != "" and lieu_naiss.text != "") or validation.active and (niveau_field.text != "" and date_naiss.text != "" and mention_field.text != "" and addresse.text != "" and nom.text != "" and num_select.text != "" and nation.text != "" and lieu_naiss.text != "" and prof_et.text != "" and montant.text != "" and num_quintance.text != "" and date_quintance.text != "" and centre_bacc.text != "" and annee_bacc.text != "" and num_bacc.text != "" and serie_bacc.text != "" and situation.text != "" and parcours_field.text != "")) else True
                     icon: "content-save"
-                    on_release:root.enreg_etudiant()
+                    on_release:
+                        root.spinner_toggle()
+                        root.process_update_toggle()
+                        root.spinner_toggle()
                     md_bg_color:(0,0,0,0)
 
                 MDCheckbox:
@@ -1554,7 +1572,7 @@ ScreenManager:
                     pos: 600, 320
                     icon: "content-save"
                     on_release:root.save_parcours()
-                    disabled: False if (email.hint_text == "Titre parcours" and email.text != ""  and nom.text != "" and password != "" and mention != "" ) else True
+                    disabled: False if (email.hint_text == "Titre parcours" and email.text != ""  and semestre.text != "" and password.text != "" and mention.text != "" ) else True
                     width:100
                     md_bg_color:(0,0,0,0)
 

@@ -153,7 +153,7 @@ class PublicAddScreen(Screen):
                 self.email.text = ""
                 self.nom.text = ""
                 self.prenom.text = ""
-                self.passxord.text = ""
+                self.password.text = ""
                 self.mention.text = ""
 
         elif self.titre == "Titre parcours":
@@ -231,7 +231,7 @@ class PublicAddScreen(Screen):
                 self.email.text = ""
                 self.nom.text = ""
                 self.prenom.text = ""
-                self.passxord.text = ""
+                self.password.text = ""
                 self.mention.text = ""
 
         elif self.titre == "Titre année":
@@ -265,7 +265,7 @@ class PublicAddScreen(Screen):
                 self.email.text = ""
                 self.nom.text = ""
                 self.prenom.text = ""
-                self.passxord.text = ""
+                self.password.text = ""
                 self.mention.text = ""
 
         elif self.titre == "Montant":
@@ -304,7 +304,7 @@ class PublicAddScreen(Screen):
                 self.email.text = ""
                 self.nom.text = ""
                 self.prenom.text = ""
-                self.passxord.text = ""
+                self.password.text = ""
                 self.mention.text = ""
 
     def get_all_semestre(self):

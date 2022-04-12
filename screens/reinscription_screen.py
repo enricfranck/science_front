@@ -17,8 +17,43 @@ from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.spinner import MDSpinner
 from kivymd.toast import toast
 
-from all_requests import request_utils, request_etudiants
+from all_requests import request_utils
 from concurrent.futures import ThreadPoolExecutor, as_completed
+
+
+def transforme_data(all_data: list):
+    data = []
+    k: int = 1
+    for un_et in all_data:
+        if un_et["sexe"] == "MASCULIN":
+            if un_et["etat"] == "Passant":
+                logo = ("face-profile",
+                        [39 / 256, 174 / 256, 96 / 256, 1], un_et["num_carte"])
+            else:
+                logo = ("face-profile", [1, 0, 0, 1], un_et["num_carte"])
+        else:
+            if un_et["etat"] == "Passant":
+                logo = ("face-woman",
+                        [39 / 256, 174 / 256, 96 / 256, 1], un_et["num_carte"])
+            else:
+                logo = ("face-woman", [1, 0, 0, 1], un_et["num_carte"])
+        etudiant = (k, logo, f'{un_et["nom"]} {un_et["prenom"]}', (un_et["parcours"]).upper())
+
+        data.append(etudiant)
+        k += 1
+    data.append(("", "", "", ""))
+    return data
+
+
+def read_by_semestre_and_parcours(data: list, parcours: str, semestre: str):
+    return list(filter(lambda etudiant: etudiant["parcours"].lower() == parcours.lower() and (
+            etudiant["semestre_petit"] == semestre or etudiant["semestre_grand"] == semestre), data))
+
+
+def find_key(lettre: str, key: str):
+    value = lettre.lower()
+    key_value = key.lower()
+    return value.find(key_value)
 
 
 class ReinscriptionScreen(Screen):
@@ -27,6 +62,7 @@ class ReinscriptionScreen(Screen):
 
     def __init__(self, **kw):
         super().__init__(**kw)
+        self.initialise_table = True
         self.all_parcours = []
         self.spinner = None
         self.menu_etat = None
@@ -70,7 +106,7 @@ class ReinscriptionScreen(Screen):
         )
         self.menu_parcours = MDDropdownMenu(
             caller=self.ids.parcours_button,
-            items=[],
+            items=self.get_all_parcours(),
             width_mult=4,
         )
 
@@ -162,8 +198,6 @@ class ReinscriptionScreen(Screen):
                 ("Parcours", dp(20))],
         )
         self.data_tables.bind(on_row_press=self.row_selected)
-        # self.add_widget(self.semestre)
-        # self.add_widget(self.semestre_label)
         self.add_widget(self.data_tables)
         return layout
 
@@ -185,14 +219,16 @@ class ReinscriptionScreen(Screen):
 
     def on_enter(self):
         if self.initialise:
-            self.load_table()
+            if self.initialise_table:
+                self.load_table()
+                self.initialise_table = False
             self.init_data()
-            # self.search.bind(on_text=self.serch_etudiant(self.search.text))
             self.initialise = False
+            self.inactive_button()
         else:
             MDApp.get_running_app().NUM_CARTE = ""
-            self.inactive_button()
-        self.data_tables.row_data = self.transforme_data(MDApp.get_running_app().ALL_ETUDIANT)
+
+        self.data_tables.row_data = transforme_data(MDApp.get_running_app().ALL_ETUDIANT)
 
     def get_all_mention(self):
         mention = []
@@ -279,19 +315,29 @@ class ReinscriptionScreen(Screen):
             self.spinner.active = False
 
     def insert_data(self):
-        self.data_tables.row_data = self.transforme_data(MDApp.get_running_app().ALL_ETUDIANT)
+        self.data_tables.row_data = []
+        self.data_tables.row_data = transforme_data(MDApp.get_running_app().ALL_ETUDIANT)
 
     def get_data(self):
         self.initialise = False
+        annee = MDApp.get_running_app().ANNEE
+        schemas = "anne_" + annee[0:4] + "_" + annee[5:9]
         host = MDApp.get_running_app().HOST
         token = MDApp.get_running_app().TOKEN
         uuid_mention = MDApp.get_running_app().MENTION
         url_etudiant: str = f'http://{host}/api/v1/ancien_etudiants/by_mention/'
-        MDApp.get_running_app().ALL_ETUDIANT = request_etudiants.get_by_mention(url_etudiant, self.annee.text,
-                                                                                uuid_mention, token)
+        list_key = ["schema", "uuid_mention"]
+        list_value = [schemas, uuid_mention]
+        response = request_utils.get_with_params(url_etudiant, list_key, list_value, token)
+        if response:
+            if response[1] == 200:
+                MDApp.get_running_app().ALL_ETUDIANT = response[0]
+            elif response[1] == 400:
+                toast(str(response[0]))
+            else:
+                toast(str(response))
 
     def process_spiner(self):
-        time.sleep(2)
         processes = []
         with ThreadPoolExecutor(max_workers=10) as executor:
             processes.append(executor.submit(get_parcours))
@@ -307,14 +353,14 @@ class ReinscriptionScreen(Screen):
     def menu_calback_parcours(self, i, text_item):
         self.ids.parcours_label.text = text_item
         all_etudiant = MDApp.get_running_app().read_by_key(MDApp.get_running_app().ALL_ETUDIANT, "parcours", text_item)
-        self.data_tables.row_data = self.transforme_data(all_etudiant)
+        self.data_tables.row_data = transforme_data(all_etudiant)
         self.menu_parcours.dismiss()
 
     def menu_calback_semestre(self, text_item):
         self.ids.semestre_label.text = text_item
         parcours = self.ids.parcours_label.text
-        all_etudiant = self.read_by_semestre_and_parcours(MDApp.get_running_app().ALL_ETUDIANT, parcours, text_item)
-        self.data_tables.row_data = self.transforme_data(all_etudiant)
+        all_etudiant = read_by_semestre_and_parcours(MDApp.get_running_app().ALL_ETUDIANT, parcours, text_item)
+        self.data_tables.row_data = transforme_data(all_etudiant)
         self.menu_semestre.dismiss()
 
     def menu_calback_annee(self, text_item):
@@ -383,11 +429,10 @@ class ReinscriptionScreen(Screen):
     def row_selected(self, table, row):
         start_index, end_index = row.table.recycle_data[row.index]["range"]
         num_carte = row.table.recycle_data[start_index + 1]["text"]
-        if num_carte != "":
+        if len(num_carte) != 0:
             MDApp.get_running_app().NUM_CARTE = num_carte
             self.active_button()
         else:
-            MDApp.get_running_app().NUM_CARTE = num_carte
             self.inactive_button()
 
     def show_dialog(self, *args):
@@ -417,13 +462,22 @@ class ReinscriptionScreen(Screen):
 
         url = f"http://{host}/api/v1/ancien_etudiants/"
         if num_carte != "":
-            response = request_etudiants.delete(url, annee, 'num_carte', num_carte, token)
+            schemas = "anne_" + annee[0:4] + "_" + annee[5:9]
+            list_key = ["shemas", "num_carte"]
+            list_value = [schemas, num_carte]
+            response = request_utils.delete_with_params(url, list_key, list_value, token)
             if response:
-                self.dialog.dismiss()
-                MDApp.get_running_app().ALL_ETUDIANT = response
-                toast(f"{num_carte} bien supprimé")
-                MDApp.get_running_app().NUM_CARTE = ""
-                self.data_tables.row_data = self.transforme_data(MDApp.get_running_app().ALL_ETUDIANT)
+                if response[1] == 200:
+                    self.reset_champs()
+                    MDApp.get_running_app().ALL_ETUDIANT = response[0]
+                    toast(f"{num_carte} bien supprimé")
+                    MDApp.get_running_app().NUM_CARTE = ""
+                    self.data_tables.row_data = transforme_data(MDApp.get_running_app().ALL_ETUDIANT)
+                elif response[1] == 400:
+                    toast(str(response[0]))
+                else:
+                    toast(str(response))
+            self.dialog.dismiss()
 
     def cancel_dialog(self, *args):
         self.dialog.dismiss()
@@ -440,43 +494,18 @@ class ReinscriptionScreen(Screen):
         MDApp.get_running_app().REINSCRIPTION_ACTION_TYPE = "UPDATE"
         MDApp.get_running_app().root.current = 'Reinscription_add'
 
-    def read_by_semestre_and_parcours(self, data: list, parcours: str, semestre: str):
-        return list(filter(lambda etudiant: etudiant["parcours"].lower() == parcours.lower() and (
-                etudiant["semestre_petit"] == semestre or etudiant["semestre_grand"] == semestre), data))
-
-    def find_key(self, lettre: str, key: str):
-        value = lettre.lower()
-        key_value = key.lower()
-        return value.find(key_value)
-
     def search_etudiant(self, titre: str):
         data = MDApp.get_running_app().ALL_ETUDIANT
         value = list(
-            filter(lambda mention: self.find_key(mention["num_carte"], titre) != -1 or
-                                   self.find_key(mention["nom"], titre) != -1 or
-                                   self.find_key(mention["prenom"], titre) != -1 or
-                                   self.find_key(mention["adresse"], titre) != -1 or
-                                   self.find_key(mention["sexe"], titre) != -1 or
-                                   self.find_key(mention["etat"], titre) != -1 or
-                                   self.find_key(mention["parcours"], titre) != -1,
+            filter(lambda mention: find_key(mention["num_carte"], titre) != -1 or
+                                   find_key(mention["nom"], titre) != -1 or
+                                   find_key(mention["prenom"], titre) != -1 or
+                                   find_key(mention["adresse"], titre) != -1 or
+                                   find_key(mention["sexe"], titre) != -1 or
+                                   find_key(mention["etat"], titre) != -1 or
+                                   find_key(mention["parcours"], titre) != -1,
                    data))
-        self.data_tables.row_data = self.transforme_data(value)
-
-    def transforme_data(self, all_data: list):
-        data = []
-        k: int = 1
-        for un_et in all_data:
-            etudiant = (k, ("human-female",
-                            [39 / 256, 174 / 256, 96 / 256, 1], un_et["num_carte"]),
-                        f'{un_et["nom"]} {un_et["prenom"]}', (un_et["parcours"]).upper())
-
-            data.append(etudiant)
-            k += 1
-        data.append(("", "", "", ""))
-        return data
-
-    def set_parcours(self):
-        self.all_parcours = self.get_all_parcours(),
+        self.data_tables.row_data = transforme_data(value)
 
 
 def get_parcours():

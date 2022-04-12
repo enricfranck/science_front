@@ -1,10 +1,12 @@
 import os
 import secrets
 import string
+import sys
 
 from kivy.config import Config
 from kivy.lang.builder import Builder
 from kivy.properties import StringProperty
+from kivy.resources import resource_paths
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.image import AsyncImage
@@ -13,7 +15,6 @@ from kivymd.toast import toast
 from kivymd.uix.button import MDFlatButton
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.picker import MDDatePicker
-from kivymd.uix.boxlayout import MDBoxLayout
 
 from all_requests import request_utils
 from screens.download_screen import DownloadScreen
@@ -27,11 +28,11 @@ from screens.public_add_screen import PublicAddScreen
 from screens.public_screen import PublicScreen
 from screens.reinscription_add_screen import ReinscriptionAddScreen
 from screens.reinscription_screen import ReinscriptionScreen
+from screens.scolarite_screen import ScolaScreen
 from screens.selection_add_screens import SelectionAddScreen
 from screens.selection_screens import SelectionScreen
 from screens.selection_update_screens import SelectionUpdateScreen
 from screens.upload_screen import UploadScreen
-from screens.scolarite_screen import ScolaScreen
 from utils import creat_str_from_list
 
 Config.set('graphics', 'resizable', 0)
@@ -439,4 +440,8 @@ class ScienceApp(MDApp):
         MDApp.get_running_app().PUBLIC_TITRE = ""
 
 
-ScienceApp().run()
+if __name__ == "__main__":
+    if hasattr(sys, '_MEIPASS'):
+        resource_paths(os.path.join(sys._MEIPASS))
+    ScienceApp().run()
+
