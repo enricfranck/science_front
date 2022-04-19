@@ -1,5 +1,7 @@
 import json
+import threading
 
+from kivy.clock import mainthread
 from kivymd.app import MDApp
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.properties import ObjectProperty, StringProperty
@@ -33,6 +35,43 @@ class PublicAddScreen(Screen):
         self.prenom = None
         self.role = None
         self.mention = None
+
+    @mainthread
+    def spinner_toggle(self):
+        if not self.ids.spinner.active:
+            self.ids.spinner.active = True
+        else:
+            self.ids.spinner.active = False
+
+    def process_enreg_users(self):
+        self.spinner_toggle()
+        threading.Thread(target=(
+            self.save_users)).start()
+
+    def process_enreg_mention(self):
+        self.spinner_toggle()
+        threading.Thread(target=(
+            self.save_mention)).start()
+
+    def process_enreg_role(self):
+        self.spinner_toggle()
+        threading.Thread(target=(
+            self.save_role)).start()
+
+    def process_enreg_parcours(self):
+        self.spinner_toggle()
+        threading.Thread(target=(
+            self.save_parcours)).start()
+
+    def process_enreg_droit(self):
+        self.spinner_toggle()
+        threading.Thread(target=(
+            self.save_droit)).start()
+
+    def process_enreg_annee(self):
+        self.spinner_toggle()
+        threading.Thread(target=(
+            self.save_annee())).start()
 
     def back_home(self):
         MDApp.get_running_app().root.current = 'Public'
@@ -195,8 +234,8 @@ class PublicAddScreen(Screen):
                                             "title"])
                 self.semestre.text = creat_str_from_list(
                     MDApp.get_running_app().read_by_key(
-                        MDApp.get_running_app().ALL_PARCOURS, "uuid", MDApp.get_running_app().UUID_SELECTED)[0][
-                            "semestre"])
+                        MDApp.get_running_app().ALL_PARCOURS, "uuid",
+                        MDApp.get_running_app().UUID_SELECTED)[0]["semestre"])
             else:
                 self.email.text = ""
                 self.nom.text = ""
@@ -417,6 +456,7 @@ class PublicAddScreen(Screen):
                 toast(response[0]['detail'])
             else:
                 toast(str(response))
+        self.spinner_toggle()
 
     def save_mention(self):
         # create_json_update
@@ -444,6 +484,8 @@ class PublicAddScreen(Screen):
             else:
                 toast(str(response))
 
+        self.spinner_toggle()
+
     def save_parcours(self):
         url = f"http://{self.host}/api/v1/parcours/"
 
@@ -468,6 +510,7 @@ class PublicAddScreen(Screen):
                 toast(response[0]['detail'])
             else:
                 toast(str(response))
+        self.spinner_toggle()
 
     def save_role(self):
         url = f"http://{self.host}/api/v1/roles/"
@@ -491,6 +534,7 @@ class PublicAddScreen(Screen):
                 toast(response[0]['detail'])
             else:
                 toast(response)
+        self.spinner_toggle()
 
     def save_droit(self):
         url = f"http://{self.host}/api/v1/droit/"
@@ -521,6 +565,7 @@ class PublicAddScreen(Screen):
                 toast(response[0]['detail'])
             else:
                 toast(str(response))
+        self.spinner_toggle()
 
     def save_annee(self):
         url = f"http://{self.host}/api/v1/anne_univ/"
@@ -544,3 +589,4 @@ class PublicAddScreen(Screen):
                 toast(response[0]['detail'])
             else:
                 toast(str(response))
+        self.spinner_toggle()

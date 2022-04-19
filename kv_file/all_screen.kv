@@ -1,3 +1,4 @@
+#:import get_color_from_hex kivy.utils.get_color_from_hex
 ScreenManager:
     LoginScreen: 
     MainScreen: 
@@ -47,6 +48,62 @@ ScreenManager:
             active: False
             disabled: True
             opacity: 0
+
+<ListExam>
+    orientation: "vertical"
+    spacing: "8dp"
+    size_hint_y: None
+    height: "60dp"
+    md_bg_color: (1,1,1,1)
+    MDCard:
+        size_hint_y: None
+        height: "60dp"
+        haling: "center"
+        orientation: "horizontal"
+
+        MDTextField:
+            id: salle
+            hint_text: "Salle"
+            size_hint_x: None
+            helper_text_mode:"on_error"
+            width:80
+            required: True
+
+        MDLabel:
+            text: ""
+            size_hint_x: None
+            width: 20
+
+        MDTextField:
+            id: start
+            hint_text: "de"
+            size_hint_x: None
+            helper_text_mode:"on_error"
+            width:50
+            required: True
+
+        MDLabel:
+            text: ""
+            size_hint_x: None
+            width: 20
+
+        MDTextField:
+            id: end
+            hint_text: "à"
+            size_hint_x: None
+            helper_text_mode:"on_error"
+            width:50
+            required: True
+
+        MDLabel:
+            text: ""
+            size_hint_x: None
+            width: 30
+
+        MDFlatButton:
+            text: "Valider"
+            theme_text_color:"Custom"
+            on_release: root.process_get_list()
 
 <LoginScreen>:
     id: login_screen
@@ -218,6 +275,27 @@ ScreenManager:
         MDNavigationDrawer:
             id:nav_drawer
             type:'standard'
+            MDBoxLayout:
+                orientation: 'vertical'
+                padding: '8dp'
+                spacing: '5dp'
+                Image:
+                    source: 'images/logo_science.jpg'
+
+                ScrollView:
+                    MDList:
+                        id: list
+                        OneLineIconListItem:
+                            id: list_email
+                            text: 'enricfranck@gmail.com'
+                            IconLeftWidget:
+                                icon: 'email'
+
+                        OneLineIconListItem:
+                            id: list_role
+                            text: 'Secretaire'
+                            IconLeftWidget:
+                                icon: 'home-account'
 
 <ReinscriptionScreen>:
     name: 'Reinscription'
@@ -317,7 +395,6 @@ ScreenManager:
                         pos: 80, 430
                         size: 100 , 120
                         angle_start: 0
-                        source: "images/profil.png"
                         angle_end: 360
                 MDIconButton:
                     id: camera
@@ -1454,6 +1531,14 @@ ScreenManager:
                 on_focus: if self.focus: root.menu_annee.open()
                 readonly: True
                 width:100
+
+            MDSpinner:
+                id:spinner
+                size_hint: None, None
+                size: dp(20), dp(20)
+                pos_hint: {'center_x': 0.5}
+                active: False
+
     MDBottomAppBar:
         orientation:'vertical'
         MDToolbar:
@@ -1546,13 +1631,23 @@ ScreenManager:
                     width:200
                     required: True
 
+                MDSpinner:
+                    id: spinner
+                    size_hint: None, None
+                    size: dp(24), dp(24)
+                    pos: 570, 325
+                    active: False
+
                 MDFillRoundFlatIconButton:
                     id: save_users
                     text: "Sauvegarder"
                     pos: 600, 320
                     icon: "content-save"
                     disabled: False if(email.hint_text == "Email" and password.text != "" and email.text != "" and nom.text != "" and prenom.text != "" and mention.text != "" and role.text != "" ) else True
-                    on_release:root.save_users()
+                    on_release:
+                        root.spinner_toggle()
+                        root.process_enreg_users()
+                        root.spinner_toggle()
                     width:200
                     md_bg_color:(0,0,0,0)
 
@@ -1561,7 +1656,10 @@ ScreenManager:
                     text: "Sauvegarder"
                     pos: 600, 320
                     icon: "content-save"
-                    on_release:root.save_mention()
+                    on_release:
+                        root.spinner_toggle()
+                        root.process_enreg_mention()
+                        root.spinner_toggle()
                     disabled: False if (email.hint_text == "Titre mention" and email.text != ""  and nom.text != "" and password != "" and prenom != "" ) else True
                     width:200
                     md_bg_color:(0,0,0,0)
@@ -1571,7 +1669,10 @@ ScreenManager:
                     text: "Sauvegarder"
                     pos: 600, 320
                     icon: "content-save"
-                    on_release:root.save_parcours()
+                    on_release:
+                        root.spinner_toggle()
+                        root.process_enreg_parcours()
+                        root.spinner_toggle()
                     disabled: False if (email.hint_text == "Titre parcours" and email.text != ""  and semestre.text != "" and password.text != "" and mention.text != "" ) else True
                     width:100
                     md_bg_color:(0,0,0,0)
@@ -1581,7 +1682,10 @@ ScreenManager:
                     text: "Sauvegarder"
                     pos: 600, 320
                     icon: "content-save"
-                    on_release:root.save_annee()
+                    on_release:
+                        root.spinner_toggle()
+                        root.process_enreg_annee()
+                        root.spinner_toggle()
                     disabled: False if (email.hint_text == "Titre année"  and email.text != "" and password.text != "") else True
                     width:100
                     md_bg_color:(0,0,0,0)
@@ -1591,7 +1695,10 @@ ScreenManager:
                     text: "Sauvegarder"
                     pos: 600, 320
                     icon: "content-save"
-                    on_release:root.save_role()
+                    on_release:
+                        root.spinner_toggle()
+                        root.process_enreg_role()
+                        root.spinner_toggle()
                     disabled: False if (email.hint_text == "Titre role" and email.text != "") else True
                     width:100
                     md_bg_color:(0,0,0,0)
@@ -1601,7 +1708,10 @@ ScreenManager:
                     text: "Sauvegarder"
                     pos: 600, 320
                     icon: "content-save"
-                    on_release:root.save_droit()
+                    on_release:
+                        root.spinner_toggle()
+                        root.process_enreg_droit()
+                        root.spinner_toggle()
                     disabled: False if (email.hint_text == "Montant"  and email.text != ""  and nom.text != ""  and password.text != ""  and mention.text != ""  ) else True
                     width:100
                     md_bg_color:(0,0,0,0)
@@ -1614,11 +1724,9 @@ ScreenManager:
             title: 'Ajout'
             left_action_items:[["keyboard-backspace",lambda x: root.back_home()]]
             elevation:5
-        Widget:
         BoxLayout:
             orientation: 'vertical'
             FloatLayout_:
-
                 MDTextField:
                     id: title
                     hint_text: "Élément constitutif"
@@ -1651,17 +1759,36 @@ ScreenManager:
                 MDTextField:
                     id: enseignant
                     hint_text: "Enseignant"
-                    pos: 320, 360
+                    pos: 640, 400
                     size_hint_x: None
                     width:300
                     required: False
+
+                MDTextField:
+                    id: optional
+                    hint_text: "Optionnel"
+                    pos: 640, 520
+                    disabled: True
+
+                MDCheckbox:
+                    id:check
+                    size: 20,20
+                    size_hint:None, None
+                    pos_hint: {"center_y": 0.934,"center_x": 0.73}
+
+                MDSpinner:
+                    id: spinner
+                    size_hint: None, None
+                    size: dp(24), dp(24)
+                    pos: 570, 325
+                    active: False
 
                 MDFillRoundFlatIconButton:
                     id: save_ec
                     text: "Sauvegarder"
                     pos: 600, 320
                     icon: "content-save"
-                    on_release:root.enreg_ec()
+                    on_release:root.process_enreg_matier_ec()
                     disabled: False if (value.hint_text == 'Poids' and title.text != ""  and value.text != ""  and value_ue.text != "" ) else True
                     width:100
                     md_bg_color:(0,0,0,0)
@@ -1671,7 +1798,7 @@ ScreenManager:
                     text: "Sauvegarder"
                     pos: 600, 320
                     icon: "content-save"
-                    on_release:root.enreg_ue()
+                    on_release:root.process_enreg_matier_ue()
                     disabled: False if ( value.hint_text == 'Credit' and  title.text != ""  and value.text != "") else True
                     width:100
                     md_bg_color:(0,0,0,0)
@@ -1826,7 +1953,7 @@ ScreenManager:
             title: 'Gestion des notes'
             type:'bottom'
             left_action_items:[["keyboard-backspace",lambda x: root.back_home()]]
-            right_action_items:[["upload",lambda x: root.upload_note()],["download",lambda x: root.download_note()],["logout",lambda x: app.logout()]]
+            right_action_items:[["android",lambda x: root.show_dialog_list()],["upload",lambda x: root.upload_note()],["download",lambda x: root.download_note()],["logout",lambda x: app.logout()]]
             elevation:5
             mode:"center"
             icon:"plus"

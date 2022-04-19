@@ -123,6 +123,8 @@ class LoginScreen(Screen):
                                 processes.append(executor.submit(MDApp.get_running_app().get_all_users()))
                             print(f'Time taken: {time() - start}')
                         else:
+                            MDApp.get_running_app().USER_EMAIL = email
+                            MDApp.get_running_app().USER_ROLE = response[0]['role']
                             MDApp.get_running_app().root.current = 'Main'
                     self.reset_champ()
                 elif response[1] == 400:

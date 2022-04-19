@@ -1,5 +1,6 @@
 import urllib
 import threading
+from abc import ABC
 
 from kivy.clock import mainthread
 from kivy.metrics import dp
@@ -95,6 +96,35 @@ class Content(MDBoxLayout):
         threading.Thread(target=(
             self.enreg_semestre)).start()
 
+
+class ListExam(MDBoxLayout):
+    def __init__(self, **kw):
+        super().__init__(**kw)
+
+    def process_get_list(self):
+        annee = MDApp.get_running_app().ANNEE
+        print(annee, NoteScreen().ids.parcours.text)
+        # MDApp.get_running_app().TITRE_FILE = \
+        #     f"list_{NoteScreen().ids.semestre.text}_{NoteScreen().ids.parcours.text}_{NoteScreen().ids.session.text}"
+        # schemas = "anne_" + annee[0:4] + "_" + annee[5:9]
+        # values = {'schema': f'{schemas}',
+        #           'session': f'{NoteScreen().ids.session.text}',
+        #           'semestre': f'{NoteScreen().ids.semestre.text}',
+        #           'uuid_parcours': MDApp.get_running_app().PARCOURS_SELECTED,
+        #           'uuid_mention': MDApp.get_running_app().MENTION,
+        #           'salle': self.ids.salle.text,
+        #           'skip': self.ids.start.text,
+        #           'limit': self.ids.end.text
+        #           }
+        # params = urllib.parse.urlencode(values)
+        # host = MDApp.get_running_app().HOST
+        # url = f"http://{host}/api/v1/save_data/get_models_notes/"
+        # MDApp.get_running_app().URL_DOWNLOAD = f"{url}?{params}"
+        # MDApp.get_running_app().NAME_DOWNLOAD = f"{MDApp.get_running_app().TITRE_FILE}.xlsx"
+        # MDApp.get_running_app().PARENT = "Note"
+        if len(annee) != 0 and NoteScreen().ids.parcours.text != "":
+            # MDApp.get_running_app().root.current = 'download_file'
+            NoteScreen().dialog.dismiss()
 
 class NoteScreen(Screen):
     screenManager = ObjectProperty(None)
@@ -394,7 +424,6 @@ class NoteScreen(Screen):
 
     def get_all_parcours(self):
         parcours = MDApp.get_running_app().get_list_parcours()
-        print("First", parcours)
         menu_items = [
             {
                 "viewclass": "OneLineListItem",
@@ -616,6 +645,20 @@ class NoteScreen(Screen):
         )
         self.dialog.open()
         self.spinner_toggle()
+
+    def show_dialog_list(self):
+        self.dialog = MDDialog(
+            title=f"Listes aux examen",
+            type="custom",
+            content_cls=ListExam(),
+            buttons=[
+                MDFlatButton(
+                    text="Términer",
+                    on_release=self.cancel_dialog
+                ),
+            ],
+        )
+        self.dialog.open()
 
     def cancel_dialog(self, *args):
         self.dialog.dismiss()

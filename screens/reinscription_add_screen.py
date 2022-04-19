@@ -48,7 +48,7 @@ class ReinscriptionAddScreen(Screen):
         self.file_manager = MDFileManager(
             exit_manager=self.exit_manager,
             select_path=self.select_path,
-            preview=True,
+            # preview=True,
         )
 
         self.selected_mention = ""
@@ -218,8 +218,9 @@ class ReinscriptionAddScreen(Screen):
             self.path = path
             try:
                 self.ids.ellipse.source = f"{path}"
+                toast(self.ids.ellipse.source)
             except Exception as e:
-                pass
+                toast(e)
         self.exit_manager()
 
     def exit_manager(self, *args):

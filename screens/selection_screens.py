@@ -193,9 +193,6 @@ class SelectionScreen(Screen):
     def update_etudiant(self, *args):
         MDApp.get_running_app().root.current = 'SelectionUpdate'
 
-    def show_dialog(self):
-        pass
-
     def transforme_data(self, all_data: list):
         data = []
         k: int = 1
@@ -319,22 +316,20 @@ class SelectionScreen(Screen):
             MDApp.get_running_app().root.current = 'download_file'
 
     def show_dialog(self, *args):
-        if not self.dialog:
-            # create dialog
-            self.dialog = MDDialog(
-                title="Attention!",
-                text=f"Voulez-vous supprimer {MDApp.get_running_app().NUM_SELECT} ?",
-                buttons=[
-                    MDFlatButton(
-                        text="Ok",
-                        on_release=self.delete_etudiant_
-                    ),
-                    MDFlatButton(
-                        text="Annuler",
-                        on_release=self.cancel_dialog
-                    ),
-                ],
-            )
+        self.dialog = MDDialog(
+            title="Attention!",
+            text=f"Voulez-vous supprimer {MDApp.get_running_app().NUM_SELECT} ?",
+            buttons=[
+                MDFlatButton(
+                    text="Ok",
+                    on_release=self.delete_etudiant_
+                ),
+                MDFlatButton(
+                    text="Annuler",
+                    on_release=self.cancel_dialog
+                ),
+            ],
+        )
         self.dialog.open()
 
     def delete_etudiant_(self, *args):

@@ -1,5 +1,7 @@
+import threading
 from typing import Tuple, Any, List
 
+from kivy.clock import mainthread
 from kivy.uix.anchorlayout import AnchorLayout
 from kivymd.app import MDApp
 from kivy.uix.screenmanager import ScreenManager, Screen
@@ -150,7 +152,6 @@ class PublicScreen(Screen):
             column_data=[],
         )
 
-        # self.data_tables.bind(on_row_press=self.row_selected)
         self.add_widget(self.data_tables)
         return self.layout
 
@@ -192,62 +193,77 @@ class PublicScreen(Screen):
         self.delete.disabled = True
         self.delete.md_bg_color = (0, 0, 0, 0)
 
-    def row_selected(self, table, row):
-        start_index, end_index = row.table.recycle_data[row.index]["range"]
-        title = row.table.recycle_data[start_index + 1]["text"]
-        if title != "" and MDApp.get_running_app().PUBLIC_TITRE != "Note":
-
-            if MDApp.get_running_app().PUBLIC_TITRE == "Montant":
-                anne = row.table.recycle_data[start_index + 3]["text"]
-                mention = row.table.recycle_data[start_index + 4]["text"]
-                data = MDApp.get_running_app().ALL_DROIT
-                MDApp.get_running_app().DATA_SELECTED = data
-                MDApp.get_running_app().UUID_SELECTED = \
-                    MDApp.get_running_app().read_by_key_multiple(data, 'niveau', "annee", "mention",
-                                                                 title, anne, mention)[0]['uuid']
-            elif MDApp.get_running_app().PUBLIC_TITRE == "UE":
-                data = MDApp.get_running_app().ALL_UE
-                if self.selected_parcours != "" and self.selected_mention != "" and self.ids.semestre.text != "":
-                    MDApp.get_running_app().DATA_SELECTED = data
-                    MDApp.get_running_app().UUID_SELECTED = \
-                        MDApp.get_running_app().read_by_key_multiples(
-                            data, 'title', "uuid_mention", "uuid_parcours",
-                            "semestre", title, self.selected_mention,
-                            self.selected_parcours, self.ids.semestre.text)[0]['uuid']
-
-            elif MDApp.get_running_app().PUBLIC_TITRE == "EC":
-                data = MDApp.get_running_app().ALL_EC
-                if self.selected_parcours != "" and self.selected_mention != "" and self.ids.semestre.text != "":
-                    MDApp.get_running_app().DATA_SELECTED = data
-                    MDApp.get_running_app().UUID_SELECTED = \
-                        MDApp.get_running_app().read_by_key_multiples(
-                            data, 'title', "uuid_mention", "uuid_parcours",
-                            "semestre", title, self.selected_mention,
-                            self.selected_parcours, self.ids.semestre.text)[0]['uuid']
-            else:
-                key = "title"
-                if MDApp.get_running_app().PUBLIC_TITRE == "Titre mention":
-                    data = MDApp.get_running_app().ALL_MENTION
-                elif MDApp.get_running_app().PUBLIC_TITRE == "Titre parcours":
-                    data = MDApp.get_running_app().ALL_PARCOURS
-                elif MDApp.get_running_app().PUBLIC_TITRE == "Titre role":
-                    data = MDApp.get_running_app().ALL_ROLE
-                elif MDApp.get_running_app().PUBLIC_TITRE == "Titre année":
-                    data = MDApp.get_running_app().ALL_ANNEE
-                else:
-                    data = MDApp.get_running_app().ALL_USERS
-                    key = "email"
-                    print(MDApp.get_running_app().ALL_USERS)
-                MDApp.get_running_app().DATA_SELECTED = data
-                MDApp.get_running_app().UUID_SELECTED = MDApp.get_running_app().read_by_key(
-                    data, key, title)[0]['uuid']
-
-            if MDApp.get_running_app().UUID_SELECTED != "":
-                self.active_button()
+    @mainthread
+    def spinner_toggle(self):
+        if not self.ids.spinner.active:
+            self.ids.spinner.active = True
         else:
-            MDApp.get_running_app().UUID_SELECTED = ""
-            MDApp.get_running_app().DATA_SELECTED = []
-            self.inactive_button()
+            self.ids.spinner.active = False
+
+    def process_enreg_matier_ue(self):
+        self.spinner_toggle()
+        threading.Thread(target=(
+            self.enreg_ue)).start()
+
+    def row_selected(self, table, row):
+        try:
+            start_index, end_index = row.table.recycle_data[row.index]["range"]
+            title = row.table.recycle_data[start_index + 1]["text"]
+            if title != "" and MDApp.get_running_app().PUBLIC_TITRE != "Note":
+
+                if MDApp.get_running_app().PUBLIC_TITRE == "Montant":
+                    anne = row.table.recycle_data[start_index + 3]["text"]
+                    mention = row.table.recycle_data[start_index + 4]["text"]
+                    data = MDApp.get_running_app().ALL_DROIT
+                    MDApp.get_running_app().DATA_SELECTED = data
+                    MDApp.get_running_app().UUID_SELECTED = \
+                        MDApp.get_running_app().read_by_key_multiple(data, 'niveau', "annee", "mention",
+                                                                     title, anne, mention)[0]['uuid']
+                elif MDApp.get_running_app().PUBLIC_TITRE == "UE":
+                    data = MDApp.get_running_app().ALL_UE
+                    if self.selected_parcours != "" and self.selected_mention != "" and self.ids.semestre.text != "":
+                        MDApp.get_running_app().DATA_SELECTED = data
+                        MDApp.get_running_app().UUID_SELECTED = \
+                            MDApp.get_running_app().read_by_key_multiples(
+                                data, 'title', "uuid_mention", "uuid_parcours",
+                                "semestre", title, self.selected_mention,
+                                self.selected_parcours, self.ids.semestre.text)[0]['uuid']
+
+                elif MDApp.get_running_app().PUBLIC_TITRE == "EC":
+                    data = MDApp.get_running_app().ALL_EC
+                    if self.selected_parcours != "" and self.selected_mention != "" and self.ids.semestre.text != "":
+                        MDApp.get_running_app().DATA_SELECTED = data
+                        MDApp.get_running_app().UUID_SELECTED = \
+                            MDApp.get_running_app().read_by_key_multiples(
+                                data, 'title', "uuid_mention", "uuid_parcours",
+                                "semestre", title, self.selected_mention,
+                                self.selected_parcours, self.ids.semestre.text)[0]['uuid']
+                else:
+                    key = "title"
+                    if MDApp.get_running_app().PUBLIC_TITRE == "Titre mention":
+                        data = MDApp.get_running_app().ALL_MENTION
+                    elif MDApp.get_running_app().PUBLIC_TITRE == "Titre parcours":
+                        data = MDApp.get_running_app().ALL_PARCOURS
+                    elif MDApp.get_running_app().PUBLIC_TITRE == "Titre role":
+                        data = MDApp.get_running_app().ALL_ROLE
+                    elif MDApp.get_running_app().PUBLIC_TITRE == "Titre année":
+                        data = MDApp.get_running_app().ALL_ANNEE
+                    else:
+                        data = MDApp.get_running_app().ALL_USERS
+                        key = "email"
+                        print(MDApp.get_running_app().ALL_USERS)
+                    MDApp.get_running_app().DATA_SELECTED = data
+                    MDApp.get_running_app().UUID_SELECTED = MDApp.get_running_app().read_by_key(
+                        data, key, title)[0]['uuid']
+
+                if MDApp.get_running_app().UUID_SELECTED != "":
+                    self.active_button()
+            else:
+                MDApp.get_running_app().UUID_SELECTED = ""
+                MDApp.get_running_app().DATA_SELECTED = []
+                self.inactive_button()
+        except Exception as e:
+            print(e)
 
     def on_enter(self, *args):
         list_menu = ["Année universitaire", "Mention", "Parcours", "Role", "Users", "Droit"]
@@ -398,7 +414,10 @@ class PublicScreen(Screen):
             row_data=list_row,
         )
         self.add_widget(self.data_tables)
-        self.data_tables.bind(on_row_press=self.row_selected)
+        try:
+            self.data_tables.bind(on_row_press=self.row_selected)
+        except Exception as e:
+            toast(str(e))
         return self.layout
 
     def add_new(self):
@@ -426,7 +445,6 @@ class PublicScreen(Screen):
     def menu_calback_mention(self, text_item):
         self.selected_mention = \
             MDApp.get_running_app().read_by_key(MDApp.get_running_app().ALL_MENTION, "title", text_item)[0]['uuid']
-        print(MDApp.get_running_app().ALL_MENTION)
         if MDApp.get_running_app().MENTION != self.selected_mention:
             MDApp.get_running_app().MENTION = self.selected_mention
             MDApp.get_running_app().get_list_parcours()
@@ -522,7 +540,6 @@ class PublicScreen(Screen):
         self.ids.parcours.text = text_item
         self.menu_parcours.dismiss()
         if self.ids.matier.text == "Unité d'enseignement":
-            print(self.selected_parcours, self.selected_mention)
             data = MDApp.get_running_app().read_by_two_key(MDApp.get_running_app().ALL_UE,
                                                            "uuid_mention", "uuid_parcours",
                                                            self.selected_mention, self.selected_parcours)
@@ -655,33 +672,31 @@ class PublicScreen(Screen):
                     toast(str(response))
 
     def show_dialog(self, *args):
-        if not self.dialog:
-            # create dialog
-            if MDApp.get_running_app().PUBLIC_TITRE != "Note":
-                if MDApp.get_running_app().PUBLIC_TITRE == "Email":
-                    key = "email"
-                elif MDApp.get_running_app().PUBLIC_TITRE == "Montant":
-                    key = "montant"
-                else:
-                    key = "title"
-                value = MDApp.get_running_app().read_by_key(MDApp.get_running_app().DATA_SELECTED,
-                                                            "uuid", MDApp.get_running_app().UUID_SELECTED)[0][key]
+        if MDApp.get_running_app().PUBLIC_TITRE != "Note":
+            if MDApp.get_running_app().PUBLIC_TITRE == "Email":
+                key = "email"
+            elif MDApp.get_running_app().PUBLIC_TITRE == "Montant":
+                key = "montant"
             else:
-                value = f'{self.ids.semestre.text}_{self.ids.parcours.text}_{self.ids.matier.text}'
-            self.dialog = MDDialog(
-                title="Attention!",
-                text=f"Voulez-vous supprimer {value} ?",
-                buttons=[
-                    MDFlatButton(
-                        text="Oui",
-                        on_release=self.delete_
-                    ),
-                    MDFlatButton(
-                        text="Non",
-                        on_release=self.cancel_dialog
-                    ),
-                ],
-            )
+                key = "title"
+            value = MDApp.get_running_app().read_by_key(MDApp.get_running_app().DATA_SELECTED,
+                                                        "uuid", MDApp.get_running_app().UUID_SELECTED)[0][key]
+        else:
+            value = f'{self.ids.semestre.text}_{self.ids.parcours.text}_{self.ids.matier.text}'
+        self.dialog = MDDialog(
+            title="Attention!",
+            text=f"Voulez-vous supprimer {value} ?",
+            buttons=[
+                MDFlatButton(
+                    text="Oui",
+                    on_release=self.delete_
+                ),
+                MDFlatButton(
+                    text="Non",
+                    on_release=self.cancel_dialog
+                ),
+            ],
+        )
         self.dialog.open()
 
     def update(self, *args):

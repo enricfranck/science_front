@@ -155,6 +155,8 @@ class ScienceApp(MDApp):
     DATA_SELECTED: str = []
     PARCOURS_SELECTED: str = ""
     SEMESTRE_SELECTED: str = ""
+    USER_EMAIL: str = ""
+    USER_ROLE: str = ""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -371,7 +373,6 @@ class ScienceApp(MDApp):
                       "mention": MDApp.get_running_app().read_by_key(MDApp.get_running_app().ALL_MENTION,
                                                                      "uuid", droit["uuid_mention"])[0]["title"]}
             all_droit.append(droit_)
-        print(all_droit)
         MDApp.get_running_app().ALL_DROIT = all_droit
 
     def get_all_users(self):
@@ -410,13 +411,14 @@ class ScienceApp(MDApp):
     def transform_data(self, list_key: list, all_data: list):
         data = []
         k: int = 1
-        if len(all_data) != 0:
-            for on_data in all_data:
-                data_value = [k]
-                for key in list_key:
-                    data_value.append(on_data[key])
-                data.append(tuple(data_value))
-                k += 1
+        if all_data is not None:
+            if len(all_data) != 0:
+                for on_data in all_data:
+                    data_value = [k]
+                    for key in list_key:
+                        data_value.append(on_data[key])
+                    data.append(tuple(data_value))
+                    k += 1
         data_vide = [""]
         for key in list_key:
             data_vide.append("")

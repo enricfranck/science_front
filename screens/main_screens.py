@@ -1,6 +1,7 @@
+from kivy.properties import ObjectProperty
+from kivy.uix.screenmanager import Screen
 from kivymd.app import MDApp
-from kivy.uix.screenmanager import ScreenManager, Screen
-from kivy.properties import ObjectProperty, StringProperty
+from kivymd.uix.list import OneLineListItem
 
 
 class MainScreen(Screen):
@@ -10,6 +11,10 @@ class MainScreen(Screen):
         email = self.ids.email.text
         password = self.ids.password.text
         print(email, password)
+
+    def on_enter(self, *args):
+        self.ids.list_email.text = MDApp.get_running_app().USER_EMAIL
+        self.ids.list_role.text = MDApp.get_running_app().USER_ROLE
 
     def back_select(self):
         MDApp.get_running_app().root.current = 'Selection'

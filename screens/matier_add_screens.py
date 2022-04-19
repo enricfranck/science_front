@@ -1,5 +1,7 @@
 import json
+import threading
 
+from kivy.clock import mainthread
 from kivy.properties import ObjectProperty
 from kivy.uix.screenmanager import Screen
 from kivymd.app import MDApp
@@ -21,6 +23,24 @@ class MatierAddScreen(Screen):
         self.parcours = None
         self.mention = None
         self.menue_ue = None
+
+    @mainthread
+    def spinner_toggle(self):
+        print(self.ids.spinner.active)
+        if not self.ids.spinner.active:
+            self.ids.spinner.active = True
+        else:
+            self.ids.spinner.active = False
+
+    def process_enreg_matier_ue(self):
+        self.spinner_toggle()
+        threading.Thread(target=(
+            self.enreg_ue)).start()
+
+    def process_enreg_matier_ec(self):
+        self.spinner_toggle()
+        threading.Thread(target=(
+            self.enreg_ec)).start()
 
     def on_enter(self, *args):
         self.host = MDApp.get_running_app().HOST
@@ -44,6 +64,10 @@ class MatierAddScreen(Screen):
             self.ids.enseignant.disabled = True
             self.ids.save_ec.opacity = 0
             self.ids.save_ue.opacity = 1
+
+            self.ids.check.opacity = 0
+            self.ids.check.disabled = True
+            self.ids.optional.opacity = 0
             if MDApp.get_running_app().PUBLIC_ACTION_TYPE == "UPDATE":
                 self.ids.title.text = MDApp.get_running_app().read_by_key(MDApp.get_running_app().ALL_UE, "uuid",
                                                                           MDApp.get_running_app().UUID_SELECTED
@@ -65,6 +89,10 @@ class MatierAddScreen(Screen):
             self.ids.enseignant.disabled = False
             self.ids.save_ec.opacity = 1
             self.ids.save_ue.opacity = 0
+
+            self.ids.check.opacity = 1
+            self.ids.check.disabled = False
+            self.ids.optional.opacity = 1
             if MDApp.get_running_app().PUBLIC_ACTION_TYPE == "UPDATE":
                 self.ids.title.text = MDApp.get_running_app().read_by_key(MDApp.get_running_app().ALL_EC, "uuid",
                                                                           MDApp.get_running_app().UUID_SELECTED
@@ -76,12 +104,15 @@ class MatierAddScreen(Screen):
                     MDApp.get_running_app().ALL_EC, "uuid", MDApp.get_running_app().UUID_SELECTED)[0]["value_ue"])
                 self.ids.enseignant.text = MDApp.get_running_app().read_by_key(
                     MDApp.get_running_app().ALL_EC, "uuid", MDApp.get_running_app().UUID_SELECTED)[0]["utilisateur"]
+                self.ids.check.active = bool(MDApp.get_running_app().read_by_key(
+                    MDApp.get_running_app().ALL_EC, "uuid", MDApp.get_running_app().UUID_SELECTED)[0]["is_optional"])
             else:
                 self.ids.title.text = ""
                 self.ids.title.readonly = False
                 self.ids.value.text = ""
                 self.ids.value_ue.text = ""
                 self.ids.enseignant.text = ""
+                self.ids.check.active = False
 
     def back_home(self):
         """
@@ -145,6 +176,7 @@ class MatierAddScreen(Screen):
                 MDApp.get_running_app().ALL_UE = response[0]
             if response[1] == 400:
                 toast(response[0]['detail'])
+        self.spinner_toggle()
 
     def enreg_ec(self):
         """
@@ -156,8 +188,9 @@ class MatierAddScreen(Screen):
 
         if MDApp.get_running_app().PUBLIC_ACTION_TYPE == "UPDATE":
             url = f"http://{self.host}/api/v1/matier_ec/update_ec/"
-            ec_key = ["poids", "value_ue", "utilisateur"]
-            ec_value = [self.ids.value.text, self.ids.value_ue.text, self.ids.enseignant.text]
+            ec_key = ["poids", "value_ue", "utilisateur", "is_optional"]
+            ec_value = [self.ids.value.text, self.ids.value_ue.text,
+                        self.ids.enseignant.text, bool(self.ids.check.active)]
             params_key = ["schema", "uuid"]
             uuid = MDApp.get_running_app().UUID_SELECTED
             print(uuid)
@@ -167,11 +200,12 @@ class MatierAddScreen(Screen):
             response = update_with_params(url, params_key, params_value, self.token, payload)
         else:
             url = f"http://{self.host}/api/v1/matier_ec/"
-            ec_key = ["uuid", "title", "poids", "value_ue", "uuid_mention", "uuid_parcours", "semestre", "utilisateur"]
+            ec_key = ["uuid", "title", "poids", "value_ue", "uuid_mention", "uuid_parcours",
+                      "semestre", "utilisateur", "is_optional"]
             uuid = "3fa85f64-5717-4562-b3fc-2c963f66afa6"
             ec_value = [uuid, self.ids.title.text, self.ids.value.text, self.ids.value_ue.text, self.mention,
                         self.parcours,
-                        self.semestre, self.ids.enseignant.text]
+                        self.semestre, self.ids.enseignant.text, bool(self.ids.check.active)]
             params_key = ["schema"]
             params_value = [schemas]
             ec = create_json(ec_key, ec_value)
@@ -183,3 +217,4 @@ class MatierAddScreen(Screen):
                 MDApp.get_running_app().ALL_EC = response[0]
             if response[1] == 400:
                 toast(response[0]['detail'])
+        self.spinner_toggle()
