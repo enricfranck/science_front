@@ -1,0 +1,9 @@
+{
+    "server": [
+        {
+            "title": "serveur local",
+            "address": "localhost",
+            "uuid": "5ad89b09-6ea3-40a5-bcd5-6514a2389de6"
+        }
+    ]
+}

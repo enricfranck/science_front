@@ -110,7 +110,7 @@ ScreenManager:
     name: 'Login'
     MDCard:
         size_hint: None, None
-        size: 380, 400
+        size: 380, 440
         pos_hint: {"center_x": 0.5, "center_y": 0.5}
         elevation:10
         padding: 30
@@ -151,10 +151,30 @@ ScreenManager:
             icon_right:"eye-off"
             width:300
 
+        MDCard:
+            size_hint: None, None
+            size: 300, 50
+            pos_hint: {"center_x": 0.5, "center_y": 0.5}
+            spacing: 5
+            orientation: 'horizontal'
+            MDTextField:
+                id: server
+                hint_text: "Choisir le serveur:"
+                pos_hint: {"center_x": 0.5}
+                size_hint_x: None
+                helper_text_mode:"on_error"
+                width:260
+
+            MDIconButton:
+                id: plus
+                icon: 'plus-circle'
+                on_release: root.file_manager_open()
+
         MDLabel:
-            text: "Mot de passe oublié"
+            id: adress
+            text: "Addresse: 127.0.0.1"
             halign: "center"
-            font_size: "12px"
+            font_size: "14px"
             
         MDCard:
             size_hint: None, None
@@ -165,6 +185,7 @@ ScreenManager:
             halign:'center'
             MDRectangleFlatButton:
                 text: 'login'
+                disabled: True if (email.text == "" or password.text == "" or server.text == "") else False
                 on_press:
                     root.thread_login()
 

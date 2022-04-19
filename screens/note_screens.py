@@ -140,7 +140,7 @@ class NoteScreen(Screen):
         self.nombre = None
         self.selected_mention = None
         self.selected_parcours = None
-        self.all_column = None
+        self.all_column = []
         self.menu_session = None
         self.menu_semestre = None
         self.menu_parcours = None

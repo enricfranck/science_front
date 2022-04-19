@@ -2,3 +2,4 @@ kivymd==0.104.2
 kivy
 python-dotenv
 requests_toolbelt
+uuid
