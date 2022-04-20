@@ -100,35 +100,13 @@ class Content(MDBoxLayout):
 class ListExam(MDBoxLayout):
     def __init__(self, **kw):
         super().__init__(**kw)
+        self.salle = ""
 
-    def get_salle(self):
-        return self.ids.salle.text
+    def get_info(self):
+        MDApp.get_running_app().SALLE = self.ids.salle.text
+        MDApp.get_running_app().START_LIST = self.ids.start.text
+        MDApp.get_running_app().END_LIST = self.ids.end.text
 
-    def process_get_list(self):
-        annee = MDApp.get_running_app().ANNEE
-        print(annee, NoteScreen().ids.parcours.text)
-        print(self.get_salle())
-        # MDApp.get_running_app().TITRE_FILE = \
-        #     f"list_{NoteScreen().ids.semestre.text}_{NoteScreen().ids.parcours.text}_{NoteScreen().ids.session.text}"
-        # schemas = "anne_" + annee[0:4] + "_" + annee[5:9]
-        # values = {'schema': f'{schemas}',
-        #           'session': f'{NoteScreen().ids.session.text}',
-        #           'semestre': f'{NoteScreen().ids.semestre.text}',
-        #           'uuid_parcours': MDApp.get_running_app().PARCOURS_SELECTED,
-        #           'uuid_mention': MDApp.get_running_app().MENTION,
-        #           'salle': self.ids.salle.text,
-        #           'skip': self.ids.start.text,
-        #           'limit': self.ids.end.text
-        #           }
-        # params = urllib.parse.urlencode(values)
-        # host = MDApp.get_running_app().HOST
-        # url = f"http://{host}/api/v1/save_data/get_models_notes/"
-        # MDApp.get_running_app().URL_DOWNLOAD = f"{url}?{params}"
-        # MDApp.get_running_app().NAME_DOWNLOAD = f"{MDApp.get_running_app().TITRE_FILE}.xlsx"
-        # MDApp.get_running_app().PARENT = "Note"
-        # if len(annee) != 0 and NoteScreen().ids.parcours.text != "":
-        #     # MDApp.get_running_app().root.current = 'download_file'
-        #     NoteScreen().dialog.dismiss()
 
 class NoteScreen(Screen):
     screenManager = ObjectProperty(None)
@@ -462,13 +440,13 @@ class NoteScreen(Screen):
         with ThreadPoolExecutor(max_workers=10) as executor:
             processes.append(executor.submit(self.get_all_colums))
             processes.append(executor.submit(self.get_etudiants))
-        self.insert_data()
         self.spinner_toggle()
 
     def process_spinner_toogle(self):
         self.spinner_toggle()
         threading.Thread(target=(
             self.process_spiner)).start()
+        self.insert_data()
 
     def process_parcours(self):
         processes = []
@@ -658,7 +636,7 @@ class NoteScreen(Screen):
             buttons=[
                 MDFlatButton(
                     text="Valider",
-                    on_release=self.valid_dialog
+                    on_release=self.process_get_list
                 ),
                 MDFlatButton(
                     text="Términer",
@@ -672,10 +650,31 @@ class NoteScreen(Screen):
     def cancel_dialog(self, *args):
         self.dialog.dismiss()
 
-    def valid_dialog(self, *args):
-        exam = ListExam()
-        exam.process_get_list()
-        print(exam.get_salle())
+    def process_get_list(self, *args):
+        ListExam().get_info()
+        annee = MDApp.get_running_app().ANNEE
+        MDApp.get_running_app().TITRE_FILE = \
+            f"list_{self.ids.semestre.text}_{self.ids.parcours.text}_{self.ids.session.text}"
+        schemas = "anne_" + annee[0:4] + "_" + annee[5:9]
+        values = {'schema': f'{schemas}',
+                  'session': f'{self.ids.session.text}',
+                  'semestre': f'{self.ids.semestre.text}',
+                  'uuid_parcours': MDApp.get_running_app().PARCOURS_SELECTED,
+                  'uuid_mention': MDApp.get_running_app().MENTION,
+                  'salle': MDApp.get_running_app().SALLE,
+                  'skip': MDApp.get_running_app().START_LIST,
+                  'limit': MDApp.get_running_app().END_LIST
+                  }
+        print(values)
+        params = urllib.parse.urlencode(values)
+        host = MDApp.get_running_app().HOST
+        url = f"http://{host}/v1/liste/list_exam/"
+        MDApp.get_running_app().URL_DOWNLOAD = f"{url}?{params}"
+        MDApp.get_running_app().NAME_DOWNLOAD = f"{MDApp.get_running_app().TITRE_FILE}.pdf"
+        MDApp.get_running_app().PARENT = "Note"
+        if len(annee) != 0 and self.ids.parcours.text != "":
+            MDApp.get_running_app().root.current = 'download_file'
+            self.dialog.dismiss()
 
 
 def get_ue(annee):
