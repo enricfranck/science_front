@@ -69,7 +69,7 @@ class LoginScreen(Screen):
         super().__init__(**kw)
         self.menu_server = None
         self.response = None
-        self.host = MDApp.get_running_app().HOST
+        self.host = ""
         self.token = ""
         self.menu_server = MDDropdownMenu(
             items=self.get_all_server(),
@@ -95,9 +95,8 @@ class LoginScreen(Screen):
     def menu_calback_server(self, text_item):
         self.ids.server.text = text_item
         server = get_item_by_title_from_json(text_item, "server", "server")
-        adress = server['address']
-        MDApp.get_running_app().HOST = adress
-        self.ids.adress.text = f"Adresse:{adress}"
+        MDApp.get_running_app().HOST = server['address']
+        self.ids.adress.text = f"Adresse:{MDApp.get_running_app().HOST}"
         self.menu_server.dismiss()
 
     def thread_login_(self):
@@ -120,6 +119,7 @@ class LoginScreen(Screen):
 
     @mainthread
     def login(self):
+        self.host = MDApp.get_running_app().HOST
         email = self.ids.email.text
         password = self.ids.password.text
         url_login: str = f"http://{self.host}/api/v1/login/access-token"
