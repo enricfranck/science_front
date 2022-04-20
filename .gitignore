@@ -10,4 +10,5 @@
 *.spec
 *.pdf
 *.pyc
+/data/server.json
 image.jpg
