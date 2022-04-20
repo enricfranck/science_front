@@ -13,10 +13,10 @@ from kivymd.app import MDApp
 from kivymd.uix.textfield import MDTextField
 from kivymd.uix.menu import MDDropdownMenu
 
-
 from all_requests.request_utils import login_post
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from utils import get_data_from_json, get_item_by_title_from_json
+
 parent = Path(__file__).resolve().parent.parent / ""
 sys.path.append(str(parent))
 
@@ -71,13 +71,14 @@ class LoginScreen(Screen):
         self.response = None
         self.host = MDApp.get_running_app().HOST
         self.token = ""
-
-    def on_enter(self):
         self.menu_server = MDDropdownMenu(
-            caller=self.ids.server,
             items=self.get_all_server(),
             width_mult=4,
         )
+
+    def callback(self, button):
+        self.menu_server.caller = button
+        self.menu_server.open()
 
     def get_all_server(self):
         server = get_data_from_json('server', "server")
@@ -95,7 +96,9 @@ class LoginScreen(Screen):
         self.ids.server.text = text_item
         server = get_item_by_title_from_json(text_item, "server", "server")
         adress = server['address']
+        MDApp.get_running_app().HOST = adress
         self.ids.adress.text = f"Adresse:{adress}"
+        self.menu_server.dismiss()
 
     def thread_login_(self):
         self.login()

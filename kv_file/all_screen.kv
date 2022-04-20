@@ -1,7 +1,7 @@
 #:import get_color_from_hex kivy.utils.get_color_from_hex
 ScreenManager:
-    LoginScreen: 
-    MainScreen: 
+    LoginScreen:
+    MainScreen:
     ReinscriptionScreen:
     ReinscriptionAddScreen:
     DownloadScreen:
@@ -163,6 +163,7 @@ ScreenManager:
                 pos_hint: {"center_x": 0.5}
                 size_hint_x: None
                 helper_text_mode:"on_error"
+                on_focus: if self.focus: root.callback(server)
                 width:260
 
             MDIconButton:

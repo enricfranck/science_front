@@ -1,3 +1,4 @@
+import datetime
 import json
 import uuid
 
@@ -116,7 +117,6 @@ if __name__ == "__main__":
         "title": "Serveur ubuntu",
         "address": "192.168.88.30"
     }
-    print(uuid.uuid4())
     # create_one_item_in_json("server", data, 'server')
     # print(get_data_from_json('server', 'server'))
     delete_item_from_json("9dc4d059-6f4d-4328-bef1-565f6239ebdd", "server", "server")
