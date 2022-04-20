@@ -132,7 +132,7 @@ class ScienceApp(MDApp):
     NUM_SELECT: str = ""
     MENTION: str = ""
     # HOST: str = "192.168.88.30"
-    HOST: str = "localhost"
+    HOST: str = ""
     IS_INITIALISE = False
     TITRE_FILE: str = ""
     PARENT: str = ""
@@ -158,6 +158,9 @@ class ScienceApp(MDApp):
     SEMESTRE_SELECTED: str = ""
     USER_EMAIL: str = ""
     USER_ROLE: str = ""
+    SALLE: str = ""
+    START_LIST: int = 1
+    END_LIST: int = 1
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

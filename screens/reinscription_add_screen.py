@@ -294,6 +294,7 @@ class ReinscriptionAddScreen(Screen):
         date_dialog.bind(on_save=self.on_save_quint, on_cancel=self.on_cancel)
         date_dialog.open()
 
+    @mainthread
     def enreg_etudiant(self):
         self.selected_semestre = self.get_semestre()
         annee = MDApp.get_running_app().ANNEE
