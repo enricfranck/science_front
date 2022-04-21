@@ -67,6 +67,7 @@ class DownloadScreen(Screen):
         return True
 
     def on_enter(self, *args):
+        print(MDApp.get_running_app().URL_DOWNLOAD)
         self.ids.toolbar.title = MDApp.get_running_app().TITRE_FILE
         self.ids.progress_bar.value = 0
 

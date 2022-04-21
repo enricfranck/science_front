@@ -100,12 +100,15 @@ class Content(MDBoxLayout):
 class ListExam(MDBoxLayout):
     def __init__(self, **kw):
         super().__init__(**kw)
-        self.salle = ""
+        self.ids.valider.opacity = 1
+        self.ids.valider.disabled = False
 
     def get_info(self):
         MDApp.get_running_app().SALLE = self.ids.salle.text
         MDApp.get_running_app().START_LIST = self.ids.start.text
         MDApp.get_running_app().END_LIST = self.ids.end.text
+        self.ids.valider.opacity = 0
+        self.ids.valider.disabled = True
 
 
 class NoteScreen(Screen):
@@ -357,7 +360,7 @@ class NoteScreen(Screen):
                     toast(response[0]['detail'])
                 else:
                     toast(str(response))
-
+    @mainthread
     def insert_data(self):
         data = MDApp.get_running_app().transform_data(self.all_column, self.data)
         self.transform_table(self.create_list_tuple(self.all_column), data)
@@ -440,13 +443,13 @@ class NoteScreen(Screen):
         with ThreadPoolExecutor(max_workers=10) as executor:
             processes.append(executor.submit(self.get_all_colums))
             processes.append(executor.submit(self.get_etudiants))
+        self.insert_data()
         self.spinner_toggle()
 
     def process_spinner_toogle(self):
         self.spinner_toggle()
         threading.Thread(target=(
             self.process_spiner)).start()
-        self.insert_data()
 
     def process_parcours(self):
         processes = []
@@ -634,13 +637,13 @@ class NoteScreen(Screen):
             type="custom",
             content_cls=ListExam(),
             buttons=[
-                MDFlatButton(
-                    text="Valider",
-                    on_release=self.process_get_list
-                ),
+                # MDFlatButton(
+                #     text="Valider",
+                #     on_release=self.process_get_list
+                # ),
                 MDFlatButton(
                     text="Términer",
-                    on_release=self.cancel_dialog
+                    on_release=self.process_get_list
                 ),
             ],
 
@@ -651,7 +654,7 @@ class NoteScreen(Screen):
         self.dialog.dismiss()
 
     def process_get_list(self, *args):
-        ListExam().get_info()
+        # ListExam().get_info()
         annee = MDApp.get_running_app().ANNEE
         MDApp.get_running_app().TITRE_FILE = \
             f"list_{self.ids.semestre.text}_{self.ids.parcours.text}_{self.ids.session.text}"
@@ -665,16 +668,15 @@ class NoteScreen(Screen):
                   'skip': MDApp.get_running_app().START_LIST,
                   'limit': MDApp.get_running_app().END_LIST
                   }
-        print(values)
         params = urllib.parse.urlencode(values)
         host = MDApp.get_running_app().HOST
-        url = f"http://{host}/v1/liste/list_exam/"
+        url = f"http://{host}/api/v1/liste/list_exam/"
         MDApp.get_running_app().URL_DOWNLOAD = f"{url}?{params}"
         MDApp.get_running_app().NAME_DOWNLOAD = f"{MDApp.get_running_app().TITRE_FILE}.pdf"
         MDApp.get_running_app().PARENT = "Note"
         if len(annee) != 0 and self.ids.parcours.text != "":
-            MDApp.get_running_app().root.current = 'download_file'
             self.dialog.dismiss()
+            MDApp.get_running_app().root.current = 'download_file'
 
 
 def get_ue(annee):

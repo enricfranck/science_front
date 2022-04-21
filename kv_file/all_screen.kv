@@ -101,9 +101,10 @@ ScreenManager:
             width: 30
 
         MDFlatButton:
+            id: valider
             text: "Valider"
             theme_text_color:"Custom"
-            on_release: root.process_get_list()
+            on_release: root.get_info()
 
 <LoginScreen>:
     id: login_screen
