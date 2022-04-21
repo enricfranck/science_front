@@ -89,16 +89,23 @@ def get_data_from_json(name: str, key: str):
 def create_one_item_in_json(name: str, data, key: str):
     json_data = load_data(name)
     id = uuid.uuid4()
-    data['uuid'] = str(id)
-    json_data[key].append(data)
-    save_data(name, json_data)
+    data_old = json_data[key]
+    test: bool = False
+    for item in data_old:
+        if item["address"] == data["address"]:
+            test = True
+
+    if not test:
+        data['uuid'] = str(id)
+        json_data[key].append(data)
+        save_data(name, json_data)
 
 
-def delete_item_from_json(uuid: str, key: str, name: str):
+def delete_item_from_json(key_1: str, value_key: str, key: str, name: str):
     json_data = load_data(name)
     data_old = json_data[key]
     for item in data_old:
-        if item['uuid'] == uuid:
+        if item[key_1] == value_key and value_key != "localhost":
             data_old.remove(item)
     json_data[key] = data_old
     save_data(name, json_data)

@@ -12,6 +12,10 @@ from kivy.uix.screenmanager import Screen
 from kivymd.app import MDApp
 from kivymd.uix.textfield import MDTextField
 from kivymd.uix.menu import MDDropdownMenu
+from utils import create_one_item_in_json, delete_item_from_json
+from kivymd.uix.boxlayout import MDBoxLayout
+from kivymd.uix.dialog import MDDialog
+from kivymd.uix.button import MDFlatButton
 
 from all_requests.request_utils import login_post
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -62,21 +66,43 @@ class MyMDTextField(MDTextField):
         self.cursor = pos
 
 
+class NewServer(MDBoxLayout):
+    def __init__(self, **kw):
+        super().__init__(**kw)
+
+    def save_server(self):
+        data = {
+            "title": self.ids.server.text,
+            "address": self.ids.address.text,
+        }
+        create_one_item_in_json("server", data, "server")
+        self.ids.server.text = ""
+        self.ids.address.text = ""
+        self.ids.valider.disabled = True
+
+    def delete_server(self):
+        self.ids.server.text = ""
+        self.ids.address.text = ""
+        delete_item_from_json("address", self.ids.address.text, "server", "server")
+        self.ids.delete.disabled = True
+
+
 class LoginScreen(Screen):
     screenManager = ObjectProperty(None)
 
     def __init__(self, **kw):
         super().__init__(**kw)
+        self.dialog = None
         self.menu_server = None
         self.response = None
         self.host = ""
         self.token = ""
+
+    def callback(self, button):
         self.menu_server = MDDropdownMenu(
             items=self.get_all_server(),
             width_mult=4,
         )
-
-    def callback(self, button):
         self.menu_server.caller = button
         self.menu_server.open()
 
@@ -174,8 +200,23 @@ class LoginScreen(Screen):
         self.ids.email.text = "admin@science.com"
         self.ids.password.text = "aze135azq35sfsnf6353sfh3xb68yyp31gf68k5sf6h3s5d68jd5"
 
-    def active_spinner(self):
-        self.ids.spinner.active = True
+    def show_dialog_list(self):
+        self.dialog = MDDialog(
+            title=f"Nouveau serveur",
+            type="custom",
+            content_cls=NewServer(),
+            buttons=[
+                MDFlatButton(
+                    text="Términer",
+                    on_release=self.cancel_dialog
+                ),
+            ],
+
+        )
+        self.dialog.open()
+
+    def cancel_dialog(self, *args):
+        self.dialog.dismiss()
 
 
 def get_mention():

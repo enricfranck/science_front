@@ -49,6 +49,46 @@ ScreenManager:
             disabled: True
             opacity: 0
 
+<NewServer>
+    orientation: "vertical"
+    spacing: "8dp"
+    size_hint_y: None
+    height: "150dp"
+
+    MDTextField:
+        id: server
+        hint_text: "Nom du serveur"
+        size_hint_x: None
+        width:180
+
+    MDTextField:
+        id: address
+        hint_text: "Adresse du serveur"
+        size_hint_x: None
+        width:180
+
+    MDCard:
+        size_hint: None, None
+        size: 200,40
+        pos_hint: {"center_x": 0.5, "center_y": 0.5}
+        spacing: 5
+        orientation: 'horizontal'
+        halign:'center'
+        MDRectangleFlatButton:
+            id: valider
+            text: 'Ajouter'
+            disabled: True if (server.text == "" or address.text == "" ) else False
+            on_press:
+                root.save_server()
+
+        MDRectangleFlatButton:
+            id: delete
+            text: 'Supprimer'
+            disabled: True if (address.text == "") else False
+            on_press:
+                root.delete_server()
+
+
 <ListExam>
     orientation: "vertical"
     spacing: "8dp"
@@ -170,7 +210,7 @@ ScreenManager:
             MDIconButton:
                 id: plus
                 icon: 'plus-circle'
-                on_release: root.file_manager_open()
+                on_release: root.show_dialog_list()
 
         MDLabel:
             id: adress
