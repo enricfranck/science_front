@@ -99,10 +99,6 @@ class LoginScreen(Screen):
         self.ids.adress.text = f"Adresse:{MDApp.get_running_app().HOST}"
         self.menu_server.dismiss()
 
-    def thread_login_(self):
-        self.spinner_toggle()
-        self.login()
-
     @mainthread
     def reset_champ(self):
         self.ids.email.text = ""
@@ -164,14 +160,12 @@ class LoginScreen(Screen):
                         else:
                             MDApp.get_running_app().USER_EMAIL = email
                             MDApp.get_running_app().USER_ROLE = response[0]['role']
-                            MDApp.get_running_app().root.current = 'Main'
+                            self.navigate_screen("Main")
                     self.reset_champ()
                 elif response[1] == 400:
                     self.show_dialog(str(response[0]['detail']))
-                    self.ids.spinner.active = False
                 else:
                     self.show_dialog(str(response))
-                    self.ids.spinner.active = False
         self.spinner_toggle()
 
     def auto_remplir(self):
