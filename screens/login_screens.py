@@ -100,13 +100,15 @@ class LoginScreen(Screen):
         self.menu_server.dismiss()
 
     def thread_login_(self):
+        self.spinner_toggle()
         self.login()
 
+    @mainthread
     def reset_champ(self):
         self.ids.email.text = ""
         self.ids.password.text = ""
 
-    # @mainthread
+    @mainthread
     def spinner_toggle(self, *args):
         if not self.ids.spinner.active:
             self.ids.spinner.active = True
@@ -114,10 +116,18 @@ class LoginScreen(Screen):
             self.ids.spinner.active = False
 
     def thread_login(self):
+        self.spinner_toggle()
         threading.Thread(target=(
-            self.thread_login_)).start()
+            self.login)).start()
 
     @mainthread
+    def navigate_screen(self, name: str):
+        MDApp.get_running_app().root.current = name
+
+    @mainthread
+    def show_dialog(self, message: str):
+        MDApp.get_running_app().show_dialog(message)
+
     def login(self):
         self.host = MDApp.get_running_app().HOST
         email = self.ids.email.text
@@ -143,8 +153,6 @@ class LoginScreen(Screen):
 
                         print(f'Time taken: {time() - start}')
                         if response[0]['role'] == "supperuser":
-                            MDApp.get_running_app().root.current = 'Public'
-
                             start = time()
                             processes = []
                             with ThreadPoolExecutor(max_workers=10) as executor:
@@ -152,19 +160,18 @@ class LoginScreen(Screen):
                                 processes.append(executor.submit(MDApp.get_running_app().get_all_role()))
                                 processes.append(executor.submit(MDApp.get_running_app().get_all_users()))
                             print(f'Time taken: {time() - start}')
+                            self.navigate_screen("Public")
                         else:
                             MDApp.get_running_app().USER_EMAIL = email
                             MDApp.get_running_app().USER_ROLE = response[0]['role']
                             MDApp.get_running_app().root.current = 'Main'
                     self.reset_champ()
                 elif response[1] == 400:
-                    MDApp.get_running_app().show_dialog(str(response[0]['detail']))
+                    self.show_dialog(str(response[0]['detail']))
                     self.ids.spinner.active = False
                 else:
-                    MDApp.get_running_app().show_dialog(str(response))
+                    self.show_dialog(str(response))
                     self.ids.spinner.active = False
-        else:
-            self.ids.password.require = True
         self.spinner_toggle()
 
     def auto_remplir(self):

@@ -189,7 +189,9 @@ ScreenManager:
                 text: 'login'
                 disabled: True if (email.text == "" or password.text == "" or server.text == "") else False
                 on_press:
+                    root.spinner_toggle()
                     root.thread_login()
+                    root.spinner_toggle()
 
             MDRectangleFlatButton:
                 text: 'auto'

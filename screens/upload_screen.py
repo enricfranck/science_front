@@ -58,7 +58,9 @@ class UploadScreen(Screen):
     def on_enter(self, *args):
         self.ids.toolbar.title = MDApp.get_running_app().TITRE_FILE
 
+    @mainthread
     def back_home(self):
+        self.ids.path.text = ""
         MDApp.get_running_app().root.current = MDApp.get_running_app().PARENT
 
     @mainthread
@@ -85,7 +87,6 @@ class UploadScreen(Screen):
                    'Authorization': f'Bearer {token}'
                    }
         req = requests.post(url=url, headers=headers, files={"uploaded_file": open(f'{path}', 'rb')})
-        self.ids.path.text = ""
         if req.status_code == 200:
             self.back_home()
         return req.text
