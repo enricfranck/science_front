@@ -10,5 +10,5 @@
 *.spec
 *.pdf
 *.pyc
-/data/server.json
+/data
 image.jpg
