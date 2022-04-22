@@ -1,26 +1,24 @@
-import urllib
+import json
 import threading
-from abc import ABC
+import time
+import urllib
+from concurrent.futures import ThreadPoolExecutor
 
 from kivy.clock import mainthread
 from kivy.metrics import dp
+from kivy.properties import ObjectProperty
 from kivy.uix.anchorlayout import AnchorLayout
+from kivy.uix.screenmanager import Screen
 from kivymd.app import MDApp
-from kivy.uix.screenmanager import ScreenManager, Screen
-from kivy.properties import ObjectProperty, StringProperty
 from kivymd.toast import toast
-from kivymd.uix.button import MDIconButton
+from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.button import MDFlatButton
 from kivymd.uix.datatables import MDDataTable
+from kivymd.uix.dialog import MDDialog
 from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.spinner import MDSpinner
-import time
-import json
-from kivymd.uix.dialog import MDDialog
 
 from all_requests.request_utils import create_with_params, get_with_params, create_json
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from kivymd.uix.boxlayout import MDBoxLayout
 
 
 class Content(MDBoxLayout):
@@ -136,6 +134,7 @@ class NoteScreen(Screen):
         self.layout = AnchorLayout()
         self.initialise = True
         self.data_tables = None
+        self.parcours = []
 
     def on_enter(self, *args):
         if self.initialise:
@@ -148,6 +147,8 @@ class NoteScreen(Screen):
             self.spinner_toggle()
 
     def init_data(self):
+
+        self.all_column = ["1", "2", "3", "4"]
 
         self.menu_mention = MDDropdownMenu(
             caller=self.ids.mention,
@@ -170,12 +171,6 @@ class NoteScreen(Screen):
         self.menu_semestre = MDDropdownMenu(
             caller=self.ids.mention,
             items=self.get_all_semestre(),
-            width_mult=4,
-        )
-
-        self.menu_matier = MDDropdownMenu(
-            caller=self.ids.matier,
-            items=self.get_all_matier(),
             width_mult=4,
         )
 
@@ -228,9 +223,6 @@ class NoteScreen(Screen):
             if num_carte != "":
                 MDApp.get_running_app().NUM_CARTE = num_carte
                 MDApp.get_running_app().SEMESTRE_SELECTED = semestre
-                # self.spinner_toggle()
-                # self.process_spinner_dialog()
-                # self.spinner_toggle()
                 self.show_confirmation_dialog()
         except Exception as e:
             toast(str(e))
@@ -314,6 +306,14 @@ class NoteScreen(Screen):
         self.ids.annee.text = text_item
         self.menu_annee.dismiss()
 
+    def open_menu(self):
+        self.menu_matier = MDDropdownMenu(
+            caller=self.ids.matier,
+            items=self.get_all_matier(),
+            width_mult=4,
+        )
+        self.menu_matier.open()
+
     def get_all_colums(self):
         if self.ids.parcours.text != "" and self.ids.semestre.text != "":
             annee = MDApp.get_running_app().ANNEE
@@ -331,16 +331,12 @@ class NoteScreen(Screen):
                     self.ids.nombre.text = ""
                     self.ids.disabled = True
                     self.all_column = list(response[0])
-                    self.menu_matier = MDDropdownMenu(
-                        caller=self.ids.matier,
-                        items=self.get_all_matier(),
-                        width_mult=4,
-                    )
                 elif response[1] == 400:
                     toast(response[0]['detail'])
                     self.all_column = []
                 else:
                     toast(str(response))
+                    self.all_column = []
 
     def get_etudiants(self, *args):
         if self.ids.parcours.text != "" and self.ids.semestre.text != "":
@@ -408,7 +404,7 @@ class NoteScreen(Screen):
         self.menu_condition.dismiss()
 
     def get_all_parcours(self):
-        parcours = MDApp.get_running_app().get_list_parcours()
+        parcours = self.parcours
         menu_items = [
             {
                 "viewclass": "OneLineListItem",
@@ -454,13 +450,17 @@ class NoteScreen(Screen):
     def process_parcours(self):
         processes = []
         with ThreadPoolExecutor(max_workers=3) as executor:
-            processes.append(executor.submit(self.get_all_parcours))
+            processes.append(executor.submit(self.get_parcours))
+        self.spinner_toggle()
+
+    def get_parcours(self):
+        self.parcours = MDApp.get_running_app().get_list_parcours()
         self.spinner_toggle()
 
     def process_parcours_toogle(self):
         self.spinner_toggle()
         threading.Thread(target=(
-            self.process_parcours)).start()
+            self.get_parcours)).start()
 
     def show_spinner_dialog(self):
         self.content = Content()
@@ -492,14 +492,14 @@ class NoteScreen(Screen):
             self.spinner_toggle()
             self.process_parcours_toogle()
             self.spinner_toggle()
-
-            self.menu_parcours = MDDropdownMenu(
-                caller=self.ids.parcours,
-                items=self.get_all_parcours(),
-                width_mult=4,
-            )
         self.ids.mention.text = text_item
         self.menu_mention.dismiss()
+        time.sleep(2)
+        self.menu_parcours = MDDropdownMenu(
+            caller=self.ids.parcours,
+            items=self.get_all_parcours(),
+            width_mult=4,
+        )
 
     def get_all_matier(self):
         matier = []
@@ -519,6 +519,10 @@ class NoteScreen(Screen):
 
     def menu_calback_session(self, text_item):
         self.ids.session.text = text_item
+        if self.ids.parcours.text != "" and self.ids.semestre.text != "":
+            self.spinner_toggle()
+            self.process_spinner_toogle()
+            self.spinner_toggle()
         self.menu_session.dismiss()
 
     def menu_calback_matier(self, text_item):
@@ -637,10 +641,6 @@ class NoteScreen(Screen):
             type="custom",
             content_cls=ListExam(),
             buttons=[
-                # MDFlatButton(
-                #     text="Valider",
-                #     on_release=self.process_get_list
-                # ),
                 MDFlatButton(
                     text="Términer",
                     on_release=self.process_get_list
@@ -689,8 +689,3 @@ def get_ec(anne):
     if len(MDApp.get_running_app().ALL_ANNEE) != 0:
         MDApp.get_running_app().ALL_EC = \
             MDApp.get_running_app().get_all_ec(annee=anne)
-
-
-def get_parcours():
-    MDApp.get_running_app().get_list_parcours()
-    print("parcours", MDApp.get_running_app().ALL_PARCOURS)

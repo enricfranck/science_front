@@ -1889,7 +1889,7 @@ ScreenManager:
                 pos_hint:{"center_y": 0.94, "center_x":0.2}
                 size_hint_x: None
                 readonly: True
-                on_focus:if self.focus: root.menu_matier.open()
+                on_focus:if self.focus and session.text != "": root.open_menu()
                 width:240
                 on_text: root.view_rattrapage()
             MDLabel:
