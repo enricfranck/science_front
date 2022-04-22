@@ -100,9 +100,9 @@ class DownloadScreen(Screen):
         print('success')
 
     def fail(self, req, result):
-        self.spinner_toggle()
+        self.ids.download.disabled = False
         print("fail_", req.resp_status, result)
 
     def error(self, req, result):
-        self.spinner_toggle()
+        self.ids.download.disabled = False
         print("error_", req.resp_status, result)
