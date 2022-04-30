@@ -180,7 +180,10 @@ class ReinscriptionAddScreen(Screen):
                 self.selected_mention = MDApp.get_running_app().MENTION
                 self.set_semestre([un_etudiant["semestre_petit"], un_etudiant["semestre_grand"]])
                 try:
-                    self.ids.ellipse.source = f'http://{self.host}/api/v1/ancien_etudiants/photo?name_file={str(un_etudiant["photo"])}'
+                    self.ids.ellipse.source = \
+                        StringProperty(''+str(f'http://{self.host}/api/v1/ancien_etudiants/photo?name_file='
+                                       f'{str(un_etudiant["photo"])}.jpg'))
+                    print(self.ids.ellipse.source)
                 except Exception as e:
                     print(e)
                     pass
@@ -346,7 +349,7 @@ class ReinscriptionAddScreen(Screen):
                         etudiant = create_json(list_key, list_value)
                         payload = json.dumps(etudiant)
                         if self.path != "":
-                            photo = self.post_photo(num_carte)
+                            photo = self.post_photo(num_carte, self.path)["filename"]
                             if 'detail' not in photo:
                                 response = create_with_params(url_enreg, key_params, value_params, token, payload)
                             else:
@@ -365,7 +368,7 @@ class ReinscriptionAddScreen(Screen):
                     key_params = ["schema", "num_carte"]
                     value_params = [schemas, num_carte]
                     if self.path != "":
-                        photo = self.post_photo(num_carte)
+                        photo = self.post_photo(num_carte, self.path)["filename"]
                         if 'detail' not in photo:
                             response = update_with_params(url_enreg, key_params, value_params, token, payload)
                         else:
@@ -387,7 +390,7 @@ class ReinscriptionAddScreen(Screen):
             toast("Sélectioner d'abord l'année universitaires")
         self.spinner_toggle()
 
-    def post_photo(self, num_carte: str):
+    def post_photos(self, num_carte: str):
         photo = {}
         try:
             photo = self.post_photo(num_carte, self.path)["filename"]
