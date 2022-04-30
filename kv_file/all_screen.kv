@@ -461,6 +461,7 @@ ScreenManager:
                         size: 100 , 120
                         angle_start: 0
                         angle_end: 360
+                        source: "/home/enric/Images/franck.jpg"
                 MDIconButton:
                     id: camera
                     icon: 'camera'
@@ -2015,6 +2016,7 @@ ScreenManager:
     MDBottomAppBar:
         orientation:'vertical'
         MDToolbar:
+            id: result
             title: 'Gestion des notes'
             type:'bottom'
             left_action_items:[["keyboard-backspace",lambda x: root.back_home()]]
@@ -2022,7 +2024,7 @@ ScreenManager:
             elevation:5
             mode:"center"
             icon:"plus"
-            on_action_button: root.add_new()
+            on_action_button: root.menu_result_final.open()
 <NoteAddScreen>:
     name: 'NoteAdd'
     MDBoxLayout:

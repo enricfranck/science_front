@@ -195,10 +195,10 @@ class LoginScreen(Screen):
         self.spinner_toggle()
 
     def auto_remplir(self):
-        self.ids.email.text = "enricfranck@gmail.com"
-        self.ids.password.text = "123"
-        # self.ids.email.text = "admin@science.com"
-        # self.ids.password.text = "aze135azq35sfsnf6353sfh3xb68yyp31gf68k5sf6h3s5d68jd5"
+        # self.ids.email.text = "enricfranck@gmail.com"
+        # self.ids.password.text = "123"
+        self.ids.email.text = "admin@science.com"
+        self.ids.password.text = "aze135azq35sfsnf6353sfh3xb68yyp31gf68k5sf6h3s5d68jd5"
 
     def show_dialog_list(self):
         self.dialog = MDDialog(

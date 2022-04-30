@@ -18,6 +18,7 @@ from kivymd.uix.dialog import MDDialog
 from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.spinner import MDSpinner
 
+from all_requests import request_utils
 from all_requests.request_utils import create_with_params, get_with_params, create_json
 
 
@@ -109,6 +110,24 @@ class ListExam(MDBoxLayout):
         self.ids.valider.disabled = True
 
 
+def get_list_parcours() -> list:
+    parcours = []
+    host = MDApp.get_running_app().HOST
+    token = MDApp.get_running_app().TOKEN
+    uuid_mention = MDApp.get_running_app().MENTION
+    url_parcours: str = f'http://{host}/api/v1/parcours/by_mention/'
+    response = request_utils.get_with_params(url_parcours, ["uuid_mention"], [uuid_mention], token)
+    if response:
+        if response[1] == 200:
+            MDApp.get_running_app().ALL_PARCOURS = response[0]
+            if len(response[0]) != 0:
+                for rep in response[0]:
+                    parcours.append(str(rep['abreviation']))
+        else:
+            toast(str(response))
+    return parcours
+
+
 class NoteScreen(Screen):
     screenManager = ObjectProperty(None)
     dialog = None
@@ -125,6 +144,7 @@ class NoteScreen(Screen):
         self.selected_parcours = None
         self.all_column = []
         self.menu_session = None
+        self.menu_result_final = None
         self.menu_semestre = None
         self.menu_parcours = None
         self.menu_matier = None
@@ -148,7 +168,7 @@ class NoteScreen(Screen):
 
     def init_data(self):
 
-        self.all_column = ["1", "2", "3", "4"]
+        self.all_column = []
 
         self.menu_mention = MDDropdownMenu(
             caller=self.ids.mention,
@@ -177,6 +197,12 @@ class NoteScreen(Screen):
         self.menu_session = MDDropdownMenu(
             caller=self.ids.session,
             items=self.get_all_session(),
+            width_mult=4,
+        )
+
+        self.menu_result_final = MDDropdownMenu(
+            caller=self.ids.result,
+            items=self.get_all_result(),
             width_mult=4,
         )
 
@@ -271,6 +297,18 @@ class NoteScreen(Screen):
         ]
         return menu_items
 
+    def get_all_result(self):
+        result = ["Définitive", "Compensé"]
+        menu_items = [
+            {
+                "viewclass": "OneLineListItem",
+                "text": f"{result[i]}",
+                "height": dp(50),
+                "on_release": lambda x=f"{result[i]}": self.menu_calback_result(x),
+            } for i in range(len(result))
+        ]
+        return menu_items
+
     def get_all_condition(self):
         condition = ["Inférieur à", "Égale à", "Supérieur à"]
         menu_items = [
@@ -356,6 +394,7 @@ class NoteScreen(Screen):
                     toast(response[0]['detail'])
                 else:
                     toast(str(response))
+
     @mainthread
     def insert_data(self):
         data = MDApp.get_running_app().transform_data(self.all_column, self.data)
@@ -447,20 +486,21 @@ class NoteScreen(Screen):
         threading.Thread(target=(
             self.process_spiner)).start()
 
-    def process_parcours(self):
-        processes = []
-        with ThreadPoolExecutor(max_workers=3) as executor:
-            processes.append(executor.submit(self.get_parcours))
-        self.spinner_toggle()
+    # def process_parcours(self):
+    #     processes = []
+    #     with ThreadPoolExecutor(max_workers=3) as executor:
+    #         processes.append(executor.submit(self.get_parcours))
+    #     self.spinner_toggle()
 
     def get_parcours(self):
-        self.parcours = MDApp.get_running_app().get_list_parcours()
-        self.spinner_toggle()
+        self.parcours = get_list_parcours()
 
     def process_parcours_toogle(self):
         self.spinner_toggle()
         threading.Thread(target=(
             self.get_parcours)).start()
+
+        print("Parcours",self.parcours)
 
     def show_spinner_dialog(self):
         self.content = Content()
@@ -489,12 +529,10 @@ class NoteScreen(Screen):
             MDApp.get_running_app().read_by_key(MDApp.get_running_app().ALL_MENTION, "title", text_item)[0]['uuid']
         if MDApp.get_running_app().MENTION != self.selected_mention:
             MDApp.get_running_app().MENTION = self.selected_mention
-            self.spinner_toggle()
-            self.process_parcours_toogle()
-            self.spinner_toggle()
+            self.get_parcours()
         self.ids.mention.text = text_item
         self.menu_mention.dismiss()
-        time.sleep(2)
+
         self.menu_parcours = MDDropdownMenu(
             caller=self.ids.parcours,
             items=self.get_all_parcours(),
@@ -524,6 +562,28 @@ class NoteScreen(Screen):
             self.process_spinner_toogle()
             self.spinner_toggle()
         self.menu_session.dismiss()
+
+    def menu_calback_result(self, text_item):
+        if text_item == "Définitive":
+            text_item = "definitive"
+        else:
+            text_item = "compense"
+        MDApp.get_running_app().TITRE_FILE = \
+            f"Resultat_final_{self.ids.parcours.text}_{self.ids.semestre.text}_{self.ids.session.text}_{text_item}"
+        annee = MDApp.get_running_app().ANNEE
+        schemas = "anne_" + annee[0:4] + "_" + annee[5:9]
+        values = {'schema': f'{schemas}', 'session': f'{self.ids.session.text}',
+                  'semestre': f'{self.ids.semestre.text}', 'uuid_parcours': MDApp.get_running_app().PARCOURS_SELECTED,
+                  'type_result': text_item}
+        params = urllib.parse.urlencode(values)
+        host = MDApp.get_running_app().HOST
+        url = f"http://{host}/api/v1/resultat/get_by_session"
+        MDApp.get_running_app().URL_DOWNLOAD = f"{url}?{params}"
+        MDApp.get_running_app().NAME_DOWNLOAD = f"{MDApp.get_running_app().TITRE_FILE}.pdf"
+        MDApp.get_running_app().PARENT = "Note"
+        if len(annee) != 0:
+            MDApp.get_running_app().root.current = 'download_file'
+        self.menu_result_final.dismiss()
 
     def menu_calback_matier(self, text_item):
         self.ids.matier.text = text_item
