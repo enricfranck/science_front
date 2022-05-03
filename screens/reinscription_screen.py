@@ -281,7 +281,7 @@ class ReinscriptionScreen(Screen):
                 "text": f"S{i + 1}",
                 "height": dp(50),
                 "on_release": lambda x=f"S{i + 1}": self.menu_calback_semestre(x),
-            } for i in range(9)
+            } for i in range(10)
         ]
         return menu_items
 
@@ -295,11 +295,6 @@ class ReinscriptionScreen(Screen):
             self.process_spinner_toogle()
             self.spinner_toggle()
 
-            self.menu_parcours = MDDropdownMenu(
-                caller=self.ids.parcours_button,
-                items=self.get_all_parcours(),
-                width_mult=4,
-            )
             self.initialise = True
             self.ids.mention_label.text = text_item
             self.menu_mention.dismiss()
@@ -314,7 +309,13 @@ class ReinscriptionScreen(Screen):
         else:
             self.spinner.active = False
 
+    @mainthread
     def insert_data(self):
+        self.menu_parcours = MDDropdownMenu(
+            caller=self.ids.parcours_button,
+            items=self.get_all_parcours(),
+            width_mult=4,
+        )
         self.data_tables.row_data = []
         self.data_tables.row_data = transforme_data(MDApp.get_running_app().ALL_ETUDIANT)
 

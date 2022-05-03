@@ -1,20 +1,19 @@
 import json
 import os.path
-import secrets
-import string
 import threading
-from kivy.clock import mainthread
 
+from kivy.clock import mainthread
 from kivy.core.window import Window
-from kivymd.app import MDApp
-from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.properties import ObjectProperty, StringProperty, get_color_from_hex
+from kivy.uix.screenmanager import Screen
+from kivymd.app import MDApp
 from kivymd.material_resources import dp
 from kivymd.toast import toast
 from kivymd.uix.filemanager import MDFileManager
 from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.picker import MDDatePicker
-from all_requests.request_etudiants import save_etudiant, post_photo, update_etudiant
+
+from all_requests.request_etudiants import post_photo
 from all_requests.request_utils import create_json, create_with_params, create_json_update, update_with_params
 
 
@@ -43,6 +42,7 @@ class ReinscriptionAddScreen(Screen):
         self.menu_mention = None
         self.menu_parcours = None
         self.path = ""
+        self.button = ""
         Window.bind(on_keyboard=self.events)
         self.manager_open = False
         self.file_manager = MDFileManager(
@@ -180,11 +180,15 @@ class ReinscriptionAddScreen(Screen):
                 self.selected_mention = MDApp.get_running_app().MENTION
                 self.set_semestre([un_etudiant["semestre_petit"], un_etudiant["semestre_grand"]])
                 try:
-                    self.ids.ellipse.source = \
-                        StringProperty(''+str(f'http://{self.host}/api/v1/ancien_etudiants/photo?name_file='
-                                       f'{str(un_etudiant["photo"])}.jpg'))
+                    url_img = str(f'http://{self.host}/api/v1/ancien_etudiants/photo?name_file='
+                                  f'{str(un_etudiant["photo"])}.jpg')
+                    self.ids.ellipse.source = StringProperty(url_img)
+                    print("blabla", type(url_img))
                     print(self.ids.ellipse.source)
                 except Exception as e:
+                    url_img = str(f'http://{self.host}/api/v1/ancien_etudiants/photo?name_file='
+                                  f'{str(un_etudiant["photo"])}.jpg')
+                    print("blabla", type(url_img))
                     print(e)
                     pass
 
@@ -243,12 +247,18 @@ class ReinscriptionAddScreen(Screen):
     def on_cancel(self, instance, value):
         """Events called when the "CANCEL" dialog box button is clicked."""
 
-    def on_save_cin(self, instance, value, date_range):
+    def on_save_date(self, instance, value, date_range):
         """
         """
-        self.ids.date_cin.text = str(value)
+        if self.button == "quintance":
+            self.ids.date_quintance.text = str(value)
+        elif self.button == "naiss":
+            self.ids.date_naiss.text = str(value)
+        elif self.button == "cin":
+            self.ids.date_cin.text = str(value)
 
-    def show_date_picker_cin(self, ):
+    def show_date_picker(self, button):
+        self.button = button
         date_dialog = MDDatePicker(min_year=1980,
                                    max_year=2030,
                                    primary_color=get_color_from_hex("#72225b"),
@@ -258,43 +268,7 @@ class ReinscriptionAddScreen(Screen):
                                    text_color="#ffffff",
                                    text_current_color=get_color_from_hex("#e93f39"),
                                    input_field_background_color=(1, 1, 1, 0.2), )
-        date_dialog.bind(on_save=self.on_save_cin, on_cancel=self.on_cancel)
-        date_dialog.open()
-
-    def on_save_naiss(self, instance, value, date_range):
-        """
-        """
-        self.ids.date_naiss.text = str(value)
-
-    def show_date_picker_naiss(self):
-        date_dialog = MDDatePicker(min_year=1980,
-                                   max_year=2030,
-                                   primary_color=get_color_from_hex("#72225b"),
-                                   accent_color=get_color_from_hex("#5d1a4a"),
-                                   selector_color=get_color_from_hex("#e93f39"),
-                                   text_toolbar_color=get_color_from_hex("#cccccc"),
-                                   text_color="#ffffff",
-                                   text_current_color=get_color_from_hex("#e93f39"),
-                                   input_field_background_color=(1, 1, 1, 0.2), )
-        date_dialog.bind(on_save=self.on_save_naiss, on_cancel=self.on_cancel)
-        date_dialog.open()
-
-    def on_save_quint(self, instance, value, date_range):
-        """
-        """
-        self.ids.date_quintance.text = str(value)
-
-    def show_date_picker_quint(self):
-        date_dialog = MDDatePicker(min_year=1980,
-                                   max_year=2030,
-                                   primary_color=get_color_from_hex("#72225b"),
-                                   accent_color=get_color_from_hex("#5d1a4a"),
-                                   selector_color=get_color_from_hex("#e93f39"),
-                                   text_toolbar_color=get_color_from_hex("#cccccc"),
-                                   text_color="#ffffff",
-                                   text_current_color=get_color_from_hex("#e93f39"),
-                                   input_field_background_color=(1, 1, 1, 0.2), )
-        date_dialog.bind(on_save=self.on_save_quint, on_cancel=self.on_cancel)
+        date_dialog.bind(on_save=self.on_save_date, on_cancel=self.on_cancel)
         date_dialog.open()
 
     @mainthread
@@ -334,10 +308,14 @@ class ReinscriptionAddScreen(Screen):
                             "nation", "adresse", "num_cin", "date_cin", "lieu_cin", "num_quitance",
                             "date_quitance", "montant", "photo", "etat", "moyenne", "uuid_mention",
                             "uuid_parcours", "bacc_anne", "semestre_petit", "semestre_grand"]
+
                 list_value = [num_carte, nom, prenom, sexe, date_naiss, lieu_naiss, nation, adresse,
                               num_cin, date_cin, lieu_cin, quintance, date_quintance, montant, photo,
                               etat, moyenne, uuid_mention, uuid_parcours, bacc_anne, semestre_petit,
                               semestre_grand]
+
+                etudiant = create_json(list_key, list_value)
+                payload = json.dumps(etudiant)
 
                 key_params = ["schema"]
                 value_params = [schemas]
@@ -346,11 +324,17 @@ class ReinscriptionAddScreen(Screen):
                         MDApp.get_running_app().ALL_ETUDIANT, "num_carte", num_carte)
                     if len(test_num) == 0:
                         url_enreg: str = f'http://{host}/api/v1/ancien_etudiants/'
-                        etudiant = create_json(list_key, list_value)
-                        payload = json.dumps(etudiant)
                         if self.path != "":
                             photo = self.post_photo(num_carte, self.path)["filename"]
+                            print(photo)
                             if 'detail' not in photo:
+                                list_value = [num_carte, nom, prenom, sexe, date_naiss, lieu_naiss, nation, adresse,
+                                              num_cin, date_cin, lieu_cin, quintance, date_quintance, montant, photo,
+                                              etat, moyenne, uuid_mention, uuid_parcours, bacc_anne, semestre_petit,
+                                              semestre_grand]
+
+                                etudiant = create_json(list_key, list_value)
+                                payload = json.dumps(etudiant)
                                 response = create_with_params(url_enreg, key_params, value_params, token, payload)
                             else:
                                 toast(photo)
@@ -362,14 +346,18 @@ class ReinscriptionAddScreen(Screen):
 
                 else:
                     url_enreg: str = f'http://{host}/api/v1/ancien_etudiants/update_etudiant/'
-                    etudiant = create_json_update(list_key, list_value)
-                    payload = json.dumps(etudiant)
-
                     key_params = ["schema", "num_carte"]
                     value_params = [schemas, num_carte]
                     if self.path != "":
                         photo = self.post_photo(num_carte, self.path)["filename"]
                         if 'detail' not in photo:
+                            list_value = [num_carte, nom, prenom, sexe, date_naiss, lieu_naiss, nation, adresse,
+                                          num_cin, date_cin, lieu_cin, quintance, date_quintance, montant, photo,
+                                          etat, moyenne, uuid_mention, uuid_parcours, bacc_anne, semestre_petit,
+                                          semestre_grand]
+
+                            etudiant = create_json(list_key, list_value)
+                            payload = json.dumps(etudiant)
                             response = update_with_params(url_enreg, key_params, value_params, token, payload)
                         else:
                             toast(photo)
@@ -441,12 +429,6 @@ class ReinscriptionAddScreen(Screen):
             MDApp.get_running_app().ALL_PARCOURS, "abreviation", text_item)[0]['uuid']
         self.ids.parcours_field.text = text_item
         self.menu_parcours.dismiss()
-
-    # def read_parcours_by_title(self, data: list, titre: str):
-    #     return list(filter(lambda parcours: parcours["abreviation"].lower() == titre.lower(), data))
-
-    # def read_mention_by_title(self, data: list, titre: str):
-    #     return list(filter(lambda mention: mention["title"].lower() == titre.lower(), data))
 
     def auto_complete(self):
         self.ids.num_ce.text = MDApp.get_running_app().create_secret(5)

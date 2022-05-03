@@ -18,6 +18,7 @@ class SelectionUpdateScreen(Screen):
 
     def __init__(self, **kw):
         super().__init__(**kw)
+        self.button = None
         self.menu_serie = None
         self.menu_parcours = None
         self.menu_sexe = None
@@ -195,7 +196,7 @@ class SelectionUpdateScreen(Screen):
 
     def menu_calback_niveau(self, text_item):
         self.ids.niveau_field.text = text_item
-        self.menue_niveau.dismiss()
+        self.menu_niveau.dismiss()
 
     def menu_calback_sexe(self, text_item):
         self.ids.sexe.text = text_item
@@ -360,32 +361,18 @@ class SelectionUpdateScreen(Screen):
     def on_cancel(self, instance, value):
         """Events called when the "CANCEL" dialog box button is clicked."""
 
-    def on_save_cin(self, instance, value, date_range):
+    def on_save_date(self, instance, value, date_range):
         """
         """
-        self.ids.date_cin.text = str(value)
+        if self.button == "quintance":
+            self.ids.date_quintance.text = str(value)
+        elif self.button == "naiss":
+            self.ids.date_naiss.text = str(value)
+        elif self.button == "cin":
+            self.ids.date_cin.text = str(value)
 
-    def show_date_picker_cin(self, ):
-        date_dialog = MDDatePicker(
-            min_year=1980,
-            max_year=2030,
-            primary_color=get_color_from_hex("#72225b"),
-            accent_color=get_color_from_hex("#5d1a4a"),
-            selector_color=get_color_from_hex("#e93f39"),
-            text_toolbar_color=get_color_from_hex("#cccccc"),
-            text_color="#ffffff",
-            text_current_color=get_color_from_hex("#e93f39"),
-            input_field_background_color=(1, 1, 1, 0.2),
-        )
-        date_dialog.bind(on_save=self.on_save_cin, on_cancel=self.on_cancel)
-        date_dialog.open()
-
-    def on_save_naiss(self, instance, value, date_range):
-        """
-        """
-        self.ids.date_naiss.text = str(value)
-
-    def show_date_picker_naiss(self):
+    def show_date_picker(self, button):
+        self.button = button
         date_dialog = MDDatePicker(min_year=1980,
                                    max_year=2030,
                                    primary_color=get_color_from_hex("#72225b"),
@@ -395,23 +382,5 @@ class SelectionUpdateScreen(Screen):
                                    text_color="#ffffff",
                                    text_current_color=get_color_from_hex("#e93f39"),
                                    input_field_background_color=(1, 1, 1, 0.2), )
-        date_dialog.bind(on_save=self.on_save_naiss, on_cancel=self.on_cancel)
-        date_dialog.open()
-
-    def on_save_quint(self, instance, value, date_range):
-        """
-        """
-        self.ids.date_quintance.text = str(value)
-
-    def show_date_picker_quint(self):
-        date_dialog = MDDatePicker(min_year=1980,
-                                   max_year=2030,
-                                   primary_color=get_color_from_hex("#72225b"),
-                                   accent_color=get_color_from_hex("#5d1a4a"),
-                                   selector_color=get_color_from_hex("#e93f39"),
-                                   text_toolbar_color=get_color_from_hex("#cccccc"),
-                                   text_color="#ffffff",
-                                   text_current_color=get_color_from_hex("#e93f39"),
-                                   input_field_background_color=(1, 1, 1, 0.2), )
-        date_dialog.bind(on_save=self.on_save_quint, on_cancel=self.on_cancel)
+        date_dialog.bind(on_save=self.on_save_date, on_cancel=self.on_cancel)
         date_dialog.open()

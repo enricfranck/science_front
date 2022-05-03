@@ -467,11 +467,13 @@ class NoteScreen(Screen):
 
     @mainthread
     def spinner_toggle(self):
-        print(self.spinner.active)
+        print("avant", self.spinner.active)
         if not self.spinner.active:
             self.spinner.active = True
         else:
             self.spinner.active = False
+
+        print("apres", self.spinner.active)
 
     def process_spiner(self):
         processes = []

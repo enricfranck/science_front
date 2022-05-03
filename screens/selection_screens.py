@@ -200,11 +200,18 @@ class SelectionScreen(Screen):
             if un_et["select"]:
                 logo = ("checkbox-marked-circle",
                         [39 / 256, 174 / 256, 96 / 256, 1], "Oui")
+                if un_et["sexe"] == "MASCULIN":
+                    logo_face = ("face-profile", [39 / 256, 174 / 256, 96 / 256, 1], un_et["num_select"])
+                else:
+                    logo_face = ("face-woman", [39 / 256, 174 / 256, 96 / 256, 1], un_et["num_select"])
             else:
                 logo = ("alert", [1, 0, 0, 1], "Non")
+                if un_et["sexe"] == "MASCULIN":
+                    logo_face = ("face-profile", [1, 0, 0, 1], un_et["num_select"])
+                else:
+                    logo_face = ("face-woman", [1, 0, 0, 1], un_et["num_select"])
 
-            etudiant = (k, ("human-female",
-                            [39 / 256, 174 / 256, 96 / 256, 1], un_et["num_select"]),
+            etudiant = (k, logo_face,
                         f'{un_et["nom"]} {un_et["prenom"]}', logo)
 
             data.append(etudiant)

@@ -546,7 +546,7 @@ ScreenManager:
                     id:calend_naiss
                     icon: 'calendar'
                     pos: 375, 420
-                    on_release:root.show_date_picker_naiss()
+                    on_release:root.show_date_picker('naiss')
 
                 MDTextField:
                     id: lieu_naiss
@@ -600,7 +600,7 @@ ScreenManager:
                     id:calend_cin
                     icon: 'calendar'
                     pos: 540, 300
-                    on_release:root.show_date_picker_cin()
+                    on_release:root.show_date_picker("cin")
 
                 MDTextField:
                     id: lieu_cin
@@ -634,7 +634,7 @@ ScreenManager:
                     id:calend_quitance
                     icon: 'calendar'
                     pos: 640, 240
-                    on_release:root.show_date_picker_quint()
+                    on_release:root.show_date_picker('quintance')
 
                 MDTextField:
                     id: montant
@@ -1067,7 +1067,7 @@ ScreenManager:
                     id:calend_naiss
                     icon: 'calendar'
                     pos: 375, 420
-                    on_release:root.show_date_picker_naiss()
+                    on_release:root.show_date_picker('naiss')
 
                 MDTextField:
                     id: lieu_naiss
@@ -1121,7 +1121,7 @@ ScreenManager:
                     id:calend_cin
                     icon: 'calendar'
                     pos: 540, 300
-                    on_release:root.show_date_picker_cin()
+                    on_release:root.show_date_picker('cin')
 
                 MDTextField:
                     id: lieu_cin
@@ -1256,7 +1256,7 @@ ScreenManager:
                     id:calend_naiss
                     icon: 'calendar'
                     pos: 375, 460
-                    on_release:root.show_date_picker_naiss()
+                    on_release:root.show_date_picker('naiss')
 
                 MDTextField:
                     id: lieu_naiss
@@ -1320,7 +1320,7 @@ ScreenManager:
                     id:calend_cin
                     icon: 'calendar'
                     pos: 540, 340
-                    on_release:root.show_date_picker_cin()
+                    on_release:root.show_date_picker('cin')
 
                 MDTextField:
                     id: lieu_cin
@@ -1428,7 +1428,7 @@ ScreenManager:
                     id: calend_quint
                     icon: 'calendar'
                     pos: 540, 170
-                    on_release:root.show_date_picker_quint()
+                    on_release:root.show_date_picker('quintance')
                     disabled: False if validation.active else True
                     opacity: 1 if(validation.active) else 0
 
@@ -1886,7 +1886,7 @@ ScreenManager:
                 width:10
             MDTextField:
                 id: matier
-                hint_text: "Matier"
+                hint_text: "Matière"
                 pos_hint:{"center_y": 0.94, "center_x":0.2}
                 size_hint_x: None
                 readonly: True
