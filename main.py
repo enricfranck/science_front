@@ -6,7 +6,7 @@ import sys
 from kivy.config import Config
 from kivy.lang.builder import Builder
 from kivy.properties import StringProperty
-from kivy.resources import resource_paths
+from kivy.resources import resource_add_path
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.image import AsyncImage
@@ -446,8 +446,8 @@ class ScienceApp(MDApp):
         MDApp.get_running_app().PUBLIC_TITRE = ""
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     if hasattr(sys, '_MEIPASS'):
-        resource_paths(os.path.join(sys._MEIPASS))
+        resource_add_path(os.path.join(sys._MEIPASS))
     ScienceApp().run()
 
