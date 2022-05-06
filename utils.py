@@ -1,5 +1,6 @@
 import datetime
 import json
+import os
 import uuid
 
 
@@ -60,8 +61,22 @@ def load_data(name: str):
     :param name:
     :return:
     """
-    with open(f'data/{name}.json') as f:
-        return json.load(f)
+    if os.path.exists(f'{name}.json'):
+        with open(f'{name}.json') as f:
+            return json.load(f)
+    else:
+        json_data = {
+            "server": [
+                {
+                    "title": "serveur local",
+                    "address": "localhost",
+                    "uuid": "5ad89b09-6ea3-40a5-bcd5-6514a2389de6"
+                },
+            ]
+        }
+        save_data(name, json_data)
+        with open(f'{name}.json') as f:
+            return json.load(f)
 
 
 def save_data(name: str, json_data):
@@ -71,8 +86,8 @@ def save_data(name: str, json_data):
         :param json_data:
         :return:
     """
-    with open(f'data/{name}.json', "w") as f:
-        json.dump(json_data, f, indent=4)
+    with open(f'{name}.json', "w") as f:
+        json.dump(json_data, f, indent=2)
 
 
 def get_data_from_json(name: str, key: str):
