@@ -769,9 +769,11 @@ class PublicScreen(Screen):
                     response = delete_with_params(url, key_delete, value_delete, token)
                     self.get_response(response, "Titre role", self.key_role)
                 else:
-                    url = f"http://{host}/api/v1/anne_univ/"
-                    response = delete_with_params(url, key_delete, value_delete, token)
-                    self.get_response(response, "Année universitaire", self.key_anne)
+                    # url = f"http://{host}/api/v1/anne_univ/"
+                    # response = delete_with_params(url, key_delete, value_delete, token)
+                    # self.get_response(response, "Année universitaire", self.key_anne)
+                    self.dialog.dismiss()
+                    toast("Permission non autorisé")
             self.complet_table()
 
     def get_response(self, response, text: str, key):

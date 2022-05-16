@@ -159,6 +159,7 @@ class ScienceApp(MDApp):
     USER_EMAIL: str = ""
     USER_ROLE: str = ""
     SALLE: str = ""
+    VERSION_APP: str = ""
     START_LIST: int = 1
     END_LIST: int = 1
 
@@ -450,4 +451,3 @@ if __name__ == '__main__':
     if hasattr(sys, '_MEIPASS'):
         resource_add_path(os.path.join(sys._MEIPASS))
     ScienceApp().run()
-
