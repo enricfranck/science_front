@@ -1,20 +1,25 @@
-from dotenv import load_dotenv
-import os
 import sys
+from kivy.clock import mainthread, Clock
+from functools import partial
 from pathlib import Path
 from time import sleep, time
-
-from kivymd.app import MDApp
-from kivy.uix.screenmanager import ScreenManager, Screen
-from kivy.properties import ObjectProperty, StringProperty, BooleanProperty
-from kivymd.uix.textfield import MDTextField
+import threading
+from dotenv import load_dotenv
 from kivy.clock import Clock
-from functools import partial
-from kivymd.uix.datatables import MDDataTable
-from kivy.uix.anchorlayout import AnchorLayout
-
-from all_requests import request_login
 from kivy.metrics import dp
+from kivy.properties import ObjectProperty, BooleanProperty
+from kivy.uix.screenmanager import Screen
+from kivymd.app import MDApp
+from kivymd.uix.textfield import MDTextField
+from kivymd.uix.menu import MDDropdownMenu
+from utils import create_one_item_in_json, delete_item_from_json
+from kivymd.uix.boxlayout import MDBoxLayout
+from kivymd.uix.dialog import MDDialog
+from kivymd.uix.button import MDFlatButton
+
+from all_requests.request_utils import login_post
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from utils import get_data_from_json, get_item_by_title_from_json
 
 parent = Path(__file__).resolve().parent.parent / ""
 sys.path.append(str(parent))
@@ -61,37 +66,178 @@ class MyMDTextField(MDTextField):
         self.cursor = pos
 
 
+class NewServer(MDBoxLayout):
+    def __init__(self, **kw):
+        super().__init__(**kw)
+
+    def save_server(self):
+        data = {
+            "title": self.ids.server.text,
+            "address": self.ids.address.text,
+        }
+        create_one_item_in_json("server", data, "server")
+        self.ids.server.text = ""
+        self.ids.address.text = ""
+        self.ids.valider.disabled = True
+
+    def delete_server(self):
+        self.ids.server.text = ""
+        self.ids.address.text = ""
+        delete_item_from_json("address", self.ids.address.text, "server", "server")
+        self.ids.delete.disabled = True
+
+
 class LoginScreen(Screen):
     screenManager = ObjectProperty(None)
 
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        self.dialog = None
+        self.menu_server = None
+        self.response = None
+        self.host = ""
+        self.token = ""
+
+    def callback(self, button):
+        self.menu_server = MDDropdownMenu(
+            items=self.get_all_server(),
+            width_mult=4,
+        )
+        self.menu_server.caller = button
+        self.menu_server.open()
+
+    def get_all_server(self):
+        server = get_data_from_json('server', "server")
+        menu_items = [
+            {
+                "viewclass": "OneLineListItem",
+                "text": f"{server[i]['title']}",
+                "height": dp(50),
+                "on_release": lambda x=f"{server[i]['title']}": self.menu_calback_server(x),
+            } for i in range(len(server))
+        ]
+        return menu_items
+
+    def menu_calback_server(self, text_item):
+        self.ids.server.text = text_item
+        server = get_item_by_title_from_json(text_item, "server", "server")
+        MDApp.get_running_app().HOST = server['address']
+        self.ids.adress.text = f"Adresse:{MDApp.get_running_app().HOST}"
+        self.menu_server.dismiss()
+
+    @mainthread
+    def reset_champ(self):
+        self.ids.email.text = ""
+        self.ids.password.text = ""
+
+    @mainthread
+    def spinner_toggle(self, *args):
+        if not self.ids.spinner.active:
+            self.ids.spinner.active = True
+        else:
+            self.ids.spinner.active = False
+
+    def thread_login(self):
+        self.spinner_toggle()
+        threading.Thread(target=(
+            self.login)).start()
+
+    @mainthread
+    def navigate_screen(self, name: str):
+        MDApp.get_running_app().root.current = name
+
+    @mainthread
+    def show_dialog(self, message: str):
+        MDApp.get_running_app().show_dialog(message)
+
     def login(self):
-        host = MDApp.get_running_app().HOST
+        self.host = MDApp.get_running_app().HOST
         email = self.ids.email.text
         password = self.ids.password.text
-        url_login: str = f"http://{host}/api/v1/login/access-token"
-
+        url_login: str = f"http://{self.host}/api/v1/login/access-token"
         if len(email) != 0 and len(password) != 0:
-            self.ids.spinner.active = True
-            response = {}
-            response = request_login.login_post(url_login, email, password)
-            # response["access_token"] = "blablabla"
-            sleep(1)
-            if "access_token" in response:
-                self.ids.spinner.active = False
-                MDApp.get_running_app().root.current = 'Reinscription'
-                MDApp.get_running_app().TOKEN = response["access_token"]
-                MDApp.get_running_app().ALL_MENTIONS = response["mention"]
-                MDApp.get_running_app().MENTION = MDApp.get_running_app().ALL_MENTIONS[0]
-                self.ids.email.text = ""
-                self.ids.password.text = ""
-            else:
-                self.ids.spinner.active = False
-                MDApp.get_running_app().show_dialog(str(response['detail']))
-        else:
-            self.ids.password.require = True
+            response = login_post(url_login, email, password)
+            if response:
+                if response[1] == 200:
+                    if "access_token" in response[0]:
+                        MDApp.get_running_app().TOKEN = response[0]["access_token"]
+                        self.token = MDApp.get_running_app().TOKEN
+                        MDApp.get_running_app().ALL_UUID_MENTION = response[0]["mention"]
+                        start = time()
+                        get_anne()
+                        processes = []
+                        with ThreadPoolExecutor(max_workers=10) as executor:
+                            processes.append(executor.submit(get_mention))
+                            processes.append(executor.submit(get_droit))
+                            if len(MDApp.get_running_app().ALL_ANNEE) != 0:
+                                processes.append(executor.submit(get_ue, MDApp.get_running_app().ALL_ANNEE[0]['title']))
+                                processes.append(executor.submit(get_ec, MDApp.get_running_app().ALL_ANNEE[0]['title']))
+
+                        print(f'Time taken: {time() - start}')
+                        if response[0]['role'] == "supperuser":
+                            start = time()
+                            processes = []
+                            with ThreadPoolExecutor(max_workers=10) as executor:
+                                processes.append(executor.submit(MDApp.get_running_app().get_all_parcours()))
+                                processes.append(executor.submit(MDApp.get_running_app().get_all_role()))
+                                processes.append(executor.submit(MDApp.get_running_app().get_all_users()))
+                            print(f'Time taken: {time() - start}')
+                            self.navigate_screen("Public")
+                        else:
+                            MDApp.get_running_app().USER_EMAIL = email
+                            MDApp.get_running_app().USER_ROLE = response[0]['role']
+                            self.navigate_screen("Main")
+                    self.reset_champ()
+                elif response[1] == 400:
+                    self.show_dialog(str(response[0]['detail']))
+                else:
+                    self.show_dialog(str(response))
+        self.spinner_toggle()
 
     def auto_remplir(self):
-        # self.ids.email.text = "franck@example.com"
+        # self.ids.email.text = "enricfranck@gmail.com"
         # self.ids.password.text = "123"
         self.ids.email.text = "admin@science.com"
         self.ids.password.text = "aze135azq35sfsnf6353sfh3xb68yyp31gf68k5sf6h3s5d68jd5"
+
+    def show_dialog_list(self):
+        self.dialog = MDDialog(
+            title=f"Nouveau serveur",
+            type="custom",
+            content_cls=NewServer(),
+            buttons=[
+                MDFlatButton(
+                    text="Términer",
+                    on_release=self.cancel_dialog
+                ),
+            ],
+
+        )
+        self.dialog.open()
+
+    def cancel_dialog(self, *args):
+        self.dialog.dismiss()
+
+
+def get_mention():
+    MDApp.get_running_app().get_all_mention()
+
+
+def get_anne():
+    MDApp.get_running_app().get_annee_univ()
+
+
+def get_droit():
+    MDApp.get_running_app().get_all_droit()
+
+
+def get_ue(annee):
+    if len(MDApp.get_running_app().ALL_ANNEE) != 0:
+        MDApp.get_running_app().ALL_UE = \
+            MDApp.get_running_app().get_all_ue(annee=annee)
+
+
+def get_ec(anne):
+    if len(MDApp.get_running_app().ALL_ANNEE) != 0:
+        MDApp.get_running_app().ALL_EC = \
+            MDApp.get_running_app().get_all_ec(annee=anne)

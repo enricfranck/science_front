@@ -1,12 +1,11 @@
+
 import os
 import secrets
 import string
-import sys
 
 from kivy.config import Config
 from kivy.lang.builder import Builder
 from kivy.properties import StringProperty
-from kivy.resources import resource_add_path
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.image import AsyncImage
@@ -15,6 +14,7 @@ from kivymd.toast import toast
 from kivymd.uix.button import MDFlatButton
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.picker import MDDatePicker
+from kivymd.uix.boxlayout import MDBoxLayout
 
 from all_requests import request_utils
 from screens.download_screen import DownloadScreen
@@ -28,7 +28,6 @@ from screens.public_add_screen import PublicAddScreen
 from screens.public_screen import PublicScreen
 from screens.reinscription_add_screen import ReinscriptionAddScreen
 from screens.reinscription_screen import ReinscriptionScreen
-from screens.scolarite_screen import ScolaScreen
 from screens.selection_add_screens import SelectionAddScreen
 from screens.selection_screens import SelectionScreen
 from screens.selection_update_screens import SelectionUpdateScreen
@@ -108,11 +107,6 @@ class NoteScreen(NoteScreen):
 class NoteAddScreen(NoteAddScreen):
     pass
 
-
-class ScolaScreen(ScolaScreen):
-    pass
-
-
 class ScienceApp(MDApp):
     dialog = None
     TOKEN: str = ""
@@ -131,8 +125,7 @@ class ScienceApp(MDApp):
     NUM_CARTE: str = ""
     NUM_SELECT: str = ""
     MENTION: str = ""
-    # HOST: str = "192.168.88.30"
-    HOST: str = ""
+    HOST: str = "localhost"
     IS_INITIALISE = False
     TITRE_FILE: str = ""
     PARENT: str = ""
@@ -156,12 +149,6 @@ class ScienceApp(MDApp):
     DATA_SELECTED: str = []
     PARCOURS_SELECTED: str = ""
     SEMESTRE_SELECTED: str = ""
-    USER_EMAIL: str = ""
-    USER_ROLE: str = ""
-    SALLE: str = ""
-    VERSION_APP: str = ""
-    START_LIST: int = 1
-    END_LIST: int = 1
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -378,6 +365,7 @@ class ScienceApp(MDApp):
                       "mention": MDApp.get_running_app().read_by_key(MDApp.get_running_app().ALL_MENTION,
                                                                      "uuid", droit["uuid_mention"])[0]["title"]}
             all_droit.append(droit_)
+        print(all_droit)
         MDApp.get_running_app().ALL_DROIT = all_droit
 
     def get_all_users(self):
@@ -416,14 +404,13 @@ class ScienceApp(MDApp):
     def transform_data(self, list_key: list, all_data: list):
         data = []
         k: int = 1
-        if all_data is not None:
-            if len(all_data) != 0:
-                for on_data in all_data:
-                    data_value = [k]
-                    for key in list_key:
-                        data_value.append(on_data[key])
-                    data.append(tuple(data_value))
-                    k += 1
+        if len(all_data) != 0:
+            for on_data in all_data:
+                data_value = [k]
+                for key in list_key:
+                    data_value.append(on_data[key])
+                data.append(tuple(data_value))
+                k += 1
         data_vide = [""]
         for key in list_key:
             data_vide.append("")
@@ -447,7 +434,4 @@ class ScienceApp(MDApp):
         MDApp.get_running_app().PUBLIC_TITRE = ""
 
 
-if __name__ == '__main__':
-    if hasattr(sys, '_MEIPASS'):
-        resource_add_path(os.path.join(sys._MEIPASS))
-    ScienceApp().run()
+ScienceApp().run()

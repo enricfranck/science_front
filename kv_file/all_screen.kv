@@ -1,15 +1,157 @@
+#:import get_color_from_hex kivy.utils.get_color_from_hex
 ScreenManager:
-    LoginScreen: 
-    MainScreen: 
+    LoginScreen:
+    MainScreen:
     ReinscriptionScreen:
     ReinscriptionAddScreen:
+    DownloadScreen:
+    UploadScreen:
+    SelectionScreen:
+    SelectionAddScreen:
+    SelectionUpdateScreen:
+    PublicScreen:
+    PublicAddScreen:
+    MatierAddScreen:
+    NoteScreen:
+    NoteAddScreen:
+    ScolaScreen:
+
+<Content>
+    orientation: "vertical"
+    spacing: "8dp"
+    size_hint_y: None
+    height: "40dp"
+    md_bg_color: (1,1,1,1)
+    MDCard:
+        size_hint_y: None
+        height: "40dp"
+        haling: "center"
+        orientation: "horizontal"
+        MDSpinner:
+            id:spinner
+            size_hint: None, None
+            size: dp(20), dp(20)
+            pos_hint: {"center_y": 0.5,"center_x": 0.5}
+            active: False
+        MDFlatButton:
+            text:"Valider" if not check.active else "Supprimer"
+            theme_text_color:"Custom"
+            on_release:
+                root.spinner_toggle()
+                root.process_enreg_semestre()
+                root.spinner_toggle()
+        MDCheckbox:
+            id:check
+            size: 20,20
+            size_hint:None, None
+            pos_hint: {"center_y": 0.5,"center_x": 0.5}
+            active: False
+            disabled: True
+            opacity: 0
+
+<NewServer>
+    orientation: "vertical"
+    spacing: "8dp"
+    size_hint_y: None
+    height: "150dp"
+
+    MDTextField:
+        id: server
+        hint_text: "Nom du serveur"
+        size_hint_x: None
+        width:180
+
+    MDTextField:
+        id: address
+        hint_text: "Adresse du serveur"
+        size_hint_x: None
+        width:180
+
+    MDCard:
+        size_hint: None, None
+        size: 200,40
+        pos_hint: {"center_x": 0.5, "center_y": 0.5}
+        spacing: 5
+        orientation: 'horizontal'
+        halign:'center'
+        MDRectangleFlatButton:
+            id: valider
+            text: 'Ajouter'
+            disabled: True if (server.text == "" or address.text == "" ) else False
+            on_press:
+                root.save_server()
+
+        MDRectangleFlatButton:
+            id: delete
+            text: 'Supprimer'
+            disabled: True if (address.text == "") else False
+            on_press:
+                root.delete_server()
+
+
+<ListExam>
+    orientation: "vertical"
+    spacing: "8dp"
+    size_hint_y: None
+    height: "60dp"
+    md_bg_color: (1,1,1,1)
+    MDCard:
+        size_hint_y: None
+        height: "60dp"
+        haling: "center"
+        orientation: "horizontal"
+
+        MDTextField:
+            id: salle
+            hint_text: "Salle"
+            size_hint_x: None
+            helper_text_mode:"on_error"
+            width:80
+            required: True
+
+        MDLabel:
+            text: ""
+            size_hint_x: None
+            width: 20
+
+        MDTextField:
+            id: start
+            hint_text: "de"
+            size_hint_x: None
+            helper_text_mode:"on_error"
+            width:50
+            required: True
+
+        MDLabel:
+            text: ""
+            size_hint_x: None
+            width: 20
+
+        MDTextField:
+            id: end
+            hint_text: "à"
+            size_hint_x: None
+            helper_text_mode:"on_error"
+            width:50
+            required: True
+
+        MDLabel:
+            text: ""
+            size_hint_x: None
+            width: 30
+
+        MDFlatButton:
+            id: valider
+            text: "Valider"
+            theme_text_color:"Custom"
+            on_release: root.get_info()
 
 <LoginScreen>:
     id: login_screen
     name: 'Login'
     MDCard:
         size_hint: None, None
-        size: 380, 400
+        size: 380, 440
         pos_hint: {"center_x": 0.5, "center_y": 0.5}
         elevation:10
         padding: 30
@@ -30,7 +172,7 @@ ScreenManager:
             size_hint: None, None
             size: dp(20), dp(20)
             pos_hint: {'center_x': 0.5}
-            active:False
+            active: False
         
         MDTextField:
             id: email
@@ -50,10 +192,31 @@ ScreenManager:
             icon_right:"eye-off"
             width:300
 
+        MDCard:
+            size_hint: None, None
+            size: 300, 50
+            pos_hint: {"center_x": 0.5, "center_y": 0.5}
+            spacing: 5
+            orientation: 'horizontal'
+            MDTextField:
+                id: server
+                hint_text: "Choisir le serveur:"
+                pos_hint: {"center_x": 0.5}
+                size_hint_x: None
+                helper_text_mode:"on_error"
+                on_focus: if self.focus: root.callback(server)
+                width:260
+
+            MDIconButton:
+                id: plus
+                icon: 'plus-circle'
+                on_release: root.show_dialog_list()
+
         MDLabel:
-            text: "Mot de passe oublié"
+            id: adress
+            text: "Addresse: 127.0.0.1"
             halign: "center"
-            font_size: "12px"
+            font_size: "14px"
             
         MDCard:
             size_hint: None, None
@@ -64,7 +227,11 @@ ScreenManager:
             halign:'center'
             MDRectangleFlatButton:
                 text: 'login'
-                on_press: root.login()
+                disabled: True if (email.text == "" or password.text == "" or server.text == "") else False
+                on_press:
+                    root.spinner_toggle()
+                    root.thread_login()
+                    root.spinner_toggle()
 
             MDRectangleFlatButton:
                 text: 'auto'
@@ -79,67 +246,195 @@ ScreenManager:
                 BoxLayout:
                     orientation:'vertical'
                     MDToolbar:
-                        title: 'Menue Principale'
+                        title: 'Menu Principale'
                         left_action_items:[["menu",lambda x: nav_drawer.set_state("toggle")]]
-                        right_action_items:[["logout",lambda x: root.logout()]]
+                        right_action_items:[["download",lambda x: app.update()], ["logout",lambda x: app.logout()]]
                         elevation:5
-                    Widget:
+                    MDGridLayout:
+                        spacing: 10
+                        padding: 10
+                        cols: 2
+                        rows: 2
+                        MDCard:
+                            orientation: "vertical"
+                            padding: "8dp"
+                            MDRectangleFlatButton:
+                                text: "Séléction des dossier et inscription"
+                                pos_hint: {"center_x": .5, "center_y": .5}
+                                theme_text_color: "Custom"
+                                text_color: 1, 1, 1, 1
+                                line_color: 0, 0, 0, 0
+                                on_press: root.back_select()
+
+                            MDSeparator:
+                                height: "1dp"
+
+                            FitImage:
+                                id: bg_image
+                                source: "images/inscri.jpg"
+                                size_hint: .5, .5
+                                pos_hint: {"center_x": .5, "center_y": .5}
+                                radius: 10, 10, 10, 10
+                        MDCard:
+                            orientation: "vertical"
+                            padding: "8dp"
+                            MDRectangleFlatButton:
+                                text: "Réinscription"
+                                pos_hint: {"center_x": .5, "center_y": .5}
+                                theme_text_color: "Custom"
+                                text_color: 1, 1, 1, 1
+                                line_color: 0, 0, 0, 0
+                                on_press: root.back_reins()
+
+                            MDSeparator:
+                                height: "1dp"
+
+                            FitImage:
+                                id: bg_image
+                                source: "images/diplome.png"
+                                size_hint: .5, .5
+                                pos_hint: {"center_x": .5, "center_y": .5}
+                                radius: 10, 10, 10, 10
+
+                        MDCard:
+                            orientation: "vertical"
+                            padding: "8dp"
+                            MDRectangleFlatButton:
+                                text: "Gestion des Notes"
+                                pos_hint: {"center_x": .5, "center_y": .5}
+                                theme_text_color: "Custom"
+                                text_color: 1, 1, 1, 1
+                                line_color: 0, 0, 0, 0
+                                on_press: root.back_notes()
+
+                            MDSeparator:
+                                height: "1dp"
+
+                            FitImage:
+                                id: bg_image
+                                source: "images/note.png"
+                                size_hint: .5, .5
+                                pos_hint: {"center_x": .5, "center_y": .5}
+                                radius: 10, 10, 10, 10
+                        MDCard:
+                            orientation: "vertical"
+                            padding: "8dp"
+                            MDRectangleFlatButton:
+                                text: "Service scolarité"
+                                pos_hint: {"center_x": .5, "center_y": .5}
+                                theme_text_color: "Custom"
+                                text_color: 1, 1, 1, 1
+                                line_color: 0, 0, 0, 0
+                                on_press: root.back_scola()
+
+                            MDSeparator:
+                                height: "1dp"
+
+                            FitImage:
+                                id: bg_image
+                                source: "images/matier.png"
+                                size_hint: .5, .5
+                                pos_hint: {"center_x": .5, "center_y": .5}
+                                radius: 10, 10, 10, 10
                     
         MDNavigationDrawer:
             id:nav_drawer
+            type:'standard'
+            MDBoxLayout:
+                orientation: 'vertical'
+                padding: '8dp'
+                spacing: '5dp'
+                Image:
+                    source: 'images/logo_science.jpg'
+
+                ScrollView:
+                    MDList:
+                        id: list
+                        OneLineIconListItem:
+                            id: list_email
+                            text: 'enricfranck@gmail.com'
+                            IconLeftWidget:
+                                icon: 'email'
+
+                        OneLineIconListItem:
+                            id: list_role
+                            text: 'Secretaire'
+                            IconLeftWidget:
+                                icon: 'home-account'
 
 <ReinscriptionScreen>:
     name: 'Reinscription'
-    BoxLayout:
-        orientation:'horizontal'
-        size_hint_x:0.8
-        MDFlatButton:
-            id:mention_button
-            text:"Mention"
-            pos_hint:{"center_y": 0.12}
-            on_release:root.menu_mention.open()
-        MDLabel:
-            id:mention_label
-            text:""
-            pos_hint:{"center_y": 0.12}
-            size_hint_x:1.2
 
-        MDFlatButton:
-            id:parcours_button
-            text:"Parcours"
-            pos_hint:{"center_y": 0.12}
-            on_release:root.menu_parcours.open()
+    MDBoxLayout:
+        orientation:'vertical'
+        size_hint_y:1
+        MDBoxLayout:
+            orientation:'horizontal'
+            size_hint_y:0.5
+            size_hint_x:0.3
+            MDLabel:
+                id:parcours_label
+                pos_hint:{"center_y": 0.9}
+                size_hint:(0.3,0.15)
+            MDTextField:
+                id:search
+                hint_text:"Recherche"
+                pos_hint:{"center_y": 0.9, "center_x":0.2}
+                size_hint_x:None
+                width:250
+                on_text: root.search_etudiant(search.text)
 
-        MDLabel:
-            id:parcours_label
-            text:""
-            pos_hint:{"center_y": 0.12}
-            size_hint:(0.3,0.15)
+        MDBoxLayout:
+            orientation:'horizontal'
+            size_hint_y:0.5
+            size_hint_x:0.8
+            MDFlatButton:
+                id:mention_button
+                text:"Mention"
+                pos_hint:{"center_y": 0.25}
+                on_release:root.menu_mention.open()
+            MDLabel:
+                id:mention_label
+                text:""
+                pos_hint:{"center_y": 0.25}
+                size_hint_x:1.2
 
-        MDFlatButton:
-            id:semestre_button
-            text:"Semestre"
-            pos_hint:{"center_y": 0.12}
-            on_release:root.menu_semestre.open()
+            MDFlatButton:
+                id:parcours_button
+                text:"Parcours"
+                pos_hint:{"center_y": 0.25}
+                on_release:root.menu_parcours.open()
 
-        MDLabel:
-            id:semestre_label
-            text:""
-            pos_hint:{"center_y": 0.12}
-            size_hint:(0.3,0.15)
+            MDLabel:
+                id:parcours_label
+                text:""
+                pos_hint:{"center_y": 0.25}
+                size_hint:(0.3,0.15)
 
-        MDFlatButton:
-            id:annee_button
-            text:"Année universitaire"
-            pos_hint:{"center_y": 0.12}
-            on_release:root.menu_annee_univ.open()
+            MDFlatButton:
+                id:semestre_button
+                text:"Semestre"
+                pos_hint:{"center_y": 0.25}
+                on_release:root.menu_semestre.open()
+
+            MDLabel:
+                id:semestre_label
+                text:""
+                pos_hint:{"center_y": 0.25}
+                size_hint:(0.3,0.15)
+
+            MDFlatButton:
+                id:annee_button
+                text:"Année universitaire"
+                pos_hint:{"center_y": 0.25}
+                on_release:root.menu_annee_univ.open()
 
     MDBottomAppBar:
         orientation:'vertical'
         MDToolbar:
             title: 'Réinscription'
             type:'bottom'
-            left_action_items:[["keyboard-backspace",lambda x: root.back_main()]]
+            left_action_items:[["keyboard-backspace",lambda x: root.back_main()],["card-account-details",lambda x: root.calback_carte(x)],["clipboard-list",lambda x: root.calback_list(x)]]
             elevation:5
             mode:"end"
             icon:"account-plus"
@@ -156,20 +451,22 @@ ScreenManager:
         Widget:
         BoxLayout:
             orientation: 'vertical'
-            FloatLayout:
+            FloatLayout_:
+                id: ellipse
                 canvas:
                     Color:
                         rgb: 1, 1, 1
                     Ellipse:
                         pos: 80, 430
-                        size: 100 , 120 
-                        source: 'image.jpg'
+                        size: 100 , 120
                         angle_start: 0
                         angle_end: 360
+                        source: self.source
                 MDIconButton:
                     id: camera
                     icon: 'camera'
                     pos: 140, 415
+                    on_release: root.file_manager_open()
 
                 MDTextField:
                     id: num_ce
@@ -187,6 +484,24 @@ ScreenManager:
                     disabled: True if len(num_ce.text) < 4 else False
                     opacity: 0 if len(num_ce.text) < 4 else 1
                     md_bg_color:(0,0,0,0)
+
+                MDTextField:
+                    id:mention_field
+                    hint_text:"Mention"
+                    size_hint_x: None
+                    pos: 20, 185
+                    width: 250
+                    readonly: True
+                    on_focus: if self.focus: root.menu_mention.open()
+
+
+                MDTextField:
+                    id:parcours_field
+                    hint_text:"Parcours"
+                    size_hint_x: None
+                    pos: 20, 125
+                    width: 180
+                    on_focus: if self.focus: root.menu_parcours.open()
 
                 MDTextField:
                     id: nom
@@ -213,6 +528,8 @@ ScreenManager:
                     size_hint_x: None
                     helper_text_mode:"on_error"
                     width:100
+                    readonly: True
+                    on_focus: if self.focus: root.menu_sexe.open()
                     required: True
 
                 MDTextField:
@@ -223,13 +540,13 @@ ScreenManager:
                     helper_text_mode:"on_error"
                     width:100
                     readonly: True
-                    text:"2022-12-12"
+                    text:""
 
                 MDIconButton:
                     id:calend_naiss
                     icon: 'calendar'
                     pos: 375, 420
-                    on_release:""
+                    on_release:root.show_date_picker('naiss')
 
                 MDTextField:
                     id: lieu_naiss
@@ -247,6 +564,8 @@ ScreenManager:
                     size_hint_x: None
                     helper_text_mode:"on_error"
                     width:150
+                    readonly: True
+                    on_focus: if self.focus: root.menu_nation.open()
                     required: True
 
                 MDTextField:
@@ -274,13 +593,14 @@ ScreenManager:
                     helper_text_mode:"on_error"
                     width:100
                     readonly: True
-                    text:"2022-12-12"
+                    required:True if num_cin.text != "" else False
+                    text:""
 
                 MDIconButton:
                     id:calend_cin
                     icon: 'calendar'
                     pos: 540, 300
-                    on_release:""
+                    on_release:root.show_date_picker("cin")
 
                 MDTextField:
                     id: lieu_cin
@@ -292,7 +612,7 @@ ScreenManager:
                     required: True if num_cin.text != "" else False
 
                 MDTextField:
-                    id: num_quictance
+                    id: num_quintance
                     hint_text: "Quintance"
                     pos: 280, 240
                     size_hint_x: None
@@ -308,17 +628,17 @@ ScreenManager:
                     helper_text_mode:"on_error"
                     width:100
                     readonly: True
-                    text:"2022-12-12"
+                    text:""
 
                 MDIconButton:
                     id:calend_quitance
                     icon: 'calendar'
                     pos: 640, 240
-                    on_release:""
+                    on_release:root.show_date_picker('quintance')
 
                 MDTextField:
-                    id: etat
-                    hint_text: "État"
+                    id: montant
+                    hint_text: "Montant"
                     pos: 700, 240
                     size_hint_x: None
                     helper_text_mode:"on_error"
@@ -334,14 +654,52 @@ ScreenManager:
                     width:100
                     required: True
 
+                MDTextField:
+                    id: etat
+                    hint_text: "État"
+                    pos: 400, 185
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:100
+                    readonly: True
+                    on_focus: if self.focus: root.menu_etat.open()
+                    required: True
+
+                MDTextField:
+                    id: bacc_annee
+                    hint_text: "Année bacc"
+                    pos: 520, 185
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:90
+                    required: True
+
                 MDFillRoundFlatIconButton:
                     id: save_etudiant
                     text: "Sauvegarder"
                     pos: 750, 150
                     width:100
-                    disabled: True if (moyenne.text == "" or etat.text =="" or num_quictance.text == "" or addresse.text=="" or nom.text == "" or num_ce.text == "" or nation.text == "" or lieu_naiss.text == "") else False
+                    disabled: True if (date_naiss.text == "" or date_quintance.text == "" or mention_field.text == "" or parcours_field.text == "" or montant.text == "" or bacc_annee.text == "" or moyenne.text == "" or etat.text =="" or num_quintance.text == "" or addresse.text=="" or nom.text == "" or num_ce.text == "" or nation.text == "" or lieu_naiss.text == "") else False
                     icon: "content-save"
+                    on_release:
+                        root.spinner_toggle()
+                        root.process_enreg_toggle()
+                        root.spinner_toggle()
                     md_bg_color:(0,0,0,0)
+
+                MDFillRoundFlatIconButton:
+                    id: auto
+                    text: "auto"
+                    pos: 650, 150
+                    on_release:root.auto_complete()
+                    width:100
+
+                MDSpinner:
+                    id: spinner
+                    size_hint: None, None
+                    size: dp(50), dp(50)
+                    pos: 540, 300
+                    active: False
 
                 MDLabel:
                     id:s1
@@ -352,6 +710,7 @@ ScreenManager:
                     size: 20,20
                     size_hint:None, None
                     pos_hint: {"center_y": 1.12,"center_x": 0.04}
+                    on_active: root.disabled_check_master_one_two()
 
                 MDLabel:
                     id:s3
@@ -362,6 +721,7 @@ ScreenManager:
                     size: 20,20
                     size_hint:None, None
                     pos_hint: {"center_y": 1.12,"center_x": 0.08}
+                    on_active: root.disabled_check_master_one_two()
 
                 MDLabel:
                     id:s5
@@ -372,6 +732,7 @@ ScreenManager:
                     size: 20,20
                     size_hint:None, None
                     pos_hint: {"center_y": 1.12,"center_x": 0.12}
+                    on_active: root.disabled_check_master_one_two()
 
                 MDLabel:
                     id:s7
@@ -382,7 +743,7 @@ ScreenManager:
                     size: 20,20
                     size_hint:None, None
                     pos_hint: {"center_y": 1.12,"center_x": 0.16}
-
+                    on_active: root.disabled_check_licence_master_two()
                 MDLabel:
                     id:s9
                     text:"S9"
@@ -392,6 +753,7 @@ ScreenManager:
                     size: 20,20
                     size_hint:None, None
                     pos_hint: {"center_y": 1.12,"center_x": 0.2}
+                    on_active:root.disabled_check_licence_master_one()
 
 
                 MDLabel:
@@ -403,6 +765,7 @@ ScreenManager:
                     size: 20,20
                     size_hint:None, None
                     pos_hint: {"center_y": 0.95,"center_x": 0.04}
+                    on_active: root.disabled_check_master_one_two()
 
                 MDLabel:
                     id:s4
@@ -413,6 +776,7 @@ ScreenManager:
                     size: 20,20
                     size_hint:None, None
                     pos_hint: {"center_y": 0.95,"center_x": 0.08}
+                    on_active: root.disabled_check_master_one_two()
 
                 MDLabel:
                     id:s6
@@ -423,6 +787,7 @@ ScreenManager:
                     size: 20,20
                     size_hint:None, None
                     pos_hint: {"center_y": 0.95,"center_x": 0.12}
+                    on_active: root.disabled_check_master_one_two()
 
                 MDLabel:
                     id:s8
@@ -433,6 +798,7 @@ ScreenManager:
                     size: 20,20
                     size_hint:None, None
                     pos_hint: {"center_y": 0.95,"center_x": 0.16}
+                    on_active: root.disabled_check_licence_master_two()
 
                 MDLabel:
                     id:s10
@@ -443,9 +809,1368 @@ ScreenManager:
                     size: 20,20
                     size_hint:None, None
                     pos_hint: {"center_y": 0.95,"center_x": 0.2}
+                    on_active:root.disabled_check_licence_master_one()
+
+<DownloadScreen>:
+    name: 'download_file'
+    MDBoxLayout:
+        orientation:'vertical'
+        MDToolbar:
+            id:toolbar
+            title: 'Download'
+            left_action_items:[["keyboard-backspace",lambda x: root.back_home()]]
+        MDBoxLayout:
+            orientation:'horizontal'
+            FloatLayout:
+                MDTextField:
+                    id:path
+                    hint_text:'Path'
+                    pos: 200, 300
+                    size_hint_x: None
+                    readonly:True
+                    width:500
+
+                MDIconButton:
+                    id: foder
+                    icon: 'folder'
+                    pos: 700, 300
+                    on_release: root.file_manager_open()
+
+                ProgressBar:
+                    id:progress_bar
+                    pos_hint: {"center_y": 0.95}
+                    size_hint_x: 1
+                    max: 1
+                    value: 0
+
+                MDFillRoundFlatIconButton:
+                    id: download
+                    text: "Télécharger"
+                    pos: 400, 240
+                    width:100
+                    disabled: True if path.text == "" else False
+                    icon: "content-save"
+                    on_release:
+                        root.spinner_toggle()
+                        root.process_download_toogle()
+                        root.spinner_toggle()
+                    md_bg_color:(0,0,0,0)
+
+<UploadScreen>:
+    name: 'upload_file'
+    MDBoxLayout:
+        orientation:'vertical'
+        MDToolbar:
+            id:toolbar
+            title: 'Upload'
+            left_action_items:[["keyboard-backspace",lambda x: root.back_home()]]
+        MDBoxLayout:
+            orientation:'horizontal'
+            FloatLayout:
+
+                MDTextField:
+                    id:path
+                    hint_text:'Path'
+                    pos: 200, 300
+                    size_hint_x: None
+                    readonly:True
+                    width:500
+
+                MDIconButton:
+                    id: foder
+                    icon: 'folder'
+                    pos: 700, 300
+                    on_release: root.file_manager_open()
+
+                MDSpinner:
+                    id:spinner
+                    size_hint: None, None
+                    size: dp(20), dp(20)
+                    pos_hint: {'center_x': 0.5}
+                    active: False
+
+                MDFillRoundFlatIconButton:
+                    id: download
+                    text: "Valider"
+                    pos: 400, 240
+                    width:100
+                    disabled: True if path.text == "" else False
+                    icon: "content-save"
+                    on_release:
+                        root.spinner_toggle()
+                        root.thread_upload_note()
+                        root.spinner_toggle()
+                    md_bg_color:(0,0,0,0)
 
 
+<SelectionScreen>:
+    name: 'Selection'
+    MDBoxLayout:
+        orientation:'vertical'
+        size_hint_y:1
+        MDBoxLayout:
+            orientation:'horizontal'
+            size_hint_y:0.5
+            size_hint_x:0.3
+            MDLabel:
+                id:parcours_label
+                pos_hint:{"center_y": 0.9}
+                size_hint:(0.3,0.15)
+            MDTextField:
+                id:search
+                hint_text:"Recherche"
+                pos_hint:{"center_y": 0.9, "center_x":0.2}
+                size_hint_x:None
+                width:250
+                on_text: root.serch_etudiant(search.text)
+
+        MDBoxLayout:
+            orientation:'horizontal'
+            size_hint_y:0.5
+            size_hint_x:0.8
+            MDFlatButton:
+                id:mention_button
+                text:"Mention"
+                pos_hint:{"center_y": 0.25}
+                on_release:root.menu_mention.open()
+            MDLabel:
+                id:mention_label
+                text:""
+                pos_hint:{"center_y": 0.25}
+                size_hint_x:1.2
+
+            MDFlatButton:
+                id:niveau_button
+                text:"Niveau"
+                pos_hint:{"center_y": 0.25}
+                on_release:root.menu_niveau.open()
+
+            MDLabel:
+                id:niveau_label
+                text:""
+                pos_hint:{"center_y": 0.25}
+                size_hint:(0.3,0.15)
+
+            MDFlatButton:
+                id:annee_button
+                text:"Année universitaire"
+                pos_hint:{"center_y": 0.25}
+                on_release:root.menu_annee_univ.open()
+
+    MDBottomAppBar:
+        orientation:'vertical'
+        MDToolbar:
+            title: 'Selection de dossier'
+            type:'bottom'
+            left_action_items:[["keyboard-backspace",lambda x: root.back_main()],["clipboard-list",lambda x: root.menu_calback_list(x)]]
+            elevation:5
+            mode:"end"
+            icon:"account-plus"
+            on_action_button: root.add_new_etudiant()
+
+<SelectionAddScreen>:
+    name: 'SelectionAdd'
+    MDBoxLayout:
+        orientation:'vertical'
+        MDToolbar:
+            title: 'Ajout etudiant'
+            left_action_items:[["keyboard-backspace",lambda x: root.back_home()]]
+            elevation:5
+        Widget:
+        BoxLayout:
+            orientation: 'vertical'
+            FloatLayout_:
+                id: ellipse
+                canvas:
+                    Color:
+                        rgb: 1, 1, 1
+                    Ellipse:
+                        pos: 80, 430
+                        size: 100 , 120
+                        angle_start: 0
+                        source: self.source
+                        angle_end: 360
+                MDIconButton:
+                    id: camera
+                    icon: 'camera'
+                    pos: 140, 415
+                    on_release: root.file_manager_open()
+
+                MDTextField:
+                    id: num_select
+                    hint_text: "Numéro selection"
+                    pos: 70, 370
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:120
+                    required: True
+
+                MDTextField:
+                    id:mention_field
+                    hint_text:"Mention"
+                    size_hint_x: None
+                    pos: 280, 240
+                    width: 250
+                    readonly: True
+                    on_focus: if self.focus: root.menu_mention.open()
 
 
+                MDTextField:
+                    id:niveau_field
+                    hint_text:"Niveau"
+                    size_hint_x: None
+                    pos: 550, 240
+                    width: 180
+                    readonly: True
+                    on_focus: if self.focus: root.menu_niveau.open()
 
-            
+                MDTextField:
+                    id: nom
+                    hint_text: "Nom"
+                    pos: 280, 480
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:300
+                    required: True
+
+                MDTextField:
+                    id: prenom
+                    hint_text: "Prénom"
+                    pos: 600, 480
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:150
+                    required: False
+
+                MDTextField:
+                    id: sexe
+                    hint_text: "Sexe"
+                    pos: 770, 480
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:100
+                    readonly: True
+                    required: True
+                    on_focus: if self.focus: root.menu_sexe.open()
+
+                MDTextField:
+                    id: date_naiss
+                    hint_text: "Né(e) le"
+                    pos: 280, 420
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:100
+                    readonly: True
+                    text:""
+
+                MDIconButton:
+                    id:calend_naiss
+                    icon: 'calendar'
+                    pos: 375, 420
+                    on_release:root.show_date_picker('naiss')
+
+                MDTextField:
+                    id: lieu_naiss
+                    hint_text: "à"
+                    pos: 440, 420
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:245
+                    required: True
+
+                MDTextField:
+                    id: nation
+                    hint_text: "Nationalité"
+                    pos: 725, 420
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:150
+                    readonly: True
+                    required: True
+                    on_focus: if self.focus: root.menu_nation.open()
+
+                MDTextField:
+                    id: addresse
+                    hint_text: "Addresse"
+                    pos: 280, 360
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:600
+                    required: True
+
+                MDTextField:
+                    id: num_cin
+                    hint_text: "CIN"
+                    pos: 280, 300
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:150
+
+                MDTextField:
+                    id: date_cin
+                    hint_text: "du"
+                    pos: 450, 300
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:100
+                    readonly: True
+                    required:True if num_cin.text != "" else False
+                    text:""
+
+                MDIconButton:
+                    id:calend_cin
+                    icon: 'calendar'
+                    pos: 540, 300
+                    on_release:root.show_date_picker('cin')
+
+                MDTextField:
+                    id: lieu_cin
+                    hint_text: "à"
+                    pos: 600, 300
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:270
+                    required: True if num_cin.text != "" else False
+
+                MDFillRoundFlatIconButton:
+                    id: save_etudiant
+                    text: "Sauvegarder"
+                    pos: 750, 150
+                    width:100
+                    disabled: True if (niveau_field.text == "" or date_naiss.text == "" or mention_field.text == "" or addresse.text=="" or nom.text == "" or num_select.text == "" or nation.text == "" or lieu_naiss.text == "") else False
+                    icon: "content-save"
+                    on_release:root.enreg_etudiant()
+                    md_bg_color:(0,0,0,0)
+
+                MDFillRoundFlatIconButton:
+                    id: auto
+                    text: "auto"
+                    pos: 650, 150
+                    on_release:root.auto_complete()
+                    width:100
+
+<SelectionUpdateScreen>:
+    name: 'SelectionUpdate'
+    MDBoxLayout:
+        orientation:'vertical'
+        MDToolbar:
+            title: 'Ajout etudiant'
+            left_action_items:[["keyboard-backspace",lambda x: root.back_home()]]
+            elevation:5
+        BoxLayout:
+            orientation: 'vertical'
+            FloatLayout_:
+                ImageButton:
+                    id: ellipse
+                    pos: 80, 430
+                    size: 100 , 120
+                    angle_start: 0
+                    size_hint: None, None
+                    source:self.source
+                MDIconButton:
+                    id: camera
+                    icon: 'camera'
+                    pos: 140, 415
+                    on_release: root.file_manager_open()
+
+                MDTextField:
+                    id: num_select
+                    hint_text: "Numéro selection"
+                    pos: 70, 370
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:120
+                    readonly: True
+
+                MDTextField:
+                    id:mention_field
+                    hint_text:"Mention"
+                    size_hint_x: None
+                    pos: (20, 300) if validation.active else (280, 280)
+                    width: 230
+                    readonly: True
+                    on_focus: if self.focus: root.menu_mention.open()
+
+
+                MDTextField:
+                    id:niveau_field
+                    hint_text:"Niveau"
+                    size_hint_x: None
+                    pos: (20, 240) if validation.active else (530,280)
+                    width: 180
+                    readonly: True
+                    on_focus: if self.focus: root.menu_niveau.open()
+
+                MDTextField:
+                    id:parcours_field
+                    hint_text:"Parcours"
+                    size_hint_x: None
+                    pos: 20, 180
+                    width: 180
+                    readonly: True
+                    on_focus: if self.focus and mention_field.text != "" : root.menu_parcours.open()
+                    readonly: True
+                    opacity: 1 if(validation.active) else 0
+
+
+                MDTextField:
+                    id: nom
+                    hint_text: "Nom"
+                    pos: 280, 520
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:300
+                    required: True
+
+                MDTextField:
+                    id: prenom
+                    hint_text: "Prénom"
+                    pos: 600, 520
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:150
+                    required: False
+
+                MDTextField:
+                    id: sexe
+                    hint_text: "Sexe"
+                    pos: 770, 520
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:100
+                    readonly: True
+                    required: True
+                    on_focus: if self.focus: root.menu_sexe.open()
+
+                MDTextField:
+                    id: date_naiss
+                    hint_text: "Né(e) le"
+                    pos: 280, 460
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:100
+                    readonly: True
+                    text:""
+
+                MDIconButton:
+                    id:calend_naiss
+                    icon: 'calendar'
+                    pos: 375, 460
+                    on_release:root.show_date_picker('naiss')
+
+                MDTextField:
+                    id: lieu_naiss
+                    hint_text: "à"
+                    pos: 440, 460
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:245
+                    required: True
+
+                MDTextField:
+                    id: nation
+                    hint_text: "Nationalité"
+                    pos: 725, 460
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:150
+                    readonly: True
+                    required: True
+                    on_focus: if self.focus: root.menu_nation.open()
+
+                MDTextField:
+                    id: addresse
+                    hint_text: "Addresse de l'étudiant"
+                    pos: 280, 400
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:400 if validation.active else 600
+                    required: True
+
+                MDTextField:
+                    id: prof_et
+                    hint_text: "Profession"
+                    pos: 700, 400
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:150
+                    required: validation.active
+                    opacity: 1 if(validation.active) else 0
+
+                MDTextField:
+                    id: num_cin
+                    hint_text: "CIN"
+                    pos: 280, 340
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:150
+
+                MDTextField:
+                    id: date_cin
+                    hint_text: "délivré le"
+                    pos: 450, 340
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:100
+                    readonly: True
+                    required:True if num_cin.text != "" else False
+                    text:""
+
+                MDIconButton:
+                    id:calend_cin
+                    icon: 'calendar'
+                    pos: 540, 340
+                    on_release:root.show_date_picker('cin')
+
+                MDTextField:
+                    id: lieu_cin
+                    hint_text: "à"
+                    pos: 600, 340
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:270
+                    required: True if num_cin.text != "" else False
+
+                MDTextField:
+                    id: situation
+                    hint_text: "Situation familiale"
+                    pos: 280, 280
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:200
+                    required: validation.active
+                    disabled: not validation.active
+                    opacity: 1 if(validation.active) else 0
+
+                MDTextField:
+                    id: phone
+                    hint_text: "Télephone"
+                    pos: 520, 280
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:100
+                    required: validation.active
+                    disabled: not validation.active
+                    opacity: 1 if(validation.active) else 0
+
+                MDTextField:
+                    id: serie_bacc
+                    hint_text: "Bacc serie"
+                    pos: 640, 280
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:100
+                    readonly: True
+                    on_focus: if self.focus: root.menu_serie.open()
+                    required: validation.active
+                    opacity: 1 if(validation.active) else 0
+
+                MDTextField:
+                    id: num_bacc
+                    hint_text: "Numéro du bacc"
+                    pos: 280, 220
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:150
+                    required: validation.active
+                    opacity: 1 if(validation.active) else 0
+
+                MDTextField:
+                    id: annee_bacc
+                    hint_text: "Annéé d'optention"
+                    pos: 450, 220
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:150
+                    required: validation.active
+                    opacity: 1 if(validation.active) else 0
+
+                MDTextField:
+                    id: centre_bacc
+                    hint_text: "Centre bacc"
+                    pos: 620, 220
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:200
+                    required: validation.active
+                    opacity: 1 if(validation.active) else 0
+
+                MDCheckbox:
+                    id:select
+                    size: 20,20
+                    size_hint:None, None
+                    pos_hint: {"center_y": 0.679,"center_x": 0.23}
+                    disabled: validation.active
+
+                MDTextField:
+                    id: num_quintance
+                    hint_text: "Quintance"
+                    pos: 280, 170
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:150
+                    required: validation.active
+                    opacity: 1 if(validation.active) else 0
+
+                MDTextField:
+                    id: date_quintance
+                    hint_text: "du"
+                    pos: 450, 170
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:100
+                    readonly: True
+                    text:""
+                    required: validation.active
+                    opacity: 1 if(validation.active) else 0
+
+                MDIconButton:
+                    id: calend_quint
+                    icon: 'calendar'
+                    pos: 540, 170
+                    on_release:root.show_date_picker('quintance')
+                    disabled: False if validation.active else True
+                    opacity: 1 if(validation.active) else 0
+
+                MDTextField:
+                    id: montant
+                    hint_text: "Montant"
+                    pos: 600, 170
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:270
+                    required: validation.active
+                    opacity: 1 if(validation.active) else 0
+
+                MDTextField:
+                    id: nom_pere
+                    hint_text: "Nom du père"
+                    pos: 280, 120
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:400
+                    opacity: 1 if(validation.active) else 0
+
+                MDTextField:
+                    id: prof_pere
+                    hint_text: "Profession"
+                    pos: 700, 120
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:150
+                    opacity: 1 if(validation.active) else 0
+
+                MDTextField:
+                    id: nom_mere
+                    hint_text: "Nom de la mère"
+                    pos: 280, 70
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:400
+                    opacity: 1 if(validation.active) else 0
+
+                MDTextField:
+                    id: prof_mere
+                    hint_text: "Profession"
+                    pos: 700, 70
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:150
+                    opacity: 1 if(validation.active) else 0
+
+                MDTextField:
+                    id: addresse_parent
+                    hint_text: "Addresse des parent"
+                    pos: 280, 10
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:500
+                    required: validation.active
+                    opacity: 1 if(validation.active) else 0
+
+                MDSpinner:
+                    id: spinner
+                    size_hint: None, None
+                    size: dp(50), dp(50)
+                    pos: 540, 300
+                    active: False
+
+                MDFillRoundFlatIconButton:
+                    id: save_etudiant
+                    text: "Sauvegarder"
+                    pos: (800, 10) if validation.active else (700,220)
+                    width:100
+                    disabled: False if ( not validation.active and (niveau_field.text != "" and sexe.text != "" and date_naiss.text != "" and mention_field.text != "" and addresse.text != "" and nom.text != "" and num_select.text != "" and nation.text != "" and lieu_naiss.text != "") or validation.active and (niveau_field.text != "" and date_naiss.text != "" and mention_field.text != "" and addresse.text != "" and nom.text != "" and num_select.text != "" and nation.text != "" and lieu_naiss.text != "" and prof_et.text != "" and montant.text != "" and num_quintance.text != "" and date_quintance.text != "" and centre_bacc.text != "" and annee_bacc.text != "" and num_bacc.text != "" and serie_bacc.text != "" and situation.text != "" and parcours_field.text != "")) else True
+                    icon: "content-save"
+                    on_release:
+                        root.spinner_toggle()
+                        root.process_update_toggle()
+                        root.spinner_toggle()
+                    md_bg_color:(0,0,0,0)
+
+                MDCheckbox:
+                    id:validation
+                    size: 20,20
+                    size_hint:None, None
+                    pos_hint: {"center_y": 0.05,"center_x": 0.97} if validation.active else {"center_y": 0.40,"center_x": 0.88}
+                    disabled: False if select.active else True
+
+                MDFillRoundFlatIconButton:
+                    id: auto
+                    text: "auto"
+                    pos: 20, 10
+                    on_release:root.auto_complete()
+                    width:100
+
+<PublicScreen>:
+    name: 'Public'
+
+    MDBoxLayout:
+        orientation:'vertical'
+        size_hint_y:1
+        MDBoxLayout:
+            orientation:'horizontal'
+            size_hint_y:0.5
+            size_hint_x:0.3
+            MDLabel:
+                id:espace_1
+                pos_hint:{"center_y": 0.95}
+                size_hint_x: None
+                width:50
+            MDTextField:
+                id: matier
+                hint_text: "Matier"
+                pos_hint:{"center_y": 0.95, "center_x":0.2}
+                size_hint_x: None
+                readonly: True
+                on_focus:if self.focus: root.menu_matier.open() if (matier.hint_text == 'Matier') else root.menu_session.open()
+                width:180
+            MDLabel:
+                id:espace_2
+                pos_hint:{"center_y": 0.95}
+                size_hint_x: None
+                width:30
+            MDTextField:
+                id: mention
+                hint_text: "Mention"
+                pos_hint:{"center_y": 0.95, "center_x":0.2}
+                size_hint_x: None
+                readonly: True
+                on_focus: if self.focus and matier.text != "": root.menu_mention.open()
+                width:250
+            MDLabel:
+                id:espace_3
+                pos_hint:{"center_y": 0.95}
+                size_hint_x: None
+                width:30
+            MDTextField:
+                id: parcours
+                hint_text: "Parcours"
+                pos_hint:{"center_y": 0.95, "center_x":0.2}
+                size_hint_x: None
+                readonly: True
+                on_focus: if self.focus and mention.text != "": root.menu_parcours.open()
+                width:80
+            MDLabel:
+                id:espace_4
+                pos_hint:{"center_y": 0.95}
+                size_hint_x: None
+                width:30
+            MDTextField:
+                id: semestre
+                hint_text: "Semestre"
+                pos_hint:{"center_y": 0.95, "center_x":0.2}
+                size_hint_x: None
+                on_focus: if self.focus and parcours.text != "": root.menu_semestre.open()
+                readonly: True
+                width:60
+            MDLabel:
+                id:espace_4
+                pos_hint:{"center_y": 0.95}
+                size_hint_x: None
+                width:30
+            MDTextField:
+                id: annee
+                hint_text: "Anneé"
+                pos_hint:{"center_y": 0.95, "center_x":0.2}
+                size_hint_x: None
+                on_focus: if self.focus: root.menu_annee.open()
+                readonly: True
+                width:100
+
+            MDSpinner:
+                id:spinner
+                size_hint: None, None
+                size: dp(20), dp(20)
+                pos_hint: {'center_x': 0.5}
+                active: False
+
+    MDBottomAppBar:
+        orientation:'vertical'
+        MDToolbar:
+            title: 'Back Office'
+            type:'bottom'
+            left_action_items:[["menu",lambda x: root.callback(x)]]
+            right_action_items:[["book-edit",lambda x: root.open_note()],["book-open",lambda x: root.open_matier()],["logout",lambda x: app.logout()]]
+            elevation:5
+            mode:"center"
+            icon:"plus"
+            on_action_button: root.add_new()
+
+<PublicAddScreen>:
+    name: 'Public_add'
+    MDBoxLayout:
+        orientation:'vertical'
+        MDToolbar:
+            title: 'Ajout'
+            left_action_items:[["keyboard-backspace",lambda x: root.back_home()]]
+            elevation:5
+        Widget:
+        BoxLayout:
+            orientation: 'vertical'
+            FloatLayout_:
+                MDTextField:
+                    id: email
+                    hint_text: "Email"
+                    pos: 280, 520
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:300
+                    required: True
+
+                MDTextField:
+                    id: nom
+                    hint_text: "Nom"
+                    pos: 280, 460
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:300
+                    required: True
+
+                MDTextField:
+                    id: semestre
+                    hint_text: "Semstre"
+                    pos: 280, 460
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:300
+                    on_focus:if self.focus: root.menu_semestre.open()
+                    required: True
+                    readonly: True
+
+                MDTextField:
+                    id: prenom
+                    hint_text: "Prenom"
+                    pos: 600, 460
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:200
+                    required: True
+
+                MDTextField:
+                    id: mention
+                    hint_text: "Mention"
+                    pos: 280, 400
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:300
+                    readonly: True
+                    required: True
+                    on_focus: if self.focus: root.menu_mention.open()
+
+                MDTextField:
+                    id: password
+                    hint_text: "Password"
+                    pos: 600, 520
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:200
+                    required: True
+
+                MDTextField:
+                    id: role
+                    hint_text: "Role"
+                    pos: 600, 400
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    on_focus: if self.focus: root.menu_role.open()
+                    width:200
+                    required: True
+
+                MDSpinner:
+                    id: spinner
+                    size_hint: None, None
+                    size: dp(24), dp(24)
+                    pos: 570, 325
+                    active: False
+
+                MDFillRoundFlatIconButton:
+                    id: save_users
+                    text: "Sauvegarder"
+                    pos: 600, 320
+                    icon: "content-save"
+                    disabled: False if(email.hint_text == "Email" and password.text != "" and email.text != "" and nom.text != "" and prenom.text != "" and mention.text != "" and role.text != "" ) else True
+                    on_release:
+                        root.spinner_toggle()
+                        root.process_enreg_users()
+                        root.spinner_toggle()
+                    width:200
+                    md_bg_color:(0,0,0,0)
+
+                MDFillRoundFlatIconButton:
+                    id: save_mention
+                    text: "Sauvegarder"
+                    pos: 600, 320
+                    icon: "content-save"
+                    on_release:
+                        root.spinner_toggle()
+                        root.process_enreg_mention()
+                        root.spinner_toggle()
+                    disabled: False if (email.hint_text == "Titre mention" and email.text != ""  and nom.text != "" and password != "" and prenom != "" ) else True
+                    width:200
+                    md_bg_color:(0,0,0,0)
+
+                MDFillRoundFlatIconButton:
+                    id: save_parcours
+                    text: "Sauvegarder"
+                    pos: 600, 320
+                    icon: "content-save"
+                    on_release:
+                        root.spinner_toggle()
+                        root.process_enreg_parcours()
+                        root.spinner_toggle()
+                    disabled: False if (email.hint_text == "Titre parcours" and email.text != ""  and semestre.text != "" and password.text != "" and mention.text != "" ) else True
+                    width:100
+                    md_bg_color:(0,0,0,0)
+
+                MDFillRoundFlatIconButton:
+                    id: save_annee
+                    text: "Sauvegarder"
+                    pos: 600, 320
+                    icon: "content-save"
+                    on_release:
+                        root.spinner_toggle()
+                        root.process_enreg_annee()
+                        root.spinner_toggle()
+                    disabled: False if (email.hint_text == "Titre année"  and email.text != "" and password.text != "") else True
+                    width:100
+                    md_bg_color:(0,0,0,0)
+
+                MDFillRoundFlatIconButton:
+                    id: save_role
+                    text: "Sauvegarder"
+                    pos: 600, 320
+                    icon: "content-save"
+                    on_release:
+                        root.spinner_toggle()
+                        root.process_enreg_role()
+                        root.spinner_toggle()
+                    disabled: False if (email.hint_text == "Titre role" and email.text != "") else True
+                    width:100
+                    md_bg_color:(0,0,0,0)
+
+                MDFillRoundFlatIconButton:
+                    id: save_droit
+                    text: "Sauvegarder"
+                    pos: 600, 320
+                    icon: "content-save"
+                    on_release:
+                        root.spinner_toggle()
+                        root.process_enreg_droit()
+                        root.spinner_toggle()
+                    disabled: False if (email.hint_text == "Montant"  and email.text != ""  and nom.text != ""  and password.text != ""  and mention.text != ""  ) else True
+                    width:100
+                    md_bg_color:(0,0,0,0)
+
+<MatierAddScreen>:
+    name: 'Matier_add'
+    MDBoxLayout:
+        orientation:'vertical'
+        MDToolbar:
+            title: 'Ajout'
+            left_action_items:[["keyboard-backspace",lambda x: root.back_home()]]
+            elevation:5
+        BoxLayout:
+            orientation: 'vertical'
+            FloatLayout_:
+                MDTextField:
+                    id: title
+                    hint_text: "Élément constitutif"
+                    pos: 320, 520
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:300
+                    required: True
+
+                MDTextField:
+                    id: value
+                    hint_text: "Poids"
+                    pos: 320, 460
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:300
+                    required: True
+
+                MDTextField:
+                    id: value_ue
+                    hint_text: "Unité d'enseignement"
+                    pos: 320, 400
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    on_focus: if self.focus: root.menue_ue.open()
+                    width:300
+                    readonly:True
+                    required: True
+
+                MDTextField:
+                    id: enseignant
+                    hint_text: "Enseignant"
+                    pos: 640, 400
+                    size_hint_x: None
+                    width:300
+                    required: False
+
+                MDTextField:
+                    id: optional
+                    hint_text: "Optionnel"
+                    pos: 640, 520
+                    disabled: True
+
+                MDCheckbox:
+                    id:check
+                    size: 20,20
+                    size_hint:None, None
+                    pos_hint: {"center_y": 0.934,"center_x": 0.73}
+
+                MDSpinner:
+                    id: spinner
+                    size_hint: None, None
+                    size: dp(24), dp(24)
+                    pos: 570, 325
+                    active: False
+
+                MDFillRoundFlatIconButton:
+                    id: save_ec
+                    text: "Sauvegarder"
+                    pos: 600, 320
+                    icon: "content-save"
+                    on_release:root.process_enreg_matier_ec()
+                    disabled: False if (value.hint_text == 'Poids' and title.text != ""  and value.text != ""  and value_ue.text != "" ) else True
+                    width:100
+                    md_bg_color:(0,0,0,0)
+
+                MDFillRoundFlatIconButton:
+                    id: save_ue
+                    text: "Sauvegarder"
+                    pos: 600, 320
+                    icon: "content-save"
+                    on_release:root.process_enreg_matier_ue()
+                    disabled: False if ( value.hint_text == 'Credit' and  title.text != ""  and value.text != "") else True
+                    width:100
+                    md_bg_color:(0,0,0,0)
+
+<NoteScreen>:
+    name: 'Note'
+
+    MDBoxLayout:
+        orientation:'vertical'
+        size_hint_y:1
+        MDBoxLayout:
+            orientation:'horizontal'
+            size_hint_y:0.5
+            size_hint_x:0.3
+            MDLabel:
+                id:espace_1
+                pos_hint:{"center_y": 0.94}
+                size_hint_x: None
+                width:10
+            MDTextField:
+                id: matier
+                hint_text: "Matière"
+                pos_hint:{"center_y": 0.94, "center_x":0.2}
+                size_hint_x: None
+                readonly: True
+                on_focus:if self.focus and session.text != "": root.open_menu()
+                width:240
+                on_text: root.view_rattrapage()
+            MDLabel:
+                id:espace_2
+                pos_hint:{"center_y": 0.94}
+                size_hint_x: None
+                width:30
+            MDTextField:
+                id: mention
+                hint_text: "Mention"
+                pos_hint:{"center_y": 0.94, "center_x":0.2}
+                size_hint_x: None
+                readonly: True
+                on_focus: if self.focus and session.text != "": root.menu_mention.open()
+                width:250
+            MDLabel:
+                id:espace_3
+                pos_hint:{"center_y": 0.95}
+                size_hint_x: None
+                width:30
+            MDTextField:
+                id: parcours
+                hint_text: "Parcours"
+                pos_hint:{"center_y": 0.94, "center_x":0.2}
+                size_hint_x: None
+                readonly: True
+                on_focus: if self.focus and mention.text != "": root.menu_parcours.open()
+                width:80
+            MDLabel:
+                id:espace_4
+                pos_hint:{"center_y": 0.94}
+                size_hint_x: None
+                width:30
+            MDTextField:
+                id: semestre
+                hint_text: "Semestre"
+                pos_hint:{"center_y": 0.94, "center_x":0.2}
+                size_hint_x: None
+                on_focus: if self.focus and parcours.text != "": root.menu_semestre.open()
+                readonly: True
+                width:60
+            MDLabel:
+                id:espace_4
+                pos_hint:{"center_y": 0.94}
+                size_hint_x: None
+                width:30
+            MDTextField:
+                id: annee
+                hint_text: "Anneé"
+                pos_hint:{"center_y": 0.94, "center_x":0.2}
+                size_hint_x: None
+                on_focus: if self.focus: root.menu_annee.open()
+                readonly: True
+                width:100
+            MDLabel:
+                id:espace_5
+                pos_hint:{"center_y": 0.94}
+                size_hint_x: None
+                width:30
+            MDTextField:
+                id: session
+                hint_text: "Session"
+                pos_hint:{"center_y": 0.94, "center_x":0.2}
+                size_hint_x: None
+                on_focus: if self.focus: root.menu_session.open()
+                readonly: True
+                width:100
+        MDBoxLayout:
+            orientation:'horizontal'
+            size_hint_y:0.20
+            size_hint_x:0.8
+            MDLabel:
+                id:espace_6
+                pos_hint:{"center_y": 0.25}
+                size_hint_x: None
+                width:30
+            MDTextField:
+                id:condition
+                hint_text: "Condition"
+                pos_hint:{"center_y": 0.45}
+                size_hint_x: None
+                on_focus: if self.focus: root.menu_condition.open()
+                disabled: True
+                readonly: True
+                width:100
+
+            MDLabel:
+                id:espace_7
+                pos_hint:{"center_y": 0.25}
+                size_hint_x: None
+                width:30
+            MDTextField:
+                id:nombre
+                hint_text:"Entrer un Nombre"
+                pos_hint:{"center_y": 0.45}
+                size_hint_x: None
+                on_text:root.test_number()
+                width:100
+                disabled: True
+            MDLabel:
+                id:espace_8
+                pos_hint:{"center_y": 0.45}
+                size_hint_x: None
+                width:30
+            MDFlatButton:
+                id:rattrapage
+                text: "Rattrapage"
+                pos_hint:{"center_y": 0.45}
+                size_hint_x: None
+                width:100
+                disabled: True
+                on_release: root.list_rattrapage()
+                opacity: 0
+            MDIconButton:
+                id:download
+                icon: "file-download"
+                pos_hint:{'center_y': 0.45, 'center_x': 0.9}
+                disable: True
+                opacity: 0
+                md_bg_color: (0, 0, 0, 0)
+                on_release: root.download_resultat()
+
+    MDBottomAppBar:
+        orientation:'vertical'
+        MDToolbar:
+            id: result
+            title: 'Gestion des notes'
+            type:'bottom'
+            left_action_items:[["keyboard-backspace",lambda x: root.back_home()]]
+            right_action_items:[["android",lambda x: root.show_dialog_list()],["upload",lambda x: root.upload_note()],["download",lambda x: root.download_note()],["logout",lambda x: app.logout()]]
+            elevation:5
+            mode:"center"
+            icon:"plus"
+            on_action_button: root.menu_result_final.open()
+<NoteAddScreen>:
+    name: 'NoteAdd'
+    MDBoxLayout:
+        orientation:'vertical'
+        MDToolbar:
+            title: 'Ajout etudiant'
+            left_action_items:[["keyboard-backspace",lambda x: root.back_home()]]
+            elevation:5
+        MDBoxLayout:
+            orientation:'vertical'
+            size_hint_y:1
+            size_hint_x:1
+            FloatLayout_:
+                MDTextField:
+                    id:value_ue
+                    hint_text:"Unité d'enseignement"
+                    pos: 710, 500
+                    size_hint_x: None
+                    width:200
+                ScrollView:
+                    pos_x: 10
+                    size_hint_x: None
+                    width:700
+                    MDList:
+                        id: container
+
+<ScolaScreen>
+    name: 'Scola'
+    MDBoxLayout:
+        orientation:'vertical'
+        MDToolbar:
+            title: 'Service de scolarité'
+            left_action_items:[["keyboard-backspace",lambda x: root.back_home()]]
+            right_action_items:[["menu",lambda x: root.calback_menu(x)]]
+            elevation:5
+        BoxLayout:
+            orientation: 'vertical'
+            FloatLayout_:
+                Label:
+                    id: title
+                    text: "Titre"
+                    pos: 320, 520
+                    size_hint_x: None
+                    width:300
+
+                MDTextField:
+                    id: annee
+                    hint_text: "Annéé universitaire"
+                    pos: 320, 520-120
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    on_focus: if self.focus: root.menu_annee_univ.open()
+                    width:300
+                    readonly:True
+                    required: True
+
+                MDTextField:
+                    id: type
+                    hint_text: "Demande"
+                    pos: 320, 460-120
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    on_focus: if self.focus: root.menu_list.open()
+                    width:300
+                    required: True
+                    readonly: True
+                    disabled: True
+                    opacity: 0
+
+                MDTextField:
+                    id: stats
+                    hint_text: "Statistique"
+                    pos: 320, 460-120
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    on_focus: if self.focus: root.menu_list_stats.open()
+                    width:300
+                    required: True
+                    readonly: True
+                    disabled: True
+                    opacity: 0
+
+                MDTextField:
+                    id: num_carte
+                    hint_text: "Numéro carte"
+                    pos: (320, 400-120) if annee.text != "" else (320, 460-120)
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:300
+                    required: True
+                    disabled: True
+                    opacity: 0
+
+                MDTextField:
+                    id: mention
+                    hint_text: "Mention"
+                    pos: (320, 400-120) if annee.text != "" else (320, 460-120)
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    on_focus: if self.focus: root.menu_mention.open()
+                    width:300
+                    readonly: True
+                    required: True
+                    disabled: True
+                    opacity: 0
+
+                MDTextField:
+                    id: semestre
+                    hint_text: "Semestre"
+                    pos: 320, 340-120
+                    size_hint_x: None
+                    helper_text_mode:"on_error"
+                    width:300
+                    required: True
+                    disabled: True
+                    opacity: 0
+
+                MDFillRoundFlatIconButton:
+                    id: save_relever
+                    text: "Créer"
+                    pos: 560, 160
+                    icon: "content-save"
+                    on_release:root.enreg_releve()
+                    disabled: False if (not semestre.disabled and num_carte.text != "" and annee.text != "" and semestre.text != "" and type.text != "") else True
+                    width:100
+                    md_bg_color:(0,0,0,0)
+                    opacity: 0
+
+                MDFillRoundFlatIconButton:
+                    id: save
+                    text: "Créer"
+                    pos: 560, 160
+                    icon: "content-save"
+                    on_release:root.enreg()
+                    disabled: False if (semestre.disabled and num_carte.text != "" and annee.text != "" and type.text != "") else True
+                    width:100
+                    opacity: 0
+                    md_bg_color:(0,0,0,0)
+
+                MDFillRoundFlatIconButton:
+                    id: download
+                    text: "Créer"
+                    pos: 560, 160
+                    icon: "content-save"
+                    on_release:root.enreg_stats()
+                    disabled: False if (annee.text != "" and mention.text != "") else True
+                    width:100
+                    opacity: 0
+                    md_bg_color:(0,0,0,0)

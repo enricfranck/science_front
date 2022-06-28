@@ -1,0 +1,14 @@
+{
+  "server": [
+    {
+      "title": "serveur local",
+      "address": "localhost",
+      "uuid": "5ad89b09-6ea3-40a5-bcd5-6514a2389de6"
+    },
+    {
+      "title": "ubuntu",
+      "address": "127.0.0.0",
+      "uuid": "542c5820-8e53-4c7c-8359-aba936c9c868"
+    }
+  ]
+}
